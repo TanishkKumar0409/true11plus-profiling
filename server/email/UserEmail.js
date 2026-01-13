@@ -18,7 +18,7 @@ export const UserEmailVerify = async (user) => {
       throw new Error("FRONT_URL missing in .env");
     }
 
-    const verifyUrl = `${process.env.FRONT_URL}/verify-email?token=${encodeURIComponent(token)}`;
+    const verifyUrl = `${process.env.FRONT_URL}/verify-email/${token}`;
 
     const htmlContent = verifyEmailTemplate({
       name: user.name,
