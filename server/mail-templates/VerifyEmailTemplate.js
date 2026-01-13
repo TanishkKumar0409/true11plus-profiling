@@ -1,0 +1,26 @@
+export const verifyEmailTemplate = ({ name, verifyUrl }) => {
+  return `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8" />
+      <title>Email Verification</title>
+    </head>
+    <body style="font-family:Arial;background:#f4f4f4;padding:20px">
+      <div style="max-width:600px;margin:auto;background:#ffffff;padding:20px;border-radius:8px">
+        <h2 style="color:#333">Verify Your Email</h2>
+        <p>Hello <b>${name}</b>,</p>
+        <p>Please verify your email by clicking the button below.</p>
+
+        <div style="text-align:center;margin:30px 0">
+          <a href="${verifyUrl}">
+            Verify Email
+          </a>
+        </div>
+
+        <p>⏰ This link will expire in <b>5 minutes</b>.</p>
+      </div>
+    </body>
+  </html>
+  `;
+};
