@@ -1,40 +1,85 @@
+import path from "node:path";
 import { MailTransporter } from "../utils/MailTransporter.js";
-import { generateEmailVerifyToken } from "../utils/GenerateEmailVerifyToken.js";
-import { verifyEmailTemplate } from "../mail-templates/VerifyEmailTemplate.js";
 import User from "../models/user-models/UserModel.js";
+import { createJwtToken } from "../utils/Callbacks.js";
+import ejs from "ejs";
 
-export const UserEmailVerify = async (user) => {
+export const sendUserEmailVerification = async (req, user) => {
   try {
-    const token = generateEmailVerifyToken(user._id);
+    const token = await createJwtToken({ userId: user?._id }, "5m");
 
     const expiryTime = new Date(Date.now() + 5 * 60 * 1000);
 
-    await User.findByIdAndUpdate(user._id, {
+    const saveVerifyToken = await User.findByIdAndUpdate(user._id, {
       verifytoken: token,
       verifytokenexpiry: expiryTime,
     });
 
-    if (!process.env.FRONT_URL) {
-      throw new Error("FRONT_URL missing in .env");
-    }
+    if (!saveVerifyToken) return { error: "User not found." };
 
-    const verifyUrl = `${process.env.FRONT_URL}/verify-email/${token}`;
+    const origin = req?.headers?.origin || process.env.FRONTEND_URL;
+    if (!origin) throw new Error("Origin not found");
 
-    const htmlContent = verifyEmailTemplate({
-      name: user.name,
+    const verifyUrl = `${origin}/auth/verify-email/confirm/${token}`;
+
+    const templatePath = path.resolve(
+      "mail-templates",
+      "VerifyEmailTemplate.ejs"
+    );
+    const html = await ejs.renderFile(templatePath, {
       verifyUrl,
+      user,
     });
 
     await MailTransporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: process.env.EMAIL,
       to: user.email,
-      subject: "Verify Your Email (Valid for 5 Minutes)",
-      html: htmlContent,
+      subject: "Verify Your Email",
+      html: html,
     });
 
     return true;
   } catch (error) {
     console.error("Email send failed:", error);
     return false;
+  }
+};
+
+export const sendUserResetEmail = async (user, req) => {
+  try {
+    const token = await createJwtToken({ userId: user?._id }, "5m");
+
+    const userInfo = await User.findOneAndUpdate(
+      { _id: user._id },
+      {
+        $set: {
+          resetToken: token,
+          resetTokenExpiry: new Date(Date.now() + 5 * 60 * 1000),
+        },
+      },
+      { new: true }
+    );
+
+    const origin = req?.headers?.origin || process.env.FRONTEND_URL;
+    if (!origin) throw new Error("Origin not found");
+    const resetUrl = `${origin}/auth/reset-password/confirm/${token}`;
+
+    const templatePath = path.resolve("mail-templates", "ResetPassword.ejs");
+
+    const html = await ejs.renderFile(templatePath, {
+      resetUrl,
+      user: userInfo,
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: user.email,
+      subject: "Password Reset Request",
+      html: html,
+    };
+
+    await MailTransporter.sendMail(mailOptions);
+  } catch (error) {
+    console.log("Error sending password reset email:", error);
   }
 };
