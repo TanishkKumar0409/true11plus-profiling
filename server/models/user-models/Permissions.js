@@ -7,6 +7,7 @@ const permissionsSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      lowercase: true,
     },
     roles: {
       type: [mongoose.Schema.Types.ObjectId],
@@ -19,6 +20,7 @@ const permissionsSchema = new mongoose.Schema(
           type: String,
           required: true,
           trim: true,
+          lowercase: true,
         },
         description: {
           type: String,
@@ -27,7 +29,7 @@ const permissionsSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const UserPermissions = MainDatabase.model("permissions", permissionsSchema);

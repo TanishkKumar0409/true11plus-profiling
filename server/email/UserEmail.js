@@ -24,7 +24,7 @@ export const sendUserEmailVerification = async (req, user) => {
 
     const templatePath = path.resolve(
       "mail-templates",
-      "VerifyEmailTemplate.ejs"
+      "VerifyEmailTemplate.ejs",
     );
     const html = await ejs.renderFile(templatePath, {
       verifyUrl,
@@ -57,7 +57,7 @@ export const sendUserResetEmail = async (user, req) => {
           resetTokenExpiry: new Date(Date.now() + 5 * 60 * 1000),
         },
       },
-      { new: true }
+      { new: true },
     );
 
     const origin = req?.headers?.origin || process.env.FRONTEND_URL;

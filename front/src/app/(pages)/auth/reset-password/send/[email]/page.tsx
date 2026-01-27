@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-export default function VerifyEmailSend() {
+export default function ResetPasswordSend() {
   const RESEND_TIME = 60;
   const LINK_VALID_MINUTES = 5;
 
@@ -76,8 +76,8 @@ export default function VerifyEmailSend() {
         {isResending
           ? "Resending..."
           : timeLeft > 0
-          ? `Resend email in ${timeLeft}s`
-          : "Resend Reset Password email"}
+            ? `Resend email in ${timeLeft}s`
+            : "Resend Reset Password email"}
       </button>
     </div>
   );

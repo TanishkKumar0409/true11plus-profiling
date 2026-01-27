@@ -15,6 +15,7 @@ interface SidebarItem {
   label: string;
   href: string;
   icon: IconType;
+  external: boolean
 }
 
 interface SidebarSection {
@@ -28,8 +29,9 @@ const SIDEBAR_SECTIONS: SidebarSection[] = [
     items: [
       {
         label: "My Profile",
-        href: `${process.env.NEXT_PUBLIC_APP_URL}`,
+        href: `${process.env.NEXT_PUBLIC_STUDENT_APP_URL}`,
         icon: BiUser,
+        external: true
       },
     ],
   },
@@ -63,23 +65,21 @@ export default function ProfileSidebar({
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] transition-opacity duration-300 ${
-          isOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/30 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
+          }`}
         onClick={onClose}
       />
 
       <div
-        className={`fixed top-0 right-0 h-full w-[320px] bg-(--primary-bg) shadow-2xl z-[70] transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col border-l border-(--border) ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-full w-[320px] bg-(--primary-bg) shadow-2xl z-[70] transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col border-l border-(--border) ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         {/* 1. COMPACT HEADER */}
         <div className="flex items-center justify-between p-4 border-b border-(--border) bg-(--secondary-bg)">
           <a
-            href={`${process.env.NEXT_PUBLIC_APP_URL}`}
+            href={`${process.env.NEXT_PUBLIC_STUDENT_APP_URL}`}
             target="_blank"
             className="flex items-center gap-3 overflow-hidden group"
           >
@@ -120,6 +120,7 @@ export default function ProfileSidebar({
                   icon={item.icon}
                   label={item.label}
                   onClick={onClose}
+                  external={item?.external}
                 />
               ))}
             </div>
@@ -157,10 +158,11 @@ const SectionLabel = ({
   </p>
 );
 
-const SidebarLink = ({ href, icon: Icon, label, onClick }: any) => (
+const SidebarLink = ({ href, icon: Icon, label, onClick, external }: any) => (
   <Link
     href={href}
     onClick={onClick}
+    target={external ? "_blank" : "_self"}
     className="flex items-center justify-between px-3 py-2.5 rounded-lg text-(--text-color) hover:bg-(--main-light) hover:text-(--main-emphasis) group transition-all duration-200"
   >
     <div className="flex items-center gap-3">

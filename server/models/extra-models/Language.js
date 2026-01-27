@@ -8,6 +8,7 @@ const languageSchema = mongoose.Schema(
             required: true,
             trim: true,
             unique: true,
+            lowercase: true,
         },
     },
     { timestamps: true }

@@ -6,13 +6,14 @@ const roleSchema = new mongoose.Schema(
     role: {
       type: String,
       required: true,
+      lowercase: true,
     },
     description: {
       type: String,
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const UserRoles = MainDatabase.model("role", roleSchema);

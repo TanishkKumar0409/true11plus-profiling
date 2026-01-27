@@ -18,7 +18,7 @@ export const registerUser = async (req, res) => {
   try {
     let { username, name, email, mobile_no, password, confirm_password, role } =
       req.body;
-    role = "student";
+    if (!role) role = "student";
 
     if (
       !username ||
@@ -76,7 +76,7 @@ export const registerUser = async (req, res) => {
         "You are registered successfully. Please check your email to verify your account.",
     });
   } catch (error) {
-    console.error("Register Error:", error);
+    console.error(error);
     return res
       .status(500)
       .json({ error: "Something went wrong. Please try again." });
@@ -86,10 +86,8 @@ export const registerUser = async (req, res) => {
 export const GetEmailVerification = async (req, res) => {
   try {
     const { token } = req.params;
-
     if (!token) return res.status(400).json({ error: "Token is required." });
     const user = await User.findOne({ verifytoken: token });
-
     if (!user)
       return res.status(400).json({ error: "Invalid or expired token." });
 
@@ -102,13 +100,13 @@ export const GetEmailVerification = async (req, res) => {
         error: "Token has expired and another verification email has been sent",
       });
     }
-
     const verifiedUser = await User.findOneAndUpdate(
       { _id: user._id },
       {
         $set: { verified: true },
         $unset: { verifytoken: "", verifytokenexpiry: "" },
-      }
+      },
+      { new: true },
     );
 
     if (!verifiedUser)
@@ -116,8 +114,10 @@ export const GetEmailVerification = async (req, res) => {
 
     return res.status(200).json({ message: "Email verified successfully." });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -140,8 +140,10 @@ export const VerifyUserEmail = async (req, res) => {
 
     return res.status(200).json({ message: "Email sent successfully." });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -180,8 +182,10 @@ export const Login = async (req, res) => {
 
     return res.status(200).json({ message: "Logged in successfully." });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -195,8 +199,10 @@ export const GetUserByEmail = async (req, res) => {
 
     return res.status(200).json(users);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -210,8 +216,10 @@ export const getAuthToken = async (req, res) => {
 
     return res.status(200).json({ token });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -259,8 +267,10 @@ export const AuthUserDetails = async (req, res) => {
 
     return res.status(200).json(finalData);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -269,8 +279,10 @@ export const AuthLogout = async (req, res) => {
     await removeToken(res);
     return res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -287,8 +299,10 @@ export const UserForgotPassword = async (req, res) => {
 
     return res.status(200).json({ message: "Password reset email sent." });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -314,8 +328,10 @@ export const getUserResetToken = async (req, res) => {
 
     return res.status(200).json({ message: "Valid token", token });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
@@ -357,6 +373,8 @@ export const UserPostResetToken = async (req, res) => {
     return res.status(200).json({ message: "Password reset successfully." });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
   }
 };

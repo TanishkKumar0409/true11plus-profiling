@@ -10,63 +10,23 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
     },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    mobile_no: {
-      type: String,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    verified: {
-      type: Boolean,
-      default: false,
-    },
-    verifytoken: {
-      type: String,
-    },
-    verifytokenexpiry: {
-      type: Date,
-    },
-    role: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "role",
-    },
-    permissions: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "permissions",
-    },
-    status: {
-      type: String,
-      default: "active",
-    },
-    resetToken: {
-      type: String,
-    },
-    resetTokenExpiry: {
-      type: Date,
-    },
-    deletionToken: {
-      type: String,
-    },
-    deletionTokenExpiry: {
-      type: Date,
-    },
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true },
+    mobile_no: { type: String, unique: true },
+    password: { type: String, required: true },
+    role: { type: mongoose.Schema.Types.ObjectId, ref: "role" },
+    permissions: { type: [mongoose.Schema.Types.ObjectId], ref: "permissions" },
+    status: { type: String, default: "active", lowercase: true },
+    verified: { type: Boolean, default: false },
+    verifytoken: { type: String },
+    verifytokenexpiry: { type: Date },
+    resetToken: { type: String },
+    resetTokenExpiry: { type: Date },
+    is_google_login: { type: Boolean, default: false },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true },
 );
 
 userSchema.pre("save", async function () {

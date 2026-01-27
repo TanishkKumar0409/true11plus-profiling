@@ -1,9 +1,11 @@
 "use client";
 
-import { Plus } from "lucide-react";
-import { Outlet } from "react-router-dom";
+import { BiPlus } from "react-icons/bi";
+import { Outlet, useLocation } from "react-router-dom";
 
 const AuthLayout = () => {
+  const location = useLocation();
+  const pathname = location.pathname;
   return (
     <div className="h-screen flex items-center justify-center font-sans overflow-hidden">
       <div className="w-full h-full flex overflow-hidden">
@@ -18,24 +20,27 @@ const AuthLayout = () => {
                 />
               </div>
 
-              <button
-                type="button"
-                className="w-full mb-8 flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium py-3.5 px-4 rounded-full hover:bg-gray-50 transition-all shadow-sm"
-              >
-                <img
-                  src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  alt="Google"
-                  className="h-5 w-5"
-                />
-                <span>Log in with Google</span>
-              </button>
-
+              {(pathname === "/" || pathname === "/auth/register") && (
+                <>
+                  <button
+                    type="button"
+                    className="w-full mb-8 flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 font-medium py-3.5 px-4 rounded-full hover:bg-gray-50 transition-all shadow-sm"
+                  >
+                    <img
+                      src="https://www.svgrepo.com/show/475656/google-color.svg"
+                      alt="Google"
+                      className="h-5 w-5"
+                    />
+                    <span>Log in with Google</span>
+                  </button>
+                </>
+              )}
               <Outlet />
             </div>
           </div>
         </div>
 
-        <div className="hidden lg:block w-1/2 min-h-full relative p-4 flex items-center">
+        <div className="hidden lg:block w-1/2 min-h-full relative p-4 items-center">
           <img
             src="https://img.freepik.com/premium-vector/hand-drawn-study-abroad-illustration_23-2150310003.jpg"
             alt="Kayaking Balance"
@@ -53,13 +58,13 @@ const AuthLayout = () => {
                   </span>
                 </span>
               </h3>
-              <p className="text-gray-500 text-xs mt-3 max-w-[200px] leading-relaxed">
+              <p className="text-gray-500 text-xs mt-3 max-w-50 leading-relaxed">
                 Helping you achieve clarity, harmony, and personal growth.
                 Together, we create lasting change.
               </p>
             </div>
             <div className="h-12 w-12 rounded-full border border-gray-200 flex items-center justify-center bg-white shadow-sm text-gray-900">
-              <Plus />
+              <BiPlus />
             </div>
 
             <div className="absolute bottom-6 right-20 flex -space-x-2">

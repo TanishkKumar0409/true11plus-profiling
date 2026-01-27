@@ -93,7 +93,7 @@ const getValidPassword = (field: string, required: boolean = true) => {
 
 const getValidConfirmPassword = (
   field: string,
-  passwordField: string = "password"
+  passwordField: string = "password",
 ) => {
   return Yup.string()
     .required(`${field} is required`)
@@ -122,7 +122,7 @@ const getValidContent = (field: string, required: boolean = true) => {
       (value) => {
         if (!value) return !required; // allow empty if optional
         return value.trim().length === value.length;
-      }
+      },
     );
 
   if (required) {
@@ -139,7 +139,7 @@ const getValidUsername = (field: string, required: boolean = true) => {
     .transform((value) => (value ? value.toLowerCase() : value))
     .matches(
       /^[a-z0-9]+$/,
-      `${field} can only contain lowercase letters and numbers`
+      `${field} can only contain lowercase letters and numbers`,
     )
     .min(3, `${field} must be at least 3 characters`)
     .matches(/^\S+$/, `${field} cannot contain spaces`);
@@ -150,6 +150,24 @@ const getValidUsername = (field: string, required: boolean = true) => {
     schema = schema.optional();
   }
 
+  return schema;
+};
+
+const getValidNumber = (
+  field: string,
+  required: boolean = true,
+  minLen: number = 1,
+  maxLen: number = 10,
+) => {
+  let schema = Yup.string()
+    .matches(/^\d+$/, `${field} must contain digits only`)
+    .min(minLen, `${field} must be at least ${minLen} digits`)
+    .max(maxLen, `${field} cannot be more than ${maxLen} digits`);
+  if (required) {
+    schema = schema.required(`${field} is required`);
+  } else {
+    schema = schema.optional();
+  }
   return schema;
 };
 
@@ -168,7 +186,7 @@ export const registreValidation = Yup.object({
   confirm_password: getValidConfirmPassword("Confirm Password", "password"),
 });
 
-// export const emailValidation = Yup.object({ email: getValidEmail("Email") });
+export const emailValidation = Yup.object({ email: getValidEmail("Email") });
 
 // export const userResetPasswordValidation = Yup.object({
 //   new_password: getValidPassword("New Password"),
@@ -181,12 +199,11 @@ export const registreValidation = Yup.object({
 //   confirm_password: getValidConfirmPassword("Confirm Password", "new_password"),
 // });
 
-// export const userUpdateValidation = Yup.object({
-//   name: getValidString("Your Name"),
-//   email: getValidEmail("Email"),
-//   mobile_no: getValidPhone("Mobile Number"),
-//   alt_mobile_no: getValidPhone("Alternate Mobile Number", false),
-// });
+export const userUpdateValidation = Yup.object({
+  name: getValidString("Your Name"),
+  email: getValidEmail("Email"),
+  mobile_no: getValidPhone("Mobile Number"),
+});
 
 // export const locationSettingValidation = Yup.object({
 //   address: getValidString("address"),
@@ -206,3 +223,26 @@ export const registreValidation = Yup.object({
 //   email: getValidEmail("Email"),
 //   mobile_no: getValidPhone("Mobile Number"),
 // });
+
+export const statusValidation = Yup.object({
+  status_name: getValidString("Status Name"),
+  parent_status: getValidString("Parent Status"),
+});
+
+export const CategorySchema = Yup.object().shape({
+  category_name: getValidString("Category name"),
+  parent_category: getValidString("Parent category"),
+});
+
+export const taskValidation = Yup.object({
+  academic_group_id: getValidString("Academic Group"),
+  final_deliverable: getValidContent("Final Deliverable"),
+  title: getValidString("Task Title"),
+  duration_value: getValidNumber("Duration Value"),
+  duration_type: getValidString("Duration Type"),
+  difficulty_level: getValidString("Difficulty Level"),
+  task_type: getValidString("Task Type (Pillar)"),
+  objective: getValidContent("Objective"),
+  steps_to_implement: getValidContent("Steps to Impement", false),
+  important_details: getValidContent("Important Details", false),
+});

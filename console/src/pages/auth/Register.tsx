@@ -1,12 +1,12 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useFormik } from "formik";
 import PhoneInput from "react-phone-input-2";
-import { Eye, EyeOff, ThumbsUp } from "lucide-react";
 import { registreValidation } from "../../contexts/ValidationSchema";
 import { getErrorResponse, getFormikError } from "../../contexts/Callbacks";
 import { API } from "../../contexts/API";
 import toast from "react-hot-toast";
+import { FiEye, FiEyeOff, FiThumbsUp } from "react-icons/fi";
 
 const RegisterPage = () => {
   const redirector = useNavigate();
@@ -22,6 +22,7 @@ const RegisterPage = () => {
       password: "",
       confirm_password: "",
       terms: false,
+      role: "mentor",
     },
     validationSchema: registreValidation,
     onSubmit: async (values, { setSubmitting }) => {
@@ -125,7 +126,7 @@ const RegisterPage = () => {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
           </button>
         </div>
         {getFormikError(formik, "password")}
@@ -149,7 +150,7 @@ const RegisterPage = () => {
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
           </button>
         </div>
         {getFormikError(formik, "confirm_password")}
@@ -165,7 +166,7 @@ const RegisterPage = () => {
             className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-400 transition-all checked:border-gray-900 checked:bg-gray-900"
           />
           <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100">
-            <ThumbsUp size={12} strokeWidth={4} />
+            <FiThumbsUp size={12} strokeWidth={4} />
           </div>
         </div>
         <label
@@ -186,6 +187,18 @@ const RegisterPage = () => {
       >
         {formik.isSubmitting ? "Registering..." : "Register"}
       </button>
+
+      <div className="text-center pt-2">
+        <p className="text-gray-600 font-medium">
+          Already have an account?{" "}
+          <Link
+            to="/"
+            className="text-purple-500 hover:text-purple-800 font-bold transition-colors"
+          >
+            Log In
+          </Link>
+        </p>
+      </div>
     </form>
   );
 };

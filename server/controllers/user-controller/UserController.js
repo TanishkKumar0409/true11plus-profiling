@@ -1,4 +1,5 @@
 import { UserMainImageMover } from "../../helper/FileMovers/UserFileMover.js";
+import UserPermissions from "../../models/user-models/Permissions.js";
 import UserAssets from "../../models/user-models/UserAssets.js";
 import UserLocation from "../../models/user-models/UserLocation.js";
 import User from "../../models/user-models/UserModel.js";
@@ -59,7 +60,7 @@ export const UserAvatarChange = async (req, res) => {
     const updatedUser = await UserAssets.findOneAndUpdate(
       { userId },
       { avatar: avatarPaths },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
 
     if (user?.avatar?.length > 0)
@@ -91,7 +92,7 @@ export const DeleteUserAvatar = async (req, res) => {
 
     const updatedUser = await UserAssets.findOneAndUpdate(
       { userId },
-      { $unset: { avatar: "" } }
+      { $unset: { avatar: "" } },
     );
 
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
@@ -123,7 +124,7 @@ export const UserBannerChange = async (req, res) => {
     const updatedUser = await UserAssets.findOneAndUpdate(
       { userId },
       { banner: bannerPaths },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
 
     if (user?.banner?.length > 0)
@@ -155,7 +156,7 @@ export const DeleteUserBanner = async (req, res) => {
 
     const updatedUser = await UserAssets.findOneAndUpdate(
       { userId },
-      { $unset: { banner: "" } }
+      { $unset: { banner: "" } },
     );
 
     if (!updatedUser) return res.status(404).json({ error: "User not found" });
@@ -204,7 +205,7 @@ export const UpdateUserDetails = async (req, res) => {
     await UserAssets.findOneAndUpdate(
       { userId },
       { $set: { website } },
-      { upsert: true }
+      { upsert: true },
     );
 
     return res.status(200).json({ message: "User updated successfully" });
@@ -223,7 +224,7 @@ export const UpdateUserLocation = async (req, res) => {
     const updatedLocation = await UserLocation.findOneAndUpdate(
       { userId },
       { $set: { address, pincode, city, state, country } },
-      { new: true, upsert: true }
+      { new: true, upsert: true },
     );
 
     if (!updatedLocation)
@@ -272,7 +273,7 @@ export const getRandomUsersWithDetails = async (req, res) => {
           password: 0,
           __v: 0,
         },
-      }
+      },
     );
 
     const users = await User.aggregate(pipeline);
@@ -292,12 +293,10 @@ export const getRandomUsersWithDetails = async (req, res) => {
       .select("userId avatar banner website");
 
     const locationMap = new Map(
-      locations.map((loc) => [String(loc.userId), loc])
+      locations.map((loc) => [String(loc.userId), loc]),
     );
 
-    const assetsMap = new Map(
-      assets.map((ast) => [String(ast.userId), ast])
-    );
+    const assetsMap = new Map(assets.map((ast) => [String(ast.userId), ast]));
 
     const finalData = users.map((user) => {
       const loc = locationMap.get(String(user._id));
@@ -326,5 +325,205 @@ export const getRandomUsersWithDetails = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Something went wrong. please try again." });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}).select("-password -__v").lean();
+
+    if (!users?.length) {
+      return res.status(200).json([]);
+    }
+
+    // 2) Fetch related data in bulk
+    const userIds = users.map((u) => u._id);
+
+    const locations = await UserLocation.find({ userId: { $in: userIds } })
+      .select("userId address pincode city state country")
+      .lean();
+
+    const assets = await UserAssets.find({ userId: { $in: userIds } })
+      .select("userId avatar banner website")
+      .lean();
+
+    const locationMap = new Map(
+      locations.map((loc) => [String(loc.userId), loc]),
+    );
+
+    const assetsMap = new Map(assets.map((ast) => [String(ast.userId), ast]));
+
+    const finalData = users.map((user) => {
+      const loc = locationMap.get(String(user._id));
+      const ast = assetsMap.get(String(user._id));
+
+      return {
+        ...user,
+        ...(loc && {
+          address: loc.address,
+          pincode: loc.pincode,
+          city: loc.city,
+          state: loc.state,
+          country: loc.country,
+        }),
+        ...(ast && {
+          avatar: ast.avatar,
+          banner: ast.banner,
+          website: ast.website,
+        }),
+      };
+    });
+
+    return res.status(200).json(finalData);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. please try again." });
+  }
+};
+
+export const getUserByObjectId = async (req, res) => {
+  try {
+    const { objectId } = req.params;
+    const userDoc = await User.findOne({ _id: objectId });
+    const user = userDoc.toObject();
+
+    const location = await UserLocation.findOne({
+      userId: user?._id,
+    }).lean();
+    const userassets = await UserAssets.findOne({ userId: user?._id });
+
+    const finalData = {
+      ...user,
+      ...(location && {
+        address: location.address,
+        pincode: location.pincode,
+        city: location.city,
+        state: location.state,
+        country: location.country,
+      }),
+      ...(userassets && {
+        avatar: userassets?.avatar,
+        banner: userassets?.banner,
+        website: userassets?.website,
+      }),
+    };
+
+    return res.status(200).json(finalData);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. please try again." });
+  }
+};
+
+export const UpdateUserDetailsByAdmin = async (req, res) => {
+  try {
+    const { objectId } = req.params;
+
+    if (!objectId) {
+      return res.status(400).json({ error: "User ID is required." });
+    }
+
+    const { username, name, email, mobile_no, role, status, verified } =
+      req.body;
+
+    const user = await User.findById(objectId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const normalizedMobile = normalizePhone(mobile_no) || user.mobile_no;
+
+    if (await User.findOne({ username, _id: { $ne: objectId } })) {
+      return res
+        .status(400)
+        .json({ error: "Username is already in use by another user." });
+    }
+
+    if (await User.findOne({ email, _id: { $ne: objectId } })) {
+      return res
+        .status(400)
+        .json({ error: "Email is already in use by another user." });
+    }
+
+    if (
+      await User.findOne({
+        mobile_no: normalizedMobile,
+        _id: { $ne: objectId },
+      })
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Mobile number is already in use by another user." });
+    }
+
+    const updatedFields = {
+      username: username || user.username,
+      name: name || user.name,
+      email: email || user.email,
+      mobile_no: normalizedMobile,
+      status,
+      verified,
+    };
+
+    if (role) {
+      updatedFields.role = role;
+
+      const allPermissions = await UserPermissions.find();
+      const matchedPermissions = allPermissions.filter((perm) =>
+        perm.roles.some((r) => r.equals(role)),
+      );
+
+      const permissionIds = matchedPermissions.flatMap((p) =>
+        p.permissions.map((perm) => perm._id),
+      );
+
+      updatedFields.permissions = permissionIds;
+    }
+
+    await User.findByIdAndUpdate(objectId, { $set: updatedFields });
+
+    return res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const UpdateProfileLocation = async (req, res) => {
+  try {
+    const { address, pincode, city, state, country } = req.body;
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required." });
+    }
+
+    await UserLocation.findOneAndUpdate(
+      { userId },
+      {
+        $set: {
+          address,
+          pincode,
+          city,
+          state,
+          country,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Profile location saved successfully." });
+  } catch (error) {
+    console.error("Error saving profile location:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
