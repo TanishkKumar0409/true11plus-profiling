@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { IconType } from "react-icons";
-import { BiLockAlt, BiShow, BiHide, BiPhone } from "react-icons/bi";
+import { BiLockAlt, BiShow, BiHide } from "react-icons/bi";
 import PhoneInput from "react-phone-input-2";
 
 // --- Existing FloatingInput ---
@@ -99,7 +99,11 @@ export const FloatingPasswordInput: React.FC<FloatingPasswordInputProps> = ({
         className="absolute inset-y-0 right-0 flex items-center pb-1 text-gray-400 hover:text-purple-600 transition-colors"
         aria-label={showPassword ? "Hide password" : "Show password"}
       >
-        {showPassword ? <BiHide className="h-5 w-5" /> : <BiShow className="h-5 w-5" />}
+        {showPassword ? (
+          <BiHide className="h-5 w-5" />
+        ) : (
+          <BiShow className="h-5 w-5" />
+        )}
       </button>
     </div>
   );
@@ -114,7 +118,6 @@ interface FloatingPhoneInputProps {
 }
 
 export const FloatingPhoneInput: React.FC<FloatingPhoneInputProps> = ({
-  name,
   value,
   label,
   onChange,
@@ -122,8 +125,6 @@ export const FloatingPhoneInput: React.FC<FloatingPhoneInputProps> = ({
   return (
     <div className="relative z-0 w-full group border-b-2 border-gray-300 focus-within:border-purple-600 transition-colors">
       <div className="flex items-center">
-      
-        
         <PhoneInput
           country={"in"}
           value={value}

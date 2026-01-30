@@ -15,6 +15,7 @@ import {
 import { taskValidation } from "../../../contexts/ValidationSchema";
 import { Breadcrumbs } from "../../../ui/breadcrumbs/Breadcrumbs";
 import { durationType } from "../../../common/ExtraData";
+import type { AcademicGroupProps } from "../../../types/AcademicStructureType";
 
 const inputClass =
   "w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-50 disabled:text-gray-400";
@@ -53,8 +54,10 @@ export default function EditTask() {
         API.get("/academic/group/all"),
       ]);
 
-      setAcademicGroups(groupsRes.data);
-
+      const data = groupsRes.data;
+      setAcademicGroups(
+        data?.filter((item: AcademicGroupProps) => item?.status === "active"),
+      );
       const task = taskRes.data;
 
       setInitialData({

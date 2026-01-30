@@ -72,7 +72,7 @@ export default function ProfileSidebar({
 
   const handleLogout = async () => {
     try {
-      await API.post("/auth/logout");
+      await API.get("/auth/logout");
       toast.success("Logged out successfully");
       window.location.reload();
     } catch (error) {

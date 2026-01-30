@@ -14,6 +14,7 @@ import { Breadcrumbs } from "../../../ui/breadcrumbs/Breadcrumbs";
 import type { DashboardOutletContextProps } from "../../../types/Types";
 import { durationType } from "../../../common/ExtraData";
 import { taskValidation } from "../../../contexts/ValidationSchema";
+import type { AcademicGroupProps } from "../../../types/AcademicStructureType";
 
 const inputClass =
   "w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-50 disabled:text-gray-400";
@@ -42,7 +43,10 @@ export default function CreateTask() {
     const fetchGroups = async () => {
       try {
         const response = await API.get("/academic/group/all");
-        setAcademicGroups(response.data);
+        const data = response.data;
+        setAcademicGroups(
+          data?.filter((item: AcademicGroupProps) => item?.status === "active"),
+        );
       } catch (error) {
         console.error("Failed to load academic groups");
       }
