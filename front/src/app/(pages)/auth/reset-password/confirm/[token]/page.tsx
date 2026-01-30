@@ -5,16 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { API } from "@/contexts/API";
 import { getErrorResponse, getFormikError } from "@/contexts/Callbacks";
-import { FiEye, FiEyeOff } from "react-icons/fi";
-// import { ResetPasswordValidation } from "@/contexts/ValidationSchema"; // Make sure to import this if you have it
+import { FloatingPasswordInput } from "@/ui/inputs/FloatingInput";
+import { LuArrowRight, LuLoader } from "react-icons/lu";
 
 export default function ResetPassword() {
   const { token } = useParams();
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Verify token on mount
   useEffect(() => {
     const verifyToken = async () => {
       if (!token) return;
@@ -35,7 +32,7 @@ export default function ResetPassword() {
       confirm_password: "",
       token: token,
     },
-    // validationSchema: ResetPasswordValidation,
+    // validationSchema: ResetPasswordValidatio,
     validateOnBlur: true,
     validateOnChange: true,
     enableReinitialize: true,
@@ -53,72 +50,53 @@ export default function ResetPassword() {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-6 relative z-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-(--text-color-emphasis) mb-2">
-          Reset Password
-        </h1>
-        <p className="text-(--gray)">
+    <div className="w-full max-w-lg">
+      <div className="mb-12">
+        <h2 className="text-3xl font-bold text-gray-900"> Reset Password</h2>
+        <p className="mt-2 text-gray-500">
           Please enter your new password to secure your account.
         </p>
       </div>
-
-      {/* New Password */}
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          New Password
-        </label>
-        <div className="relative">
-          <input
-            id="new_password"
-            type={showPassword ? "text" : "password"}
-            {...formik.getFieldProps("new_password")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Enter your new password"
+      <form onSubmit={formik.handleSubmit} className="space-y-6 relative z-10">
+        <div>
+          <FloatingPasswordInput
+            name="new_password"
+            value={formik.values.new_password}
+            label="New Password"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-(--gray) hover:text-(--text-color)"
-          >
-            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-          </button>
+          {getFormikError(formik, "new_password")}
         </div>
-        {getFormikError(formik, "new_password")}
-      </div>
-
-      {/* Confirm Password */}
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          Confirm Password
-        </label>
-        <div className="relative">
-          <input
-            id="confirm_password"
-            type={showConfirmPassword ? "text" : "password"}
-            {...formik.getFieldProps("confirm_password")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Confirm your new password"
+        <div>
+          <FloatingPasswordInput
+            name="confirm_password"
+            value={formik.values.confirm_password}
+            label="Confrim Password"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
           />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-(--gray) hover:text-(--text-color)"
-          >
-            {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-          </button>
+          {getFormikError(formik, "confirm_password")}
         </div>
-        {getFormikError(formik, "confirm_password")}
-      </div>
 
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={formik.isSubmitting}
-        className="w-full bg-(--main) rounded-xl py-4 text-2xl font-bold text-(--white) transition-colors hover:bg-(--main-emphasis) disabled:opacity-50 mt-4"
-      >
-        {formik.isSubmitting ? "Resetting..." : "Reset Password"}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={formik.isSubmitting}
+          className="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-md transition-all duration-200"
+        >
+          {formik.isSubmitting ? (
+            <>
+              <LuLoader className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 animate-spin" />
+              Resetting...
+            </>
+          ) : (
+            <>
+              Reset Password
+              <LuArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </>
+          )}
+        </button>
+      </form>
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { UserMainImageMover } from "../../helper/FileMovers/UserFileMover.js";
 import UserPermissions from "../../models/user-models/Permissions.js";
+import UserRoles from "../../models/user-models/Roles.js";
 import UserAssets from "../../models/user-models/UserAssets.js";
 import UserLocation from "../../models/user-models/UserLocation.js";
 import User from "../../models/user-models/UserModel.js";
@@ -12,7 +13,7 @@ export const getUserByUsername = async (req, res) => {
   try {
     const { username } = req.params;
     const userDoc = await User.findOne({ username });
-    const user = userDoc.toObject();
+    const user = userDoc?.toObject();
 
     const location = await UserLocation.findOne({
       userId: user?._id,
@@ -241,32 +242,25 @@ export const UpdateUserLocation = async (req, res) => {
   }
 };
 
-export const getRandomUsersWithDetails = async (req, res) => {
+export const getRandomStudentsWithDetailsLimit = async (req, res) => {
   try {
     const limitRaw = Number(req.query.limit);
     const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 10;
     const safeLimit = Math.min(limit, 50);
 
-    const authUserId = await getDataFromToken(req);
-    const paramUserId = req.params.userId;
+    const role = "student";
+    const foundRole = await UserRoles.findOne({ role }).lean();
 
-    const excludeIds = [];
-
-    if (mongoose.Types.ObjectId.isValid(authUserId)) {
-      excludeIds.push(new mongoose.Types.ObjectId(authUserId));
+    if (!foundRole?._id) {
+      return res.status(404).json({ error: "Student role not found" });
     }
 
-    if (mongoose.Types.ObjectId.isValid(paramUserId)) {
-      excludeIds.push(new mongoose.Types.ObjectId(paramUserId));
-    }
-
-    const pipeline = [];
-
-    if (excludeIds.length > 0) {
-      pipeline.push({ $match: { _id: { $nin: excludeIds } } });
-    }
-
-    pipeline.push(
+    const users = await User.aggregate([
+      {
+        $match: {
+          role: new mongoose.Types.ObjectId(foundRole._id),
+        },
+      },
       { $sample: { size: safeLimit } },
       {
         $project: {
@@ -274,21 +268,23 @@ export const getRandomUsersWithDetails = async (req, res) => {
           __v: 0,
         },
       },
-    );
+    ]);
 
-    const users = await User.aggregate(pipeline);
-
-    if (!users?.length) {
+    if (!users.length) {
       return res.status(200).json([]);
     }
 
     const userIds = users.map((u) => u._id);
 
-    const locations = await UserLocation.find({ userId: { $in: userIds } })
+    const locations = await UserLocation.find({
+      userId: { $in: userIds },
+    })
       .lean()
       .select("userId address pincode city state country");
 
-    const assets = await UserAssets.find({ userId: { $in: userIds } })
+    const assets = await UserAssets.find({
+      userId: { $in: userIds },
+    })
       .lean()
       .select("userId avatar banner website");
 
@@ -321,13 +317,121 @@ export const getRandomUsersWithDetails = async (req, res) => {
 
     return res.status(200).json(finalData);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res
       .status(500)
-      .json({ error: "Something went wrong. please try again." });
+      .json({ error: "Something went wrong. Please try again." });
   }
 };
 
+export const getRandomUsersWithDetails = async (req, res) => {
+  try {
+    const limitRaw = Number(req.query.limit);
+    const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 10;
+    const safeLimit = Math.min(limit, 50);
+
+    const authUserId = await getDataFromToken(req);
+    const paramUserId = req.params.userId;
+
+    const foundRole = await UserRoles.findOne({ role: "student" }).lean();
+
+    if (!foundRole?._id) {
+      return res.status(404).json({ error: "Student role not found" });
+    }
+
+    const excludeIds = [];
+
+    if (mongoose.Types.ObjectId.isValid(authUserId)) {
+      excludeIds.push(new mongoose.Types.ObjectId(authUserId));
+    }
+
+    if (mongoose.Types.ObjectId.isValid(paramUserId)) {
+      excludeIds.push(new mongoose.Types.ObjectId(paramUserId));
+    }
+
+    const pipeline = [];
+
+    // ✅ Only students
+    pipeline.push({
+      $match: {
+        role: new mongoose.Types.ObjectId(foundRole._id),
+      },
+    });
+
+    // ✅ Exclude auth + param user
+    if (excludeIds.length > 0) {
+      pipeline.push({
+        $match: {
+          _id: { $nin: excludeIds },
+        },
+      });
+    }
+
+    pipeline.push(
+      { $sample: { size: safeLimit } },
+      {
+        $project: {
+          password: 0,
+          __v: 0,
+        },
+      },
+    );
+
+    const users = await User.aggregate(pipeline);
+
+    if (!users.length) {
+      return res.status(200).json([]);
+    }
+
+    const userIds = users.map((u) => u._id);
+
+    const locations = await UserLocation.find({
+      userId: { $in: userIds },
+    })
+      .lean()
+      .select("userId address pincode city state country");
+
+    const assets = await UserAssets.find({
+      userId: { $in: userIds },
+    })
+      .lean()
+      .select("userId avatar banner website");
+
+    const locationMap = new Map(
+      locations.map((loc) => [String(loc.userId), loc]),
+    );
+
+    const assetsMap = new Map(assets.map((ast) => [String(ast.userId), ast]));
+
+    const finalData = users.map((user) => {
+      const loc = locationMap.get(String(user._id));
+      const ast = assetsMap.get(String(user._id));
+
+      return {
+        ...user,
+        ...(loc && {
+          address: loc.address,
+          pincode: loc.pincode,
+          city: loc.city,
+          state: loc.state,
+          country: loc.country,
+        }),
+        ...(ast && {
+          avatar: ast.avatar,
+          banner: ast.banner,
+          website: ast.website,
+        }),
+      };
+    });
+
+    return res.status(200).json(finalData);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
+  }
+};
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password -__v").lean();
@@ -525,5 +629,62 @@ export const UpdateProfileLocation = async (req, res) => {
   } catch (error) {
     console.error("Error saving profile location:", error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getUserBysRole = async (req, res) => {
+  try {
+    const { role = "student" } = req.params;
+    const foundrole = await UserRoles.findOne({ role });
+    if (!foundrole)
+      return res.status(400).json({ error: "Invalid Role Provided" });
+
+    const users = await User.find({ role: foundrole?._id })
+      .select("-password -__v")
+      .lean();
+
+    if (!users?.length) return res.status(200).json([]);
+
+    const userIds = users.map((u) => u._id);
+
+    const locations = await UserLocation.find({
+      userId: { $in: userIds },
+    }).lean();
+
+    const assets = await UserAssets.find({ userId: { $in: userIds } }).lean();
+
+    const locationMap = new Map(
+      locations.map((loc) => [String(loc.userId), loc]),
+    );
+
+    const assetsMap = new Map(assets.map((ast) => [String(ast.userId), ast]));
+
+    const finalData = users.map((user) => {
+      const loc = locationMap.get(String(user._id));
+      const ast = assetsMap.get(String(user._id));
+
+      return {
+        ...user,
+        ...(loc && {
+          address: loc.address,
+          pincode: loc.pincode,
+          city: loc.city,
+          state: loc.state,
+          country: loc.country,
+        }),
+        ...(ast && {
+          avatar: ast.avatar,
+          banner: ast.banner,
+          website: ast.website,
+        }),
+      };
+    });
+
+    return res.status(200).json(finalData);
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. please try again." });
   }
 };

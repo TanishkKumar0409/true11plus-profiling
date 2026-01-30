@@ -19,3 +19,12 @@ export interface StateProps {
 export interface CountryProps {
   country_name: string;
 }
+
+export interface CategoryProps {
+  _id: string;
+  category_name: string;
+  parent_category: string;
+  createdAt: string;
+  description: string;
+  status: string;
+}

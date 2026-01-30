@@ -101,7 +101,7 @@ const SingleCommentDisplay = ({
             <img
                 src={getUserAvatar(comment.userId.avatar)}
                 alt={comment.userId.name}
-                className={`${isReply ? 'w-7 h-7' : 'w-8 h-8'} rounded-full object-cover flex-shrink-0 mt-1 cursor-pointer`}
+                className={`${isReply ? 'w-7 h-7' : 'w-8 h-8'} rounded-full object-cover shrink-0 mt-1 cursor-pointer`}
             />
             <div className="flex-1 min-w-0">
                 <div className="bg-gray-50 rounded-2xl rounded-tl-none px-3 py-2 border border-gray-100 relative group/box">

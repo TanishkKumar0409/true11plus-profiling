@@ -19,7 +19,7 @@ const getValidUsername = (field: string, required: boolean = true) => {
     .transform((value) => (value ? value.toLowerCase() : value))
     .matches(
       /^[a-z0-9]+$/,
-      `${field} can only contain lowercase letters and numbers`
+      `${field} can only contain lowercase letters and numbers`,
     )
     .min(3, `${field} must be at least 3 characters`)
     .matches(/^\S+$/, `${field} cannot contain spaces`);
@@ -36,7 +36,7 @@ const getValidContent = (
   field: string,
   required: boolean = true,
   min: number = 3,
-  max: number = 500
+  max: number = 500,
 ) => {
   let schema = Yup.string()
     .min(min, `${field} must be at least ${min} characters`)
@@ -47,7 +47,7 @@ const getValidContent = (
       (value) => {
         if (!value) return !required; // allow empty if optional
         return value.trim().length === value.length;
-      }
+      },
     );
 
   if (required) {
@@ -94,7 +94,7 @@ const getValidPassword = (field: string, required: boolean = true) => {
 
 const getValidConfirmPassword = (
   field: string,
-  passwordField: string = "password"
+  passwordField: string = "password",
 ) => {
   return Yup.string()
     .required(`${field} is required`)
@@ -116,7 +116,7 @@ const getValidBool = (field: string, required: boolean = true) => {
 const getValidDate = (
   field: string,
   required: boolean = true,
-  allowPast: boolean = false
+  allowPast: boolean = false,
 ) => {
   let schema = Yup.date().typeError(`${field} must be a valid date`).nullable();
 
@@ -151,11 +151,41 @@ export const userChangePasswordValidation = Yup.object({
   new_password: getValidPassword("New Password"),
   confirm_password: getValidConfirmPassword("Confirm Password", "new_password"),
 });
+const getCurrentYearMonth = () => {
+  const now = new Date();
+  return {
+    year: now.getFullYear(),
+    month: now.getMonth() + 1,
+  };
+};
+
+const isAfterCurrentMonth = (year: number, month: number) => {
+  const { year: cy, month: cm } = getCurrentYearMonth();
+  return year > cy || (year === cy && month > cm);
+};
+
 export const userExperienceValidation = Yup.object({
   title: getValidString("title"),
+
   company: getValidString("Company Name"),
-  start_date: Yup.string().required("Start Date is required"),
+
+  start_date: Yup.string()
+    .required("Start Date is required")
+    .test(
+      "not-after-current-month",
+      "Start date cannot be after current month",
+      function (value) {
+        if (!value) return true;
+
+        const [y, m] = value.split("-").map(Number);
+        if (!y || !m) return true;
+
+        return !isAfterCurrentMonth(y, m);
+      },
+    ),
+
   iscurrently: getValidBool("Currently Working", false),
+
   end_date: Yup.string().when("iscurrently", {
     is: false,
     then: (schema) =>
@@ -174,18 +204,27 @@ export const userExperienceValidation = Yup.object({
 
             if (!sy || !sm || !ey || !em) return true;
 
-            // Convert YYYY-MM into comparable number
             const start = sy * 12 + sm;
             const end = ey * 12 + em;
 
-            return end > start; // end must be after start
-          }
+            return end >= start;
+          },
+        )
+        .test(
+          "not-after-current-month",
+          "End date cannot be after current month",
+          function (value) {
+            if (!value) return true;
+
+            const [y, m] = value.split("-").map(Number);
+            if (!y || !m) return true;
+
+            return !isAfterCurrentMonth(y, m);
+          },
         ),
     otherwise: (schema) => schema.nullable(),
   }),
 });
-
-
 
 export const userEducationValidation = Yup.object({
   student_class: getValidString("Class"),
@@ -193,8 +232,7 @@ export const userEducationValidation = Yup.object({
   pursuing: getValidBool("Currently Pursuing", false),
   academic_year: Yup.string().when("pursuing", {
     is: false,
-    then: (schema) =>
-      schema.required("Academic Year is required"),
+    then: (schema) => schema.required("Academic Year is required"),
     otherwise: (schema) => schema.nullable(),
   }),
 });

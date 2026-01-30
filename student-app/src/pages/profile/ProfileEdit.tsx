@@ -1,4 +1,11 @@
-import { BiUser, BiBriefcase, BiBook, BiAward, BiGlobe, BiLink } from "react-icons/bi";
+import {
+  BiUser,
+  BiBriefcase,
+  BiBook,
+  BiAward,
+  BiGlobe,
+  BiLink,
+} from "react-icons/bi";
 import Tabs from "../../ui/tabs/Tab";
 import AvatarAndBanner from "./profile-edit-components/avatar-and-banner/AvatarAndBanner";
 import { ImImage } from "react-icons/im";
@@ -11,6 +18,7 @@ import EducationDetails from "./profile-edit-components/education/Education";
 import SkillsDetails from "./profile-edit-components/skills/Skills";
 import LanguageDetails from "./profile-edit-components/language/Language";
 import SocialLinks from "./profile-edit-components/social-links/SocialLinks";
+import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 
 export default function ProfileEdit() {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
@@ -70,6 +78,13 @@ export default function ProfileEdit() {
 
   return (
     <div>
+      <Breadcrumbs
+        title="Profile"
+        breadcrumbs={[
+          { label: "Dashboard", path: "/" },
+          { label: authUser?.username || "Profile" },
+        ]}
+      />
       <Tabs tabs={tabData} defaultTab="basic-details" paramKey="tab" />
     </div>
   );

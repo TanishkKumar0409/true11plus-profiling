@@ -8,16 +8,21 @@ import extraRoutes from "./routes/ExtraRoutes.js";
 import postRouter from "./routes/PostRoutes.js";
 import SystemAssetsRoutes from "./routes/SystemAssetsRoutes.js";
 import academicStructureRoutes from "./routes/AcademicStructureRoutes.js";
+import userAcademicRoutes from "./routes/userAcademicRoutes.js";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT;
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "5gb" }));
+app.use(express.urlencoded({ extended: true, limit: "5gb" }));
 
-const allowedOrigins = [process.env.FRONT_URL, process.env.STUDENT_APP_URL];
+const allowedOrigins = [
+  process.env.FRONT_URL,
+  process.env.STUDENT_APP_URL,
+  process.env.CONSOLE_URL,
+];
 
 app.use(cookieParser());
 app.use(helmet());
@@ -36,7 +41,6 @@ function originGuard(req, res, next) {
   next();
 }
 
-app.use(originGuard);
 app.get("/", (req, res) => {
   res.send("Server is running");
 });
@@ -46,6 +50,7 @@ app.use("/api", extraRoutes);
 app.use("/api", postRouter);
 app.use("/api", SystemAssetsRoutes);
 app.use("/api", academicStructureRoutes);
+app.use("/api", userAcademicRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

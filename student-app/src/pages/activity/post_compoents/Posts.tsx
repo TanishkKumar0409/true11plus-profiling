@@ -4,7 +4,7 @@ import { Navigation, Pagination } from 'swiper/modules';
 import PostHeader from './PostHeader';
 import PostFooter from './PostFooter';
 import EditPostModal from './EditPostModal';
-import type { PostProps } from '../../types/PostTypes';
+import type { PostProps } from '../../../types/PostTypes';
 import { useState } from 'react';
 
 const PostImagesCarousel = ({ images }: { images: any[] }) => {
@@ -12,7 +12,7 @@ const PostImagesCarousel = ({ images }: { images: any[] }) => {
 
     if (images.length === 1) {
         return (
-            <div className="w-full aspect-[4/3] bg-gray-100 mt-3 border-y border-gray-100">
+            <div className="w-full aspect-4/3 bg-gray-100 mt-3 border-y border-gray-100">
                 <img
                     src={`${import.meta.env.VITE_MEDIA_URL}${images[0]?.compressed}`}
                     alt="Post content"
@@ -23,7 +23,7 @@ const PostImagesCarousel = ({ images }: { images: any[] }) => {
     }
 
     return (
-        <div className="post-card-swiper relative w-full aspect-[4/3] bg-gray-100 mt-3 border-y border-gray-100 overflow-hidden group">
+        <div className="post-card-swiper relative w-full aspect-4/3 bg-gray-100 mt-3 border-y border-gray-100 overflow-hidden group">
             <Swiper
                 modules={[Navigation, Pagination]}
                 spaceBetween={0}

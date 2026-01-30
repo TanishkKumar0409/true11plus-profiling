@@ -1,9 +1,14 @@
 import UserAssets from "../../models/user-models/UserAssets.js";
-import { ensureDir, fileExists } from "../../utils/FileOperations.js";
+import {
+  ensureDir,
+  fileExists,
+  moveSingleFile,
+} from "../../utils/FileOperations.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs/promises";
 import UserPosts from "../../models/posts/Posts.js";
+import UserTaskSubmission from "../../models/user-academics/UserTaskSubmission.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +21,7 @@ export const UserMainImageMover = async (req, res, userId, fieldName) => {
     const oldDir = path.join(__dirname, baseFilePath);
     const newDir = path.join(
       __dirname,
-      `${MEDIA_FOLDER_PATH}/profile/${userId}/main`
+      `${MEDIA_FOLDER_PATH}/profile/${userId}/main`,
     );
     await ensureDir(newDir);
 
@@ -89,7 +94,10 @@ export const UserPostImageMover = async (req, res, userId) => {
 
     const oldDir = path.join(__dirname, baseFilePath);
 
-    const newDir = path.join(__dirname, `${MEDIA_FOLDER_PATH}/profile/${userId}/posts`);
+    const newDir = path.join(
+      __dirname,
+      `${MEDIA_FOLDER_PATH}/profile/${userId}/posts`,
+    );
 
     await ensureDir(newDir);
 
@@ -170,13 +178,13 @@ export const UserPostImageMover = async (req, res, userId) => {
 
       if (skippedFiles.length > 0) {
         console.warn(
-          `Skipped files for post ${post._id}: ${skippedFiles.join(", ")}`
+          `Skipped files for post ${post._id}: ${skippedFiles.join(", ")}`,
         );
       }
     }
 
     console.log(
-      `UserPostImageMover Done -> userId: ${userId}, updatedPosts: ${totalUpdatedPosts}, movedFiles: ${totalMoved}, skippedFiles: ${totalSkipped}`
+      `UserPostImageMover Done -> userId: ${userId}, updatedPosts: ${totalUpdatedPosts}, movedFiles: ${totalMoved}, skippedFiles: ${totalSkipped}`,
     );
   } catch (error) {
     console.error("Error in UserPostImageMover:", error);
@@ -229,5 +237,127 @@ const moveSinglePostImage = async ({
   } catch (err) {
     console.warn(`moveSinglePostImage error: ${err.message}`);
     return { changed: false, skipped: true, newPath: imgPath };
+  }
+};
+
+export const UserTaskSubmissionMover = async (userId) => {
+  try {
+    if (!userId) {
+      console.warn("UserTaskSubmissionMover: userId missing");
+      return;
+    }
+
+    const baseDir = path.join(__dirname, MEDIA_FOLDER_PATH);
+    const submissionBaseDir = path.join(
+      baseDir,
+      "profile",
+      String(userId),
+      "task-submission",
+    );
+
+    const imageDir = path.join(submissionBaseDir, "images");
+    const fileDir = path.join(submissionBaseDir, "files");
+
+    await ensureDir(imageDir);
+    await ensureDir(fileDir);
+
+    const submissions = await UserTaskSubmission.find({
+      user_id: userId,
+    });
+
+    if (!submissions.length) {
+      console.warn(`No task submissions found for userId: ${userId}`);
+      return;
+    }
+
+    let movedFiles = 0;
+    let skippedFiles = 0;
+    let updatedDocs = 0;
+
+    for (const submission of submissions) {
+      let isUpdated = false;
+
+      if (Array.isArray(submission.images)) {
+        const updatedImages = [];
+
+        for (const img of submission.images) {
+          if (!img) continue;
+
+          const updatedImg = { ...img };
+
+          if (img.original) {
+            const result = await moveSingleFile({
+              filePath: img.original,
+              targetDir: imageDir,
+              finalDbBase: `/profile/${userId}/task-submission/images`,
+              fallbackSourceDir: "media/images",
+            });
+
+            updatedImg.original = result.newPath;
+            if (result.changed) movedFiles++;
+            if (result.skipped) skippedFiles++;
+            if (result.changed) isUpdated = true;
+          }
+
+          if (img.compressed) {
+            const result = await moveSingleFile({
+              filePath: img.compressed,
+              targetDir: imageDir,
+              finalDbBase: `/profile/${userId}/task-submission/images`,
+              fallbackSourceDir: "media/images",
+            });
+
+            updatedImg.compressed = result.newPath;
+            if (result.changed) movedFiles++;
+            if (result.skipped) skippedFiles++;
+            if (result.changed) isUpdated = true;
+          }
+
+          updatedImages.push(updatedImg);
+        }
+
+        submission.images = updatedImages;
+      }
+
+      if (Array.isArray(submission.files)) {
+        const updatedFiles = [];
+
+        for (const file of submission.files) {
+          if (!file?.filePath) {
+            updatedFiles.push(file);
+            continue;
+          }
+
+          const result = await moveSingleFile({
+            filePath: file.filePath,
+            targetDir: fileDir,
+            finalDbBase: `/profile/${userId}/task-submission/files`,
+            fallbackSourceDir: "media/files",
+          });
+
+          updatedFiles.push({
+            ...file,
+            filePath: result.newPath,
+          });
+
+          if (result.changed) movedFiles++;
+          if (result.skipped) skippedFiles++;
+          if (result.changed) isUpdated = true;
+        }
+
+        submission.files = updatedFiles;
+      }
+
+      if (isUpdated) {
+        await submission.save();
+        updatedDocs++;
+      }
+    }
+
+    console.log(
+      `UserTaskSubmissionMover DONE -> userId=${userId}, updatedDocs=${updatedDocs}, moved=${movedFiles}, skipped=${skippedFiles}`,
+    );
+  } catch (err) {
+    console.error("UserTaskSubmissionMover error:", err);
   }
 };

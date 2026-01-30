@@ -12,10 +12,22 @@ import {
 import { useGetAuthUser } from "./hooks/useGetAuthUser";
 import PermissionContext from "./contexts/PermissionContext";
 import AccessDenied from "./pages/error/AccessDenied";
+import { useEffect } from "react";
 
 function App() {
   const { authUser, authLoading, getAuthUser, getRoleById, roles } =
     useGetAuthUser();
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!authUser) {
+        window.location.href = import.meta.env.VITE_FRONT_URL;
+      }
+      if (authUser?.role === "student") {
+        window.location.href = import.meta.env.VITE_FRONT_URL;
+      }
+    }
+  }, [authUser?.role, authLoading]);
 
   if (authLoading) return <>Loading Application...</>;
 

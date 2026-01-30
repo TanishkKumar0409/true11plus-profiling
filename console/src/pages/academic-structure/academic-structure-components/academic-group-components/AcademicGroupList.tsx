@@ -5,7 +5,6 @@ import Badge from "../../../../ui/badge/Badge";
 import { SimpleTable } from "../../../../ui/table/SimpleTable";
 import { BiEdit, BiPlus } from "react-icons/bi";
 import TableButton from "../../../../ui/button/TableButton";
-import { LuSquareDashedMousePointer } from "react-icons/lu";
 
 interface AcademicGroupistProps {
   setIsAdding: React.Dispatch<
@@ -35,11 +34,6 @@ export default function AcademicGroupList({
       label: "Action",
       value: (row) => (
         <div className="flex gap-2">
-          <TableButton
-            Icon={LuSquareDashedMousePointer}
-            href={`/dashboard/group/${row?._id}/sessions`}
-            tooltip="Sessions"
-          />
           <TableButton
             Icon={BiEdit}
             color="green"

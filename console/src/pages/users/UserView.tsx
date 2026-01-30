@@ -5,10 +5,19 @@ import {
   getErrorResponse,
   getStatusColor,
   getUserAvatar,
+  matchPermissions,
 } from "../../contexts/Callbacks";
 import type { DashboardOutletContextProps } from "../../types/Types";
 import type { UserProps } from "../../types/UserProps";
-import { BiEnvelope, BiMapPin, BiUser, BiShieldQuarter } from "react-icons/bi";
+import {
+  BiEnvelope,
+  BiMapPin,
+  BiUser,
+  BiShieldQuarter,
+  BiTask,
+  BiLinkExternal,
+  BiImages,
+} from "react-icons/bi";
 import Tabs from "../../ui/tabs/Tab";
 import Badge from "../../ui/badge/Badge";
 import { BsShieldCheck, BsShieldX } from "react-icons/bs";
@@ -17,6 +26,8 @@ import Location from "./user-components/Location";
 import UserPermissions from "./user-components/UserPermissions";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import CountUp from "react-countup";
+import StudentTaskTab from "../students/student_compoents/StudentTaskTab";
+import StudentPostTab from "../students/student_compoents/StudentPostTab";
 
 export default function UserView() {
   const { objectId } = useParams();
@@ -67,12 +78,32 @@ export default function UserView() {
       value: "location",
       icon: <BiMapPin />,
       component: <Location user={profileData} />,
+      hide: false,
     },
     {
       label: "Permissions",
       value: "permissions",
       icon: <BiShieldQuarter />,
       component: <UserPermissions user={profileData} />,
+      hide: false,
+    },
+    {
+      label: "Task",
+      value: "task",
+      icon: <BiTask />,
+      component: <StudentTaskTab />,
+      hide:
+        !matchPermissions(authUser?.permissions, "read student task") ||
+        profileData?.role !== "student",
+    },
+    {
+      label: "Post Activity",
+      value: "post-activity",
+      icon: <BiImages />,
+      component: <StudentPostTab user={profileData} />,
+      hide:
+        !matchPermissions(authUser?.permissions, "read student post") ||
+        profileData?.role !== "student",
     },
   ];
   useEffect(() => {
@@ -83,7 +114,7 @@ export default function UserView() {
     ) {
       window.location.href = "/dashboard/users";
     }
-  }, [loading, profileData,authUser?.role]);
+  }, [loading, profileData, authUser?.role]);
 
   if (loading) {
     return (
@@ -113,6 +144,8 @@ export default function UserView() {
     </div>
   );
 
+  const frontendUrl = `${import.meta.env.VITE_FRONT_URL}/profile/${profileData?.username}`;
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
       <Breadcrumbs
@@ -127,10 +160,23 @@ export default function UserView() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-6">
+            <a
+              href={frontendUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="absolute top-4 right-4 z-10 p-2 bg-white/80 hover:bg-white text-gray-700 hover:text-purple-600 backdrop-blur-sm rounded-full shadow-sm border border-white/50 transition-all transform hover:scale-105"
+              title="View Public Profile"
+            >
+              <BiLinkExternal size={20} />
+            </a>
+
             <div className="w-full aspect-2/1 bg-purple-600 relative">
               {profileData?.banner?.[0] && (
                 <div
-                  className={`absolute inset-0 bg-[url('${import.meta.env.VITE_MEDIA_URL}/${profileData?.banner?.[0]}')] bg-cover`}
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${import.meta.env.VITE_MEDIA_URL}${profileData.banner[0]})`,
+                  }}
                 />
               )}
             </div>
@@ -217,7 +263,11 @@ export default function UserView() {
             </div>
           </div>
           <div>
-            <Tabs tabs={tabs} defaultTab={tabs?.[0]?.value} paramKey="tab" />
+            <Tabs
+              tabs={tabs?.filter((item) => !item?.hide)}
+              defaultTab={tabs?.[0]?.value}
+              paramKey="tab"
+            />
           </div>
         </div>
       </div>

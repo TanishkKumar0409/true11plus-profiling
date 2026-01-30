@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BiBell, BiSearch } from "react-icons/bi";
+import { BiSearch } from "react-icons/bi";
 import { LuPanelLeft } from "react-icons/lu";
 import { Link } from "react-router-dom";
 import ProfileSidebar from "./ProfileSidebar";
@@ -54,12 +54,12 @@ const Header: React.FC<NavbarProps> = ({
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative p-2 bg-gray-100 rounded-md text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors border border-gray-100 shadow-xs">
+          {/* <button className="relative p-2 bg-gray-100 rounded-md text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors border border-gray-100 shadow-xs">
             <BiBell size={20} />
             <span className="absolute top-2 right-2.5 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500 transform translate-x-1/2 -translate-y-1/2"></span>
-          </button>
+          </button> */}
 
-          <div className="h-8 w-px bg-gray-200 hidden sm:block mx-1"></div>
+          {/* <div className="h-8 w-px bg-gray-200 hidden sm:block mx-1"></div> */}
 
           <div
             className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-xl transition-colors cursor-pointer group"

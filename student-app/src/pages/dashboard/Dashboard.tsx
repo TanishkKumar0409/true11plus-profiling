@@ -2,6 +2,8 @@ import { Link, useOutletContext } from "react-router-dom";
 import { getUserAvatar } from "../../contexts/CallBacks";
 import type { DashboardOutletContextProps } from "../../types/Types";
 import { BiMapPin, BiCheck, BiSolidZap } from "react-icons/bi";
+import toast from "react-hot-toast";
+import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 
 export default function Dashboard() {
   const { authLoading, authUser } =
@@ -13,12 +15,18 @@ export default function Dashboard() {
 
   if (authLoading) return <>AuthLoading</>;
 
-  // Common card style class for consistency
   const cardClass =
     "bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300";
 
   return (
     <div>
+      <Breadcrumbs
+        title="Dashboard"
+        breadcrumbs={[
+          { label: "Dashboard", path: "/" },
+          { label: authUser?.username || "Profile" },
+        ]}
+      />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Profile Card */}
         <div className="lg:col-span-2 space-y-4">
@@ -68,9 +76,13 @@ export default function Dashboard() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium text-sm hover:bg-blue-700 transition shadow-sm hover:shadow">
-                        Connect
-                      </button>
+                      <a
+                        target="_blank"
+                        href={`${import.meta.env.VITE_FRONT_URL}/profile/${authUser?.username}`}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-full font-medium text-sm hover:bg-blue-700 transition shadow-sm hover:shadow"
+                      >
+                        View Public Profile
+                      </a>
                       <Link
                         to={`/profile/edit`}
                         className="border border-gray-300 text-gray-700 px-4 py-2 rounded-full font-medium text-sm hover:bg-gray-50 transition"
@@ -104,7 +116,7 @@ export default function Dashboard() {
             <div className="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-amber-100 rounded-full opacity-50 blur-xl"></div>
 
             <div className="flex items-center gap-3 mb-4 relative z-10">
-              <div className="p-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg text-white shadow-md">
+              <div className="p-2 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg text-white shadow-md">
                 <BiSolidZap className="w-6 h-6" />
               </div>
               <div>
@@ -130,13 +142,16 @@ export default function Dashboard() {
                   key={index}
                   className="flex items-center text-sm text-gray-700"
                 >
-                  <BiCheck className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" />
+                  <BiCheck className="w-5 h-5 text-green-500 mr-2 shrink-0" />
                   {item}
                 </li>
               ))}
             </ul>
 
-            <button className="w-full bg-gray-900 hover:bg-black text-white py-2.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-lg transform hover:-translate-y-0.5">
+            <button
+              onClick={() => toast.success("Comming Soon")}
+              className="w-full bg-gray-900 hover:bg-black text-white py-2.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm hover:shadow-lg transform hover:-translate-y-0.5"
+            >
               Upgrade Now
             </button>
 

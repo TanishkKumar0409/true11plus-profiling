@@ -3,9 +3,9 @@
 @import "react-advanced-cropper/dist/style.css";
 @import "react-phone-input-2/lib/style.css";
 
-@import 'swiper/css';
-@import 'swiper/css/navigation';
-@import 'swiper/css/pagination';
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
 
 button:disabled,
 select:disabled,
@@ -51,4 +51,127 @@ input:disabled {
 .post-card-swiper .swiper-pagination-bullet-active {
   background: white !important;
   transform: scale(1.2);
+}
+
+#blog-main {
+  font-size: 17px;
+}
+#blog-main h1,
+#blog-main h2,
+#blog-main h3,
+#blog-main h4 {
+  margin: 10px 0 12px;
+  font-weight: 600;
+  color: #55038f;
+}
+#blog-main h1 {
+  font-size: 24px;
+}
+#blog-main h2 {
+  font-size: 22px;
+}
+#blog-main h3 {
+  font-size: 20px;
+}
+#blog-main h4 {
+  font-size: 18px;
+}
+#blog-main .wp-block-list li {
+  margin-bottom: 4px;
+}
+#blog-main .wp-block-list li:before {
+  font-family: "Font Awesome 6 Free";
+  content: "\f0da";
+  display: inline-block;
+  padding-right: 7px;
+  vertical-align: middle;
+  font-weight: 600;
+  color: #9810fa;
+  margin-top: -5px;
+}
+#blog-main .post-details {
+  font-size: 14px;
+}
+#blog-main .post-details .left {
+  margin-left: 8px;
+}
+#blog-main p,
+mark,
+li {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(32, 32, 32);
+  margin-bottom: 12px;
+}
+#blog-main a {
+  color: #9810fa;
+  font-weight: 600;
+}
+#blog-main table {
+  font-size: 13px;
+}
+
+#blog-main ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+#blog-main ol {
+  list-style-type: decimal-leading-zero;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+#blog-main li {
+  margin-bottom: 0.5rem;
+}
+#blog-main ol li::marker,
+#blog-main ul li::marker {
+  color: #9810fa;
+  font-weight: 700;
+}
+
+#blog-main img {
+  border-radius: 10px;
+  border: 3px solid #ebceff;
+  object-fit: cover;
+}
+
+.accordion {
+  border: 1px solid #ebceff;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.accordion-question {
+  background: whitesmoke;
+  padding: 15px;
+  cursor: pointer;
+  font-weight: bold;
+  position: relative;
+}
+
+.accordion-question::after {
+  content: "+";
+  position: absolute;
+  right: 20px;
+  font-size: 18px;
+  transition: transform 0.3s;
+}
+
+.accordion.active .accordion-question::after {
+  content: "-";
+}
+
+.accordion-answer {
+  display: none;
+  padding: 15px;
+  background: whitesmoke;
+  border-top: 1px solid #ebceff;
+}
+
+.accordion.active .accordion-answer {
+  display: block;
+  padding: 15px;
 }

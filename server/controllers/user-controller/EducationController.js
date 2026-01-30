@@ -15,10 +15,10 @@ export const upsertUserEducation = async (req, res) => {
 
     const userId = await getDataFromToken(req);
 
-    if (!userId || !student_class || !school || !description) {
+    if (!userId || !student_class || !school) {
       return res
         .status(400)
-        .json({ error: "student_class, school, description are required" });
+        .json({ error: "student_class, school are required" });
     }
 
     if (!pursuing && !academic_year) {

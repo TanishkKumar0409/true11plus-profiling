@@ -1,10 +1,32 @@
 "use client";
 
+import { API } from "@/contexts/API";
+import { getErrorResponse, getUserAvatar } from "@/contexts/Callbacks";
+import { UserProps } from "@/types/UserProps";
 import { ButtonGroup, ButtonGroupSecondary } from "@/ui/button/Button";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { BiBookOpen, BiCheckCircle, BiTrophy, BiUser } from "react-icons/bi";
 import { FiZap } from "react-icons/fi";
 
 const Home = () => {
+  const [suggestions, setSuggestions] = useState<UserProps[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const getSuggestions = useCallback(async () => {
+    try {
+      const response = await API.get(`/user/random/students?limit=8`);
+      setSuggestions(response.data);
+    } catch (error) {
+      getErrorResponse(error, true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    getSuggestions();
+  }, [getSuggestions]);
+
   return (
     <div className="flex flex-col min-h-screen bg-(bg-main) text-(--text-main)">
       {/* banner */}
@@ -73,7 +95,7 @@ const Home = () => {
           </div>
 
           <div className="flex-1 w-full relative perspective-1000 group mt-12 lg:mt-0">
-            <div className="relative bg-white/90 backdrop-blur-xl border border-white/50 ring-1 ring-slate-200/50 rounded-2xl p-4 shadow-2xl transform rotate-y-[-12deg] rotate-x-[6deg] group-hover:rotate-y-[-6deg] group-hover:rotate-x-[3deg] transition-transform duration-700 ease-out">
+            <div className="relative bg-white/90 backdrop-blur-xl border border-white/50 ring-1 ring-slate-200/50 rounded-2xl p-4 shadow-2xl transform -rotate-y-12 rotate-x-6 group-hover:-rotate-y-6 group-hover:rotate-x-3 transition-transform duration-700 ease-out">
               {/* Browser Toolbar */}
               <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-4">
                 <div className="flex gap-1.5">
@@ -107,7 +129,7 @@ const Home = () => {
                         <div
                           key={i}
                           style={{ height: `${h}%` }}
-                          className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-sm opacity-90"
+                          className="w-full bg-linear-to-t from-blue-500 to-blue-400 rounded-t-sm opacity-90"
                         ></div>
                       ))}
                     </div>
@@ -161,6 +183,71 @@ const Home = () => {
           </div>
         </div>
       </section>
+      {!isLoading && suggestions?.length > 0 && (
+        <section className="py-20 bg-slate-50">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                  Rising Stars
+                </h2>
+                <p className="text-slate-600 max-w-lg text-lg">
+                  Discover talented students making waves in their fields.
+                  Connect, collaborate, and get inspired.
+                </p>
+              </div>
+            </div>
+
+            {/* Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {suggestions.map((student, index) => (
+                <div
+                  key={index}
+                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col"
+                >
+                  {/* Banner */}
+                  <div className="aspect-2/1 bg-gray-200 relative">
+                    {student.banner?.[0] && (
+                      <img
+                        src={`${process.env.NEXT_PUBLIC_MEDIA_URL}${student.banner?.[0]}`}
+                        alt="Banner"
+                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                      />
+                    )}
+                  </div>
+
+                  {/* Avatar & Content */}
+                  <div className="px-6 pb-6 relative flex-1 flex flex-col items-center text-center -mt-12">
+                    <div className="w-20 h-20 rounded-full border-4 border-white shadow-md overflow-hidden bg-white mb-3">
+                      <img
+                        src={getUserAvatar(student?.avatar || [])}
+                        alt={student.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {student.name}
+                    </h3>
+                    <p className="text-sm text-indigo-600 font-medium mb-1">
+                      {student.username}
+                    </p>
+
+                    <div className="mt-auto w-full pt-4 border-t border-slate-50">
+                      <Link
+                        href={`/profile/${student.username}`}
+                        className="block w-full py-2 bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 font-semibold rounded-lg transition-colors"
+                      >
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* --- STATS SECTION --- */}
       <section className="bg-(--bg-subtle) py-8 sm:py-14 px-4 sm:px-8 mt-6">
@@ -252,7 +339,7 @@ const Home = () => {
                 "Peer review system",
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-2 font-medium">
-                  <div className="w-6 h-6 rounded-full bg-(--green-subtle) flex items-center justify-center flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-(--green-subtle) flex items-center justify-center shrink-0">
                     <BiCheckCircle className="w-4 h-4 text-(--green)" />
                   </div>
                   <span>{item}</span>

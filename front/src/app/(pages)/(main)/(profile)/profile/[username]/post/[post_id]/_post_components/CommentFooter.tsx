@@ -73,7 +73,7 @@ export default function CommentFooter({
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={replyingTo ? `Reply to ${replyingTo.userId?.name || 'user'}...` : "Write a comment..."}
-                    className="w-full bg-transparent border-none outline-none focus:ring-0 text-sm px-3 py-2 resize-none max-h-24 min-h-[40px] text-gray-800 placeholder-gray-400"
+                    className="w-full bg-transparent border-none outline-none focus:ring-0 text-sm px-3 py-2 resize-none max-h-24 min-h-10 text-gray-800 placeholder-gray-400"
                     rows={1}
                 />
                 <button

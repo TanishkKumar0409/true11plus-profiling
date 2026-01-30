@@ -1,9 +1,7 @@
 import React from "react";
-import { BiLogOut, BiX } from "react-icons/bi";
-import { CiSettings } from "react-icons/ci";
+import { BiX } from "react-icons/bi";
 import { Link, NavLink } from "react-router-dom";
 import { SidbarNavigations } from "../../common/RouteData";
-import { handleLogout } from "../../contexts/getAssets";
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -30,7 +28,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         onClick={closeMobile}
       />
 
-      {/* Sidebar Container */}
       <aside
         className={`fixed top-0 left-0 h-screen bg-white z-50 transition-all border-r border-gray-100 duration-300 shadow-xl lg:shadow-none flex flex-col
         /* Mobile: Controlled by isMobileOpen */
@@ -87,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 }`
               }
             >
-              <div className="flex-shrink-0 transition-colors group-hover:text-purple-600">
+              <div className="shrink-0 transition-colors group-hover:text-purple-600">
                 <item.icon size={20} />
               </div>
               <span
@@ -99,47 +96,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               </span>
             </NavLink>
           ))}
-        </div>
-
-        {/* Footer (Settings & Logout) */}
-        <div className="flex-none p-3 border-t border-gray-100 space-y-2 bg-white">
-          <Link
-            to="/settings"
-            className={`flex items-center rounded-lg transition-all duration-200 group font-medium border w-full text-gray-600 border-transparent hover:bg-purple-50 hover:text-purple-600 ${
-              isCollapsed ? "lg:justify-center lg:px-2" : "px-3 gap-3"
-            } p-2`}
-            title="Settings"
-          >
-            <div className="flex-shrink-0 transition-colors group-hover:text-purple-600">
-              <CiSettings size={20} />
-            </div>
-            <span
-              className={`whitespace-nowrap overflow-hidden transition-all ${
-                isCollapsed ? "lg:hidden lg:w-0" : "block"
-              }`}
-            >
-              Settings
-            </span>
-          </Link>
-
-          <button
-            className={`flex items-center rounded-lg transition-all duration-200 group font-medium border w-full text-gray-600 border-transparent hover:bg-red-50 hover:text-red-600 ${
-              isCollapsed ? "lg:justify-center lg:px-2" : "px-3 gap-3"
-            } p-2`}
-            title="Logout"
-            onClick={handleLogout}
-          >
-            <div className="flex-shrink-0 transition-colors">
-              <BiLogOut size={20} />
-            </div>
-            <span
-              className={`whitespace-nowrap overflow-hidden transition-all ${
-                isCollapsed ? "lg:hidden lg:w-0" : "block"
-              }`}
-            >
-              Logout
-            </span>
-          </button>
         </div>
       </aside>
     </>

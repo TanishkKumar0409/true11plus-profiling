@@ -1,6 +1,13 @@
 "use client";
 
-import { BiX, BiLogOut, BiUser, BiChevronRight } from "react-icons/bi";
+import {
+  BiX,
+  BiLogOut,
+  BiUser,
+  BiChevronRight,
+  BiCog,
+  BiLinkExternal,
+} from "react-icons/bi";
 import toast from "react-hot-toast";
 import type { IconType } from "react-icons/lib";
 import type { UserProps } from "../../types/UserTypes";
@@ -12,25 +19,13 @@ interface SidebarItem {
   label: string;
   href: string;
   icon: IconType;
+  external?: boolean;
 }
 
 interface SidebarSection {
   label: string;
   items: SidebarItem[];
 }
-
-const SIDEBAR_SECTIONS: SidebarSection[] = [
-  {
-    label: "Account",
-    items: [
-      {
-        label: "My Profile",
-        href: "/",
-        icon: BiUser,
-      },
-    ],
-  },
-];
 
 interface ProfileSidebarProps {
   isOpen: boolean;
@@ -43,6 +38,37 @@ export default function ProfileSidebar({
   onClose,
   profile,
 }: ProfileSidebarProps) {
+  const FRONT_URL = import.meta.env.VITE_FRONT_URL || "";
+
+  // Dynamic sections based on profile data
+  const SIDEBAR_SECTIONS: SidebarSection[] = [
+    {
+      label: "Account",
+      items: [
+        {
+          label: "My Profile",
+          href: "/",
+          icon: BiUser,
+        },
+        {
+          label: "Settings",
+          href: "/profile/edit",
+          icon: BiCog,
+        },
+      ],
+    },
+    {
+      label: "Public",
+      items: [
+        {
+          label: "View Public Profile",
+          href: `${FRONT_URL}/profile/${profile?.username}`,
+          icon: BiLinkExternal,
+          external: true,
+        },
+      ],
+    },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -56,25 +82,30 @@ export default function ProfileSidebar({
 
   return (
     <>
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
-          }`}
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-60 transition-opacity duration-300 ${
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       />
 
+      {/* Sidebar Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-[320px] bg-white shadow-2xl z-[70] transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col border-l border-gray-100 ${isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed top-0 right-0 h-full w-[320px] bg-white shadow-2xl z-70 transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col border-l border-gray-100 ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        {/* 1. COMPACT HEADER */}
+        {/* 1. HEADER */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/50">
           <Link
-            to={`/`}
+            to="/"
+            onClick={onClose}
             className="flex items-center gap-3 overflow-hidden group"
           >
-            <div className="relative w-10 h-10 min-w-[40px] rounded-full border-2 border-white shadow-sm overflow-hidden bg-gray-200">
+            <div className="relative w-10 h-10 min-w-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-gray-200">
               <img
                 src={getUserAvatar(profile?.avatar || [])}
                 className="object-cover w-full h-full"
@@ -82,10 +113,10 @@ export default function ProfileSidebar({
               />
             </div>
             <div className="flex flex-col">
-              <h3 className="text-sm font-bold text-gray-900 truncate max-w-[160px] group-hover:text-purple-600 transition-colors">
+              <h3 className="text-sm font-bold text-gray-900 truncate max-w-40 group-hover:text-purple-600 transition-colors">
                 {profile?.name || "User"}
               </h3>
-              <p className="text-xs text-gray-500 truncate max-w-[160px]">
+              <p className="text-xs text-gray-500 truncate max-w-40">
                 @{profile?.username || "username"}
               </p>
             </div>
@@ -98,25 +129,26 @@ export default function ProfileSidebar({
           </button>
         </div>
 
-        {/* 2. BODY LINKS (Mapped) */}
+        {/* 2. BODY LINKS */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {SIDEBAR_SECTIONS.map((section, index) => (
             <div key={section.label} className={index > 0 ? "mt-4" : ""}>
               <SectionLabel label={section.label} />
               {section.items.map((item) => (
                 <SidebarLink
-                  key={item.href}
+                  key={item.label} // unique key
                   href={item.href}
                   icon={item.icon}
                   label={item.label}
                   onClick={onClose}
+                  external={item.external}
                 />
               ))}
             </div>
           ))}
         </div>
 
-        {/* 3. COMPACT FOOTER */}
+        {/* 3. FOOTER */}
         <div className="p-4 border-t border-gray-100 bg-gray-50/30">
           <button
             onClick={handleLogout}
@@ -147,22 +179,49 @@ const SectionLabel = ({
   </p>
 );
 
-const SidebarLink = ({ href, icon: Icon, label, onClick }: any) => (
-  <Link
-    to={href}
-    onClick={onClick}
-    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-600 hover:bg-purple-50 hover:text-purple-700 group transition-all duration-200"
-  >
-    <div className="flex items-center gap-3">
-      <Icon
-        size={18}
-        className="text-gray-400 group-hover:text-purple-600 transition-colors"
+const SidebarLink = ({ href, icon: Icon, label, onClick, external }: any) => {
+  // Determine if we use react-router Link or standard anchor tag
+  if (external) {
+    return (
+      <a
+        href={href}
+        onClick={onClick}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-600 hover:bg-purple-50 hover:text-purple-700 group transition-all duration-200"
+      >
+        <div className="flex items-center gap-3">
+          <Icon
+            size={18}
+            className="text-gray-400 group-hover:text-purple-600 transition-colors"
+          />
+          <span className="text-sm font-medium">{label}</span>
+        </div>
+        <BiLinkExternal
+          size={16}
+          className="text-gray-300 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
+        />
+      </a>
+    );
+  }
+
+  return (
+    <Link
+      to={href}
+      onClick={onClick}
+      className="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-600 hover:bg-purple-50 hover:text-purple-700 group transition-all duration-200"
+    >
+      <div className="flex items-center gap-3">
+        <Icon
+          size={18}
+          className="text-gray-400 group-hover:text-purple-600 transition-colors"
+        />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <BiChevronRight
+        size={16}
+        className="text-gray-300 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
       />
-      <span className="text-sm font-medium">{label}</span>
-    </div>
-    <BiChevronRight
-      size={16}
-      className="text-gray-300 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
-    />
-  </Link>
-);
+    </Link>
+  );
+};

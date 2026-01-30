@@ -2,7 +2,11 @@ import type { AxiosError } from "axios";
 import type { FormikProps } from "formik";
 import type { JSX } from "react";
 import toast from "react-hot-toast";
-import type { CategoryProps, FieldDataSimple, StatusProps } from "../types/Types";
+import type {
+  CategoryProps,
+  FieldDataSimple,
+  StatusProps,
+} from "../types/Types";
 
 export function getFormikError<T>(
   formik: FormikProps<T>,
@@ -128,14 +132,24 @@ export const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case "active":
       return "success";
-    case "published":
+    case "approved":
+      return "success";
+    case "completed":
       return "success";
     case "pending":
       return "warning";
     case "suspended":
       return "danger";
-    case "drafted":
+    case "rejected":
       return "danger";
+    case "submitted":
+      return "blue";
+    case "hold":
+      return "warning";
+    case "started":
+      return "primary";
+    case "assign":
+      return "blue";
     default:
       return "primary";
   }
@@ -176,10 +190,20 @@ export const formatDate = (dateStr: string) => {
 
 export const getCategoryAccodingToField = (
   allCategories: CategoryProps[],
-  field: string
+  field: string,
 ) => {
   return allCategories.filter(
     (category) =>
-      category.parent_category?.toLowerCase() === field.toLowerCase()
+      category.parent_category?.toLowerCase() === field.toLowerCase(),
   );
 };
+
+export function stripHtml(html: string, limit: number = 160): string {
+  const text = html?.replace(/<[^>]+>/g, "").trim() || "";
+
+  if (text.length > limit) {
+    return text.slice(0, limit) + "...";
+  }
+
+  return text;
+}

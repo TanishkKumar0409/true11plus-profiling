@@ -7,7 +7,6 @@ import ejs from "ejs";
 export const sendUserEmailVerification = async (req, user) => {
   try {
     const token = await createJwtToken({ userId: user?._id }, "5m");
-
     const expiryTime = new Date(Date.now() + 5 * 60 * 1000);
 
     const saveVerifyToken = await User.findByIdAndUpdate(user._id, {

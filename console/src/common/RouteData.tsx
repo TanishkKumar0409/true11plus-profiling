@@ -27,6 +27,10 @@ import CreateTask from "../pages/academic-structure/tasks/CreateTask";
 import Tasks from "../pages/academic-structure/tasks/Tasks";
 import TaskView from "../pages/academic-structure/tasks/TaskView";
 import EditTask from "../pages/academic-structure/tasks/EditTask";
+import StudentList from "../pages/students/StudentsList";
+import StudentView from "../pages/students/StudentView";
+import StudentTaskAssign from "../pages/students/StudentTaskAssign";
+import StudentTaskView from "../pages/students/StudentTaskView";
 
 // Import your components (Dashboard, UserList, etc.) here
 // import Dashboard from "...";
@@ -49,6 +53,15 @@ export const SidbarNavigations = [
     component: UserList,
     roles: ["bot admin", "admin"],
     permission: "read user",
+  },
+  {
+    name: "Students",
+    id: "students",
+    icon: LuUsers,
+    href: "/dashboard/students",
+    component: StudentList,
+    roles: ["bot admin", "admin", "mentor"],
+    permission: "read student",
   },
   {
     name: "Academic Structure",
@@ -112,6 +125,30 @@ export const NonSidebarNavigations = [
     component: UserEdit,
     roles: ["bot admin", "admin"],
     permission: "update user",
+  },
+  {
+    name: "Student View",
+    id: "student-view",
+    href: "/dashboard/student/:objectId",
+    component: StudentView,
+    roles: ["bot admin", "admin", "mentor"],
+    permission: "read student",
+  },
+  {
+    name: "Student Task Assign",
+    id: "student-task-assign",
+    href: "/dashboard/student/:objectId/tasks/assign",
+    component: StudentTaskAssign,
+    roles: ["bot admin", "admin", "mentor"],
+    permission: "read student task",
+  },
+  {
+    name: "Student Task",
+    id: "student-task",
+    href: "/dashboard/student/:userId/tasks/:taskId",
+    component: StudentTaskView,
+    roles: ["bot admin", "admin", "mentor"],
+    permission: "read student task",
   },
   {
     name: "Status Create",

@@ -17,7 +17,7 @@ export const getErrorResponse = (error: unknown, hide = false): void => {
     toast.error(
       err?.response?.data?.error ||
         err?.response?.data?.message ||
-        "Failed To Process Your Request"
+        "Failed To Process Your Request",
     );
   }
 
@@ -25,7 +25,7 @@ export const getErrorResponse = (error: unknown, hide = false): void => {
     err?.response?.data?.error ||
       err?.response?.data?.message ||
       err?.message ||
-      error
+      error,
   );
 };
 
@@ -36,8 +36,8 @@ export const getUserAvatar = (images: string[]) => {
     ? images[0].startsWith("http")
       ? images[0]
       : mediaUrl
-      ? `${mediaUrl}${images[0]}`
-      : `/img/defaults/avatar.png`
+        ? `${mediaUrl}${images[0]}`
+        : `/img/defaults/avatar.png`
     : "/img/defaults/avatar.png";
 
   return avatarUrl;
@@ -55,7 +55,7 @@ export const generateSlug = (text: string) => {
 
 export function getFormikError<T>(
   formik: FormikProps<T>,
-  field: keyof T
+  field: keyof T,
 ): JSX.Element | null {
   const touched = formik.touched[field];
   const error = formik.errors[field];
@@ -72,3 +72,52 @@ export function getFormikError<T>(
 
   return null;
 }
+
+export function stripHtml(html: string, limit: number = 160): string {
+  const text = html?.replace(/<[^>]+>/g, "").trim() || "";
+
+  if (text.length > limit) {
+    return text.slice(0, limit) + "...";
+  }
+
+  return text;
+}
+
+export const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+export const getStatusColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "active":
+      return "success";
+    case "approved":
+      return "success";
+    case "completed":
+      return "success";
+    case "pending":
+      return "warning";
+    case "suspended":
+      return "danger";
+    case "rejected":
+      return "danger";
+    case "submitted":
+      return "blue";
+    case "hold":
+      return "warning";
+    case "started":
+      return "primary";
+    case "assign":
+      return "blue";
+    default:
+      return "primary";
+  }
+};

@@ -1,20 +1,23 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFormik } from "formik";
-import PhoneInput from "react-phone-input-2";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registreValidation } from "@/contexts/ValidationSchema";
 import { API } from "@/contexts/API";
 import { getErrorResponse, getFormikError } from "@/contexts/Callbacks";
-import { FiEye, FiEyeOff, FiThumbsUp } from "react-icons/fi";
+import { FiThumbsUp } from "react-icons/fi";
 import { getToken } from "@/contexts/getAssets";
+import {
+  FloatingInput,
+  FloatingPasswordInput,
+  FloatingPhoneInput,
+} from "@/ui/inputs/FloatingInput";
+import { LuArrowRight, LuLoader, LuUser } from "react-icons/lu";
 
 const RegisterPage = () => {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -52,159 +55,134 @@ const RegisterPage = () => {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-5 relative z-10">
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          Username
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            {...formik.getFieldProps("username")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Enter your username"
-          />
-        </div>
-        {getFormikError(formik, "username")}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          Name
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            {...formik.getFieldProps("name")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Enter your full name"
-          />
-        </div>
-        {getFormikError(formik, "name")}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          E-mail
-        </label>
-        <div className="relative">
-          <input
-            type="email"
-            {...formik.getFieldProps("email")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Enter your email address"
-          />
-        </div>
-        {getFormikError(formik, "email")}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          Mobile Number
-        </label>
-        <div className={`relative rounded-2xl bg-(--gray-subtle)`}>
-          <PhoneInput
-            country={"in"}
-            value={formik.values.mobile_no}
-            onChange={(phone) => formik.setFieldValue("mobile_no", phone)}
-            enableSearch={true}
-            containerClass="!w-full !border-none"
-            inputClass="!w-full !h-[56px] !bg-transparent !border-none !text-base !font-medium !pl-[60px] !text-(--text-color)"
-            buttonClass="!bg-transparent !border-none !pl-2"
-            placeholder="Enter your mobile number"
-          />
-        </div>
-        {getFormikError(formik, "mobile_no")}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          Password
-        </label>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            {...formik.getFieldProps("password")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Enter your password"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-(--gray) hover:text-(--text-color)"
-          >
-            {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-          </button>
-        </div>
-        {getFormikError(formik, "password")}
-      </div>
-
-      <div>
-        <label className="block text-sm font-semibold text-(--text-color-emphasis) mb-2 ml-1">
-          Confirm Password
-        </label>
-        <div className="relative">
-          <input
-            type={showConfirmPassword ? "text" : "password"}
-            {...formik.getFieldProps("confirm_password")}
-            className={`w-full pl-5 pr-12 py-4 rounded-2xl border-none outline-none font-medium transition-all bg-(--gray-subtle) text-(--text-color) focus:bg-(--white) focus:ring-2 focus:ring-(--main)`}
-            placeholder="Confirm your password"
-          />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-(--gray) hover:text-(--text-color)"
-          >
-            {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-          </button>
-        </div>
-        {getFormikError(formik, "confirm_password")}
-      </div>
-
-      <div className="flex items-center gap-3 pt-2">
-        <div className="relative flex items-center">
-          <input
-            id="terms"
-            type="checkbox"
-            {...formik.getFieldProps("terms")}
-            className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-(--border) transition-all checked:border-(--gray-emphasis) checked:bg-(--gray-emphasis)"
-          />
-          <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-(--white) opacity-0 peer-checked:opacity-100">
-            <FiThumbsUp size={12} strokeWidth={4} />
-          </div>
-        </div>
-        <label
-          htmlFor="terms"
-          className="text-sm font-medium text-(--gray) cursor-pointer"
-        >
-          I agree to the{" "}
-          <span className="text-(--text-color-emphasis) font-bold">
-            Privacy & Policy
-          </span>
-        </label>
-      </div>
-      {getFormikError(formik, "terms")}
-
-      <button
-        type="submit"
-        disabled={formik.isSubmitting || !formik.values.terms}
-        className="w-full bg-(--main) rounded-xl py-4 text-2xl font-bold text-(--white) transition-colors hover:bg-(--main-emphasis) disabled:opacity-50"
-      >
-        {formik.isSubmitting ? "Registering..." : "Register"}
-      </button>
-
-      <div className="text-center pt-2">
-        <p className="text-(--gray) font-medium">
-          Already have an account?{" "}
-          <Link
-            href="/auth/login"
-            className="text-(--main) hover:text-(--main-emphasis) font-bold transition-colors"
-          >
-            Log In
-          </Link>
+    <div className="w-full max-w-lg">
+      <div className="mb-12">
+        <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
+        <p className="mt-2 text-gray-500">
+          Sign up to start documenting your journey.
         </p>
       </div>
-    </form>
+      <form onSubmit={formik.handleSubmit} className="space-y-5">
+        <div className="grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-2">
+          <div>
+            <FloatingInput
+              type="text"
+              name={`username`}
+              value={formik.values.username}
+              label="Username"
+              icon={LuUser}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "username")}
+          </div>
+          <div>
+            <FloatingInput
+              type="text"
+              name={`name`}
+              value={formik.values.name}
+              label="Name"
+              icon={LuUser}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "name")}
+          </div>
+          <div>
+            <FloatingInput
+              type="text"
+              name={`email`}
+              value={formik.values.email}
+              label="email"
+              icon={LuUser}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "email")}
+          </div>
+          <div>
+            <FloatingPhoneInput
+              name="mobile_no"
+              value={formik.values.mobile_no}
+              onChange={(phone) => formik.setFieldValue("mobile_no", phone)}
+              label="mobile Number"
+            />
+            {getFormikError(formik, "mobile_no")}
+          </div>
+          <div>
+            <FloatingPasswordInput
+              name="password"
+              value={formik.values.password}
+              label="Password"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "password")}
+          </div>
+          <div>
+            <FloatingPasswordInput
+              name="confirm_password"
+              value={formik.values.confirm_password}
+              label="Confirm Password"
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {getFormikError(formik, "confirm_password")}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <div className="relative flex items-center">
+            <input
+              id="terms"
+              type="checkbox"
+              {...formik.getFieldProps("terms")}
+              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-gray-300 transition-all checked:border-purple-400 checked:bg-purple-600"
+            />
+            <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-(--white) opacity-0 peer-checked:opacity-100">
+              <FiThumbsUp size={12} strokeWidth={4} />
+            </div>
+          </div>
+          <label htmlFor="terms" className="text-sm">
+            I agree to the{" "}
+            <span className="font-medium text-purple-600 hover:text-purple-500 hover:underline">
+              Privacy & Policy
+            </span>
+          </label>
+        </div>
+        {getFormikError(formik, "terms")}
+
+        <button
+          type="submit"
+          disabled={formik.isSubmitting}
+          className="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-md transition-all duration-200"
+        >
+          {formik.isSubmitting ? (
+            <>
+              <LuLoader className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 animate-spin" />
+              Registering...
+            </>
+          ) : (
+            <>
+              Register
+              <LuArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </>
+          )}
+        </button>
+
+        <div className="text-center pt-2">
+          <p className="text-center text-sm text-gray-500">
+            If you are already a member, please{" "}
+            <Link
+              href="/auth/login"
+              className="font-semibold text-purple-600 hover:text-purple-500 hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </form>{" "}
+    </div>
   );
 };
 

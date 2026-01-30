@@ -17,7 +17,9 @@ import {
   DeleteUserBanner,
   getAllUsers,
   getRandomUsersWithDetails,
+  getRandomStudentsWithDetailsLimit,
   getUserByObjectId,
+  getUserBysRole,
   getUserByUsername,
   UpdateProfileLocation,
   UpdateUserDetails,
@@ -88,9 +90,11 @@ router.patch(
   UserAvatarChange,
 );
 router.get(`/users`, getAllUsers);
+router.get(`/users/role/:role`, getUserBysRole);
 router.delete(`/user/avatar/:userId`, DeleteUserAvatar);
 router.get(`/user/username/:username`, getUserByUsername);
 router.get(`/user/:objectId`, getUserByObjectId);
+router.get(`/user/random/students`, getRandomStudentsWithDetailsLimit);
 router.get(`/user/random/:userId`, getRandomUsersWithDetails);
 router.patch(`/user/admin/update/:objectId`, UpdateUserDetailsByAdmin);
 router.patch(`/user/location/update/:userId`, UpdateProfileLocation);

@@ -1,4 +1,5 @@
 export interface UserProps extends Record<string, unknown> {
+  _id: string;
   username: string;
   name: string;
   email: string;
@@ -22,12 +23,11 @@ export interface RoleProps {
   role: string;
 }
 
-
 export interface UserExperience {
   _id?: string;
   title: string;
   company: string;
-  start_date: string
+  start_date: string;
   end_date: string;
   iscurrently: boolean;
   description: string;
@@ -50,5 +50,5 @@ export interface GlobalLanguage {
 export interface UserLanguage {
   _id?: string;
   languageId?: string; // Reference to global ID
-  language?: string;   // Fallback name if populated or optimistic
+  language?: string; // Fallback name if populated or optimistic
 }

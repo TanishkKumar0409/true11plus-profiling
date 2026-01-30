@@ -93,7 +93,7 @@ export const createTask = async (req, res) => {
 export const getAllTask = async (req, res) => {
   try {
     const tasks = await Task.find()?.populate(
-      "academic_group_id difficulty_level",
+     "academic_group_id difficulty_level task_type",
     );
     return res.status(200).json(tasks);
   } catch (error) {

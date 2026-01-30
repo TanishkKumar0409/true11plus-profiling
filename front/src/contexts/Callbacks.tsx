@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 
 export function getFormikError<T>(
   formik: FormikProps<T>,
-  field: keyof T
+  field: keyof T,
 ): JSX.Element | null {
   const touched = formik.touched[field];
   const error = formik.errors[field];
@@ -24,7 +24,7 @@ export const getErrorResponse = (error: unknown, hide = false): void => {
     toast.error(
       err?.response?.data?.error ||
         err?.response?.data?.message ||
-        "Failed To Process Your Request"
+        "Failed To Process Your Request",
     );
   }
 
@@ -32,7 +32,7 @@ export const getErrorResponse = (error: unknown, hide = false): void => {
     err?.response?.data?.error ||
       err?.response?.data?.message ||
       err?.message ||
-      error
+      error,
   );
 };
 
@@ -43,8 +43,8 @@ export const getUserAvatar = (images: string[]) => {
     ? images[0].startsWith("http")
       ? images[0]
       : mediaUrl
-      ? `${mediaUrl}${images[0]}`
-      : `/img/defaults/avatar.png`
+        ? `${mediaUrl}${images[0]}`
+        : `/img/defaults/avatar.png`
     : "/img/defaults/avatar.png";
 
   return avatarUrl;
@@ -56,4 +56,8 @@ export const formatDate = (dateString: string) => {
     month: "long",
     day: "numeric",
   });
+};
+
+export const comingSoonToast = (message = "Coming soon 🚧") => {
+  toast(message);
 };

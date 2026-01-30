@@ -165,7 +165,7 @@ export const Login = async (req, res) => {
       return res.status(401).json({ error: "Incorrect password!" });
 
     if (!user?.verified) {
-      await sendUserEmailVerification({ userId: user._id, email });
+      await sendUserEmailVerification(req, user);
       return res.status(403).json({
         error: "Email not verified. Verification email sent.",
         flag: "UnVerified",

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "react-phone-input-2/lib/style.css";
 
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -162,4 +166,44 @@ li {
 .accordion.active .accordion-answer {
   display: block;
   padding: 15px;
+}
+
+
+.post-card-swiper .swiper-button-next,
+.post-card-swiper .swiper-button-prev {
+  color: white !important;
+  background: rgba(0, 0, 0, 0.3);
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 5px;
+  padding: 5px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.post-card-swiper .swiper-button-next::after,
+.post-card-swiper .swiper-button-prev::after {
+  font-size: 14px !important;
+  font-weight: bold;
+}
+
+.post-card-swiper:hover .swiper-button-next,
+.post-card-swiper:hover .swiper-button-prev {
+  opacity: 1;
+}
+
+.post-card-swiper .swiper-button-next:hover,
+.post-card-swiper .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.post-card-swiper .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.6) !important;
+  opacity: 1 !important;
+}
+
+.post-card-swiper .swiper-pagination-bullet-active {
+  background: white !important;
+  transform: scale(1.2);
 }

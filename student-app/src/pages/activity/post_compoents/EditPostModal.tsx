@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { BiX, BiImageAdd, BiTrash } from "react-icons/bi";
-import { API } from "../../contexts/API";
-import { getErrorResponse, getSuccessResponse, getUserAvatar } from "../../contexts/CallBacks";
+import { API } from "../../../contexts/API";
+import { getErrorResponse, getSuccessResponse, getUserAvatar } from "../../../contexts/CallBacks";
 import Swal from "sweetalert2";
 import { useOutletContext } from "react-router-dom";
-import type { DashboardOutletContextProps } from "../../types/Types";
-import type { PostProps } from "../../types/PostTypes";
+import type { DashboardOutletContextProps } from "../../../types/Types";
+import type { PostProps } from "../../../types/PostTypes";
 
 interface EditPostModalProps {
     isOpen: PostProps | null;
