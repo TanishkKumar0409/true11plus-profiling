@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   BiFile,
   BiImage,
@@ -8,9 +9,11 @@ import {
   BiMedal,
   BiCommentCheck,
   BiInfoCircle,
+  BiShareAlt,
 } from "react-icons/bi";
-import Badge from "../../../ui/badge/Badge";
 import { formatDate, getStatusColor } from "../../../contexts/CallBacks";
+import Badge from "../../../ui/badge/Badge";
+import { ActivityShareModal } from "./ShareModal";
 
 // --- Types ---
 interface FileEntry {
@@ -36,6 +39,7 @@ export interface SubmissionData {
   status: string;
   grade?: string;
   remark?: string;
+  is_posted: boolean;
 }
 
 interface SubmittedWorkViewProps {
@@ -60,16 +64,15 @@ export default function SubmittedWorkView({
   title = "Submission Details",
 }: SubmittedWorkViewProps) {
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL || "";
+  const [showShareModal, setShowShareModal] = useState(false);
 
-  // Helper to determine feedback styling based on status
   const status = submission?.status?.toLowerCase();
-  const isApproved = status === "approved";
+  const isApproved = status === "approved" || status === "completed";
   const isRejected = status === "rejected";
 
   const showFeedback =
     (isApproved || isRejected) && (submission?.grade || submission?.remark);
 
-  // Dynamic Theme Colors
   const theme = isRejected
     ? {
         bg: "from-red-50 to-orange-50/30",
@@ -117,6 +120,18 @@ export default function SubmittedWorkView({
             children={submission?.status}
             variant={getStatusColor(submission?.status)}
           />
+
+          {/* SHARE BUTTON: Only if Approved */}
+          {isApproved && !submission?.is_posted && (
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-1.5 text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-full border border-purple-100 transition-colors"
+              title="Share to Activity Feed"
+            >
+              <BiShareAlt size={14} /> Share
+            </button>
+          )}
+
           <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-white px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
             <BiCalendar size={14} />
             {formatDate(submission?.createdAt)}
@@ -125,11 +140,11 @@ export default function SubmittedWorkView({
       </div>
 
       <div className="p-8 space-y-8">
+        {/* --- MENTOR FEEDBACK SECTION --- */}
         {showFeedback && (
           <div
-            className={`bg-linear-to-br ${theme.bg} rounded-2xl p-6 border ${theme.border} relative overflow-hidden`}
+            className={`bg-liear-to-br ${theme.bg} rounded-2xl p-6 border ${theme.border} relative overflow-hidden`}
           >
-            {/* Decor Blob */}
             <div
               className={`absolute top-0 right-0 w-32 h-32 ${theme.decor} rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2`}
             ></div>
@@ -141,8 +156,7 @@ export default function SubmittedWorkView({
             </h4>
 
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Grade Box (Only show if Approved & Graded) */}
-              {submission.grade && (
+              {isApproved && submission.grade && (
                 <div
                   className={`bg-white/80 backdrop-blur-sm p-4 rounded-xl border ${theme.cardBorder} shadow-sm min-w-30 text-center`}
                 >
@@ -159,7 +173,6 @@ export default function SubmittedWorkView({
                 </div>
               )}
 
-              {/* Remark Box */}
               {submission.remark && (
                 <div className="flex-1">
                   <div
@@ -181,8 +194,6 @@ export default function SubmittedWorkView({
         )}
 
         {/* --- STUDENT SUBMISSION CONTENT --- */}
-
-        {/* Message */}
         {submission?.message && (
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
@@ -198,7 +209,6 @@ export default function SubmittedWorkView({
           </div>
         )}
 
-        {/* Files */}
         {submission?.files && submission?.files?.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
@@ -242,7 +252,6 @@ export default function SubmittedWorkView({
           </div>
         )}
 
-        {/* Images */}
         {submission.images && submission.images.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
@@ -276,6 +285,13 @@ export default function SubmittedWorkView({
           </div>
         )}
       </div>
+
+      {showShareModal && (
+        <ActivityShareModal
+          submission={submission}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </div>
   );
 }

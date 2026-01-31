@@ -6,8 +6,6 @@ import {
   BiGift,
   BiInfoCircle,
   BiPlay,
-  BiPause,
-  BiCheckCircle,
 } from "react-icons/bi";
 import toast from "react-hot-toast";
 import { getErrorResponse } from "../../contexts/CallBacks";
@@ -16,13 +14,13 @@ import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import ReadMoreLess from "../../ui/read-more/ReadMoreLess";
 import type { TaskProps } from "../../types/AcademicStructureType";
 import type { DashboardOutletContextProps } from "../../types/Types";
-import TaskSubmissionForm from "./task_component/TaskSubmissionForm";
-import SubmittedWorkView, {
-  type SubmissionData,
-} from "./task_component/SubmittedWorkView";
-import SubmissionHistory from "./task_component/SubmissionHistory";
+// import TaskSubmissionForm from "./task_component/TaskSubmissionForm";
+// import SubmittedWorkView, {
+//   type SubmissionData,
+// } from "./task_component/SubmittedWorkView";
+// import SubmissionHistory from "./task_component/SubmissionHistory";
 import TaskInfomationSidebar from "./task_component/TaskInfomationSidebar";
-import { SubmissionModal } from "./task_component/SubmissionHistoryModal";
+// import { SubmissionModal } from "./task_component/SubmissionHistoryModal";
 
 interface AssignedTaskEntry {
   task_id: string | { _id: string };
@@ -36,13 +34,13 @@ export default function TaskView() {
 
   const [task, setTask] = useState<TaskProps | null>(null);
   const [assignmentStatus, setAssignmentStatus] = useState<string>("assign");
-  const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
+  // const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Modal State
-  const [selectedHistoryItem, setSelectedHistoryItem] =
-    useState<SubmissionData | null>(null);
+  // const [selectedHistoryItem, setSelectedHistoryItem] =
+  //   useState<SubmissionData | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!objectId || !authUser?._id) return;
@@ -74,11 +72,11 @@ export default function TaskView() {
         // 2. Fetch history if user has interacted with task (anything other than 'assign')
         if (status !== "assign") {
           try {
-            const subRes = await API.get(`/user/task/submission/${objectId}`);
-            const subData = Array.isArray(subRes.data)
-              ? subRes.data
-              : subRes.data?.submissions || [];
-            setSubmissions(subData);
+            // const subRes = await API.get(`/user/task/submission/${objectId}`);
+            // const subData = Array.isArray(subRes.data)
+            //   ? subRes.data
+            //   : subRes.data?.submissions || [];
+            // setSubmissions(subData);
           } catch (subError) {
             console.log("No submissions found yet.");
           }
@@ -131,23 +129,23 @@ export default function TaskView() {
 
   // --- Logic Helpers ---
   const isAssign = assignmentStatus === "assign";
-  const isStarted = assignmentStatus === "started";
+  // const isStarted = assignmentStatus === "started";
   const isHold = assignmentStatus === "hold";
   const isRejected = assignmentStatus === "rejected";
-  const isApproved = assignmentStatus === "approved";
-  const isSubmitted = assignmentStatus === "submitted";
+  // const isApproved = assignmentStatus === "approved";
+  // const isSubmitted = assignmentStatus === "submitted";
 
   // Show Form ONLY if Started or Rejected
-  const showForm = isStarted || isRejected;
+  // const showForm = isStarted || isRejected;
 
   // Get Latest Submission for display (Submitted/Approved states)
-  const latestSubmission =
-    submissions.length > 0
-      ? [...submissions].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        )[0]
-      : null;
+  // const latestSubmission =
+  //   submissions.length > 0
+  //     ? [...submissions].sort(
+  //         (a, b) =>
+  //           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  //       )[0]
+  //     : null;
 
   return (
     <div className="space-y-6 pb-10">
@@ -291,7 +289,7 @@ export default function TaskView() {
             )}
 
             {/* 4. SUBMITTED / APPROVED STATE: Show Latest View (Read Only) */}
-            {(isSubmitted || isApproved) && latestSubmission ? (
+            {/* {(isSubmitted || isApproved) && latestSubmission ? (
               <div className="space-y-4">
                 {isApproved && (
                   <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-center gap-3 text-green-800">
@@ -306,10 +304,10 @@ export default function TaskView() {
                 </h3>
                 <SubmittedWorkView submission={latestSubmission} />
               </div>
-            ) : null}
+            ) : null} */}
 
             {/* 5. FORM: Show ONLY if Started or Rejected */}
-            {showForm && (
+            {/* {showForm && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-800 ml-2">
@@ -331,28 +329,28 @@ export default function TaskView() {
                   onSuccess={() => fetchData()}
                 />
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
         {/* --- SIDEBAR (Right Column) --- */}
         <div className="lg:col-span-1 space-y-6 sticky top-6">
           <TaskInfomationSidebar task={{ ...task, status: assignmentStatus }} />
-
+          {/* 
           <SubmissionHistory
             submissions={submissions}
             onSelect={(sub) => setSelectedHistoryItem(sub)}
-          />
+          /> */}
         </div>
       </div>
 
       {/* --- MODAL --- */}
-      {selectedHistoryItem && (
+      {/* {selectedHistoryItem && (
         <SubmissionModal
           submission={selectedHistoryItem}
           onClose={() => setSelectedHistoryItem(null)}
         />
-      )}
+      )} */}
     </div>
   );
 }

@@ -45,15 +45,15 @@ export default function PostHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleTogglePrivacy = async () => {
-    setIsDropdownOpen(false);
-    try {
-      const response = await API.patch(`/user/post/private/${post._id}`);
-      getSuccessResponse(response);
-    } catch (error) {
-      getErrorResponse(error);
-    }
-  };
+  // const handleTogglePrivacy = async () => {
+  //   setIsDropdownOpen(false);
+  //   try {
+  //     const response = await API.patch(`/user/post/private/${post._id}`);
+  //     getSuccessResponse(response);
+  //   } catch (error) {
+  //     getErrorResponse(error);
+  //   }
+  // };
 
   // --- Delete Post ---
   const handleDelete = async () => {
@@ -132,7 +132,7 @@ export default function PostHeader({
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
               {/* Privacy Toggle */}
-              <button
+              {/* <button
                 onClick={handleTogglePrivacy}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                 type="button"
@@ -148,7 +148,7 @@ export default function PostHeader({
                     Make Public
                   </>
                 )}
-              </button>
+              </button> */}
 
               {/* Edit (Hide if task type, usually tasks aren't editable here) */}
               {post?.post_type !== "task" && (

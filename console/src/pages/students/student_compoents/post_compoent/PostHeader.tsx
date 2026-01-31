@@ -1,24 +1,9 @@
-import { useEffect, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { FiMoreHorizontal } from "react-icons/fi";
-import {
-  BiTime,
-  BiGlobe,
-  BiLockAlt,
-  BiCheckCircle,
-  BiXCircle,
-  BiLoaderAlt,
-} from "react-icons/bi";
+import { BiTime, BiGlobe, BiLockAlt } from "react-icons/bi";
 import type { PostProps } from "../../../../types/PostTypes";
-import {
-  getStatusColor,
-  getUserAvatar,
-  getErrorResponse,
-} from "../../../../contexts/Callbacks";
+import { getStatusColor, getUserAvatar } from "../../../../contexts/Callbacks";
 import Badge from "../../../../ui/badge/Badge";
 import type { UserProps } from "../../../../types/UserProps";
-import { API } from "../../../../contexts/API";
-import toast from "react-hot-toast";
 
 type PostHeaderProps = {
   post: PostProps;
@@ -27,45 +12,45 @@ type PostHeaderProps = {
 };
 
 export default function PostHeader({ post, onAction, user }: PostHeaderProps) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  // const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     if (
+  //       dropdownRef.current &&
+  //       !dropdownRef.current.contains(event.target as Node)
+  //     ) {
+  //       setIsDropdownOpen(false);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, []);
 
-  const handleStatusUpdate = async (status: "approved" | "rejected") => {
-    setIsDropdownOpen(false);
-    setLoading(true);
-    try {
-      const payload = {
-        post_id: post._id,
-        status: status,
-      };
+  // const handleStatusUpdate = async (status: "approved" | "rejected") => {
+  //   setIsDropdownOpen(false);
+  //   setLoading(true);
+  //   try {
+  //     const payload = {
+  //       post_id: post._id,
+  //       status: status,
+  //     };
 
-      await API.patch("/user/post/update/status", payload);
+  //     await API.patch("/user/post/update/status", payload);
 
-      toast.success(`Post successfully ${status}`);
+  //     toast.success(`Post successfully ${status}`);
 
-      // Notify parent component to refresh data
-      if (onAction) onAction(post._id);
-    } catch (error) {
-      getErrorResponse(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     // Notify parent component to refresh data
+  //     if (onAction) onAction(post._id);
+  //   } catch (error) {
+  //     getErrorResponse(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <div className="p-5 pb-2 relative">
@@ -105,7 +90,7 @@ export default function PostHeader({ post, onAction, user }: PostHeaderProps) {
         </div>
 
         {/* Dropdown Menu */}
-        <div className="relative" ref={dropdownRef}>
+        {/* <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen((prev) => !prev)}
             disabled={loading}
@@ -147,7 +132,7 @@ export default function PostHeader({ post, onAction, user }: PostHeaderProps) {
               )}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Post Text Content */}

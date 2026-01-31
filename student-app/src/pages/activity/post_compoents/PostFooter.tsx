@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BiLike, BiMessageSquare } from "react-icons/bi";
 import { CiShare1 } from "react-icons/ci";
 import SharePostModal from "./SharePostModal";
-import { Link, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import type { DashboardOutletContextProps } from "../../../types/Types";
 import type { PostProps } from "../../../types/PostTypes";
 
@@ -10,7 +10,7 @@ const PostFooter = ({ post }: { post: PostProps | null }) => {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const handleShareClick = () => setIsShareModalOpen(true);
+  // const handleShareClick = () => setIsShareModalOpen(true);
 
   return (
     <div>
@@ -19,15 +19,19 @@ const PostFooter = ({ post }: { post: PostProps | null }) => {
           <BiLike className="w-5 h-5 group-hover:scale-110 transition-transform" />{" "}
           {post?.totalLikes}
         </button>
-        <Link
+        {/* <Link
           to={`/activity/${post?._id}`}
           className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors"
         >
           <BiMessageSquare className="w-5 h-5" />
           <span>Comment</span>
-        </Link>
+        </Link> */}
+        <button className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors">
+          <BiMessageSquare className="w-5 h-5" />
+          <span>Comment</span>
+        </button>
         <button
-          onClick={handleShareClick}
+          // onClick={handleShareClick}
           className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors"
         >
           <CiShare1 className="w-5 h-5" />

@@ -12,7 +12,6 @@ import type { UserProps } from "../../types/UserProps";
 import {
   BiEnvelope,
   BiMapPin,
-  BiTask,
   BiUser,
   BiLinkExternal,
   BiImages, // Imported Icon
@@ -24,7 +23,7 @@ import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import CountUp from "react-countup";
 import BasicDetails from "../users/user-components/BasicDetails";
 import Location from "../users/user-components/Location";
-import StudentTaskTab from "./student_compoents/StudentTaskTab";
+// import StudentTaskTab from "./student_compoents/StudentTaskTab";
 import StudentPostTab from "./student_compoents/StudentPostTab";
 
 export default function StudentView() {
@@ -79,15 +78,15 @@ export default function StudentView() {
       component: <Location user={profileData} />,
       hide: false,
     },
-    {
-      label: "Task",
-      value: "task",
-      icon: <BiTask />,
-      component: <StudentTaskTab />,
-      hide:
-        !matchPermissions(authUser?.permissions, "read student task") ||
-        profileData?.role !== "student",
-    },
+    // {
+    //   label: "Task",
+    //   value: "task",
+    //   icon: <BiTask />,
+    //   component: <StudentTaskTab />,
+    //   hide:
+    //     !matchPermissions(authUser?.permissions, "read student task") ||
+    //     profileData?.role !== "student",
+    // },
     {
       label: "Post Activity",
       value: "post-activity",

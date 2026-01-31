@@ -154,7 +154,7 @@ const RegisterPage = () => {
 
         <button
           type="submit"
-          disabled={formik.isSubmitting}
+          disabled={!formik.values.terms || formik.isSubmitting}
           className="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-md transition-all duration-200"
         >
           {formik.isSubmitting ? (

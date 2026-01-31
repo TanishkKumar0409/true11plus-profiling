@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useFormik } from "formik";
 import PhoneInput from "react-phone-input-2";
-import { BiSave, BiEnvelope, BiUser, BiAt, BiGlobe } from "react-icons/bi";
+import {
+  BiSave,
+  BiEnvelope,
+  BiUser,
+  BiAt,
+  BiGlobe,
+  BiBriefcase,
+  BiInfoCircle,
+} from "react-icons/bi";
 import type { DashboardOutletContextProps } from "../../../../types/Types";
 import { userEditValidation } from "../../../../contexts/ValidationSchema";
 import {
@@ -22,6 +30,8 @@ export default function BasicDetails() {
     initialValues: {
       name: authUser?.name || "",
       username: authUser?.username || "",
+      title: authUser?.title || "",
+      about: authUser?.about || "",
       mobile_no: authUser?.mobile_no || "",
       website: authUser?.website || "",
     },
@@ -51,6 +61,7 @@ export default function BasicDetails() {
 
       <form onSubmit={formik.handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Full Name */}
           <div className="space-y-1.5">
             <label
               htmlFor="name"
@@ -75,6 +86,8 @@ export default function BasicDetails() {
             </div>
             {getFormikError(formik, "name")}
           </div>
+
+          {/* Username */}
           <div className="space-y-1.5">
             <label
               htmlFor="username"
@@ -100,6 +113,39 @@ export default function BasicDetails() {
             {getFormikError(formik, "username")}
           </div>
 
+          {/* Title (New Field) */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Profile Title / Headline
+              </label>
+              <span className="text-[10px] text-gray-400">
+                {formik.values.title.length}/200
+              </span>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 z-10">
+                <BiBriefcase size={18} />
+              </div>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                maxLength={200} // Max Length 200
+                placeholder="Ex. Senior Software Engineer"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.title}
+                className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-all text-sm border-gray-300 focus:ring-purple-500 focus:border-purple-500`}
+              />
+            </div>
+            {getFormikError(formik, "title")}
+          </div>
+
+          {/* Email Address (Read Only) */}
           <div className="space-y-1.5">
             <label
               htmlFor="email"
@@ -125,6 +171,7 @@ export default function BasicDetails() {
             </div>
           </div>
 
+          {/* Mobile Number */}
           <div className="space-y-1.5">
             <label
               htmlFor="mobile"
@@ -154,7 +201,8 @@ export default function BasicDetails() {
             {getFormikError(formik, "mobile_no")}
           </div>
 
-          <div className="space-y-1.5 md:col-span-2">
+          {/* Website */}
+          <div className="space-y-1.5">
             <label
               htmlFor="website"
               className="block text-sm font-medium text-gray-700"
@@ -178,6 +226,38 @@ export default function BasicDetails() {
             </div>
             {getFormikError(formik, "website")}
           </div>
+
+          {/* About (New Field - Full Width) */}
+          <div className="space-y-1.5 md:col-span-2">
+            <div className="flex justify-between items-center">
+              <label
+                htmlFor="about"
+                className="block text-sm font-medium text-gray-700"
+              >
+                About Me
+              </label>
+              <span className="text-[10px] text-gray-400">
+                {formik.values.about.length}/500
+              </span>
+            </div>
+            <div className="relative">
+              <div className="absolute top-3 left-3 flex items-start pointer-events-none text-gray-400 z-10">
+                <BiInfoCircle size={18} />
+              </div>
+              <textarea
+                id="about"
+                name="about"
+                rows={4}
+                maxLength={500} // Max Length 500
+                placeholder="Share a brief bio about yourself..."
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.about}
+                className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 transition-all text-sm border-gray-300 focus:ring-purple-500 focus:border-purple-500 resize-none`}
+              />
+            </div>
+            {getFormikError(formik, "about")}
+          </div>
         </div>
 
         <div className="flex justify-end pt-4 border-t border-gray-50">
@@ -197,4 +277,4 @@ export default function BasicDetails() {
       </form>
     </div>
   );
-} 
+}

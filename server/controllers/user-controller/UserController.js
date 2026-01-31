@@ -33,6 +33,8 @@ export const getUserByUsername = async (req, res) => {
         avatar: userassets?.avatar,
         banner: userassets?.banner,
         website: userassets?.website,
+        title: userassets?.title,
+        about: userassets?.about,
       }),
     };
 
@@ -179,7 +181,7 @@ export const UpdateUserDetails = async (req, res) => {
 
     if (!userId) return res.status(400).json({ error: "User ID is required." });
 
-    let { name, username, mobile_no, website } = req.body;
+    let { name, username, mobile_no, website, title, about } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found." });
@@ -205,7 +207,7 @@ export const UpdateUserDetails = async (req, res) => {
     await User.findByIdAndUpdate(userId, { $set: updatedFields });
     await UserAssets.findOneAndUpdate(
       { userId },
-      { $set: { website } },
+      { $set: { website, title, about } },
       { upsert: true },
     );
 
@@ -278,15 +280,11 @@ export const getRandomStudentsWithDetailsLimit = async (req, res) => {
 
     const locations = await UserLocation.find({
       userId: { $in: userIds },
-    })
-      .lean()
-      .select("userId address pincode city state country");
+    });
 
     const assets = await UserAssets.find({
       userId: { $in: userIds },
-    })
-      .lean()
-      .select("userId avatar banner website");
+    });
 
     const locationMap = new Map(
       locations.map((loc) => [String(loc.userId), loc]),
@@ -311,6 +309,8 @@ export const getRandomStudentsWithDetailsLimit = async (req, res) => {
           avatar: ast.avatar,
           banner: ast.banner,
           website: ast.website,
+          title: ast?.title,
+          about: ast?.about,
         }),
       };
     });
@@ -387,15 +387,11 @@ export const getRandomUsersWithDetails = async (req, res) => {
 
     const locations = await UserLocation.find({
       userId: { $in: userIds },
-    })
-      .lean()
-      .select("userId address pincode city state country");
+    });
 
     const assets = await UserAssets.find({
       userId: { $in: userIds },
-    })
-      .lean()
-      .select("userId avatar banner website");
+    });
 
     const locationMap = new Map(
       locations.map((loc) => [String(loc.userId), loc]),
@@ -420,6 +416,8 @@ export const getRandomUsersWithDetails = async (req, res) => {
           avatar: ast.avatar,
           banner: ast.banner,
           website: ast.website,
+          title: ast?.title,
+          about: ast?.about,
         }),
       };
     });
@@ -440,16 +438,11 @@ export const getAllUsers = async (req, res) => {
       return res.status(200).json([]);
     }
 
-    // 2) Fetch related data in bulk
     const userIds = users.map((u) => u._id);
 
-    const locations = await UserLocation.find({ userId: { $in: userIds } })
-      .select("userId address pincode city state country")
-      .lean();
+    const locations = await UserLocation.find({ userId: { $in: userIds } });
 
-    const assets = await UserAssets.find({ userId: { $in: userIds } })
-      .select("userId avatar banner website")
-      .lean();
+    const assets = await UserAssets.find({ userId: { $in: userIds } });
 
     const locationMap = new Map(
       locations.map((loc) => [String(loc.userId), loc]),
@@ -474,6 +467,8 @@ export const getAllUsers = async (req, res) => {
           avatar: ast.avatar,
           banner: ast.banner,
           website: ast.website,
+          title: ast?.title,
+          about: ast?.about,
         }),
       };
     });
@@ -511,6 +506,8 @@ export const getUserByObjectId = async (req, res) => {
         avatar: userassets?.avatar,
         banner: userassets?.banner,
         website: userassets?.website,
+        title: userassets?.title,
+        about: userassets?.about,
       }),
     };
 

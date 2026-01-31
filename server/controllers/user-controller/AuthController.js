@@ -262,6 +262,8 @@ export const AuthUserDetails = async (req, res) => {
         avatar: userassets?.avatar,
         banner: userassets?.banner,
         website: userassets?.website,
+        title: userassets?.title,
+        about: userassets?.about,
       }),
     };
 

@@ -97,19 +97,16 @@ export const getCommentsByPostId = async (req, res) => {
       return res.status(200).json([]);
     }
 
-    // 2) Collect unique userIds from comments
     const userIds = [
       ...new Set(
         comments.map((c) => c?.userId?._id?.toString()).filter(Boolean),
       ),
     ].map((id) => new mongoose.Types.ObjectId(id));
 
-    // 3) Fetch all user assets in one query
     const userAssetsDocs = await UserAssets.find({ userId: { $in: userIds } })
       .select("userId avatar")
       .lean();
 
-    // 4) Make map for fast lookup
     const assetsMap = new Map();
     userAssetsDocs.forEach((doc) => {
       assetsMap.set(doc.userId.toString(), doc);

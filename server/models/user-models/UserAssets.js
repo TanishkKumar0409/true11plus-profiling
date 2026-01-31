@@ -17,8 +17,12 @@ const UserAssetSchema = mongoose.Schema(
     website: {
       type: String,
     },
+    title: { type: String },
+    about: {
+      type: String,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const UserAssets = MainDatabase.model("user-assets", UserAssetSchema);

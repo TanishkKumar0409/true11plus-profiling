@@ -72,7 +72,7 @@ export default function SinglePostPage() {
         router.push(`/profile/${user?.username}`);
       }
     }
-  }, [post, postLoading, user?.username]);
+  }, [post, postLoading, user?.username, router]);
 
   if (loading) return <>loading...</>;
   if (postLoading) return <>loading...</>;

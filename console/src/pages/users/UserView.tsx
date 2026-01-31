@@ -5,7 +5,6 @@ import {
   getErrorResponse,
   getStatusColor,
   getUserAvatar,
-  matchPermissions,
 } from "../../contexts/Callbacks";
 import type { DashboardOutletContextProps } from "../../types/Types";
 import type { UserProps } from "../../types/UserProps";
@@ -14,9 +13,7 @@ import {
   BiMapPin,
   BiUser,
   BiShieldQuarter,
-  BiTask,
   BiLinkExternal,
-  BiImages,
 } from "react-icons/bi";
 import Tabs from "../../ui/tabs/Tab";
 import Badge from "../../ui/badge/Badge";
@@ -26,8 +23,6 @@ import Location from "./user-components/Location";
 import UserPermissions from "./user-components/UserPermissions";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
 import CountUp from "react-countup";
-import StudentTaskTab from "../students/student_compoents/StudentTaskTab";
-import StudentPostTab from "../students/student_compoents/StudentPostTab";
 
 export default function UserView() {
   const { objectId } = useParams();
@@ -86,24 +81,6 @@ export default function UserView() {
       icon: <BiShieldQuarter />,
       component: <UserPermissions user={profileData} />,
       hide: false,
-    },
-    {
-      label: "Task",
-      value: "task",
-      icon: <BiTask />,
-      component: <StudentTaskTab />,
-      hide:
-        !matchPermissions(authUser?.permissions, "read student task") ||
-        profileData?.role !== "student",
-    },
-    {
-      label: "Post Activity",
-      value: "post-activity",
-      icon: <BiImages />,
-      component: <StudentPostTab user={profileData} />,
-      hide:
-        !matchPermissions(authUser?.permissions, "read student post") ||
-        profileData?.role !== "student",
     },
   ];
   useEffect(() => {

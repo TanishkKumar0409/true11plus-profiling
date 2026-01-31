@@ -93,7 +93,7 @@ const getValidPassword = (field: string, required: boolean = true) => {
 
 const getValidConfirmPassword = (
   field: string,
-  passwordField: string = "password"
+  passwordField: string = "password",
 ) => {
   return Yup.string()
     .required(`${field} is required`)
@@ -139,7 +139,7 @@ const getValidUsername = (field: string, required: boolean = true) => {
     .transform((value) => (value ? value.toLowerCase() : value))
     .matches(
       /^[a-z0-9]+$/,
-      `${field} can only contain lowercase letters and numbers`
+      `${field} can only contain lowercase letters and numbers`,
     )
     .min(3, `${field} must be at least 3 characters`)
     .matches(/^\S+$/, `${field} cannot contain spaces`);
@@ -163,9 +163,9 @@ export const registreValidation = Yup.object({
   name: getValidString("Your Name"),
   email: getValidEmail("Email"),
   mobile_no: getValidPhone("Mobile Number"),
-  terms: getValidBool("Terms and Condition"),
   password: getValidPassword("Password"),
   confirm_password: getValidConfirmPassword("Confirm Password", "password"),
+  terms: getValidBool("Terms and Condition"),
 });
 
 export const emailValidation = Yup.object({ email: getValidEmail("Email") });

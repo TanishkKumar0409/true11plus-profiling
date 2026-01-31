@@ -207,7 +207,7 @@ export const PostByUserTaskSubmission = async (req, res) => {
   try {
     const { submission_id, message, post_type } = req.body;
     const userId = await getDataFromToken(req);
-
+console.log(req.body);
     const submission = await UserTaskSubmission.findOne({
       _id: submission_id,
       status: "approved",

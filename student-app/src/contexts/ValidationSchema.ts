@@ -4,6 +4,7 @@ import * as Yup from "yup";
 const getValidString = (field: string, required: boolean = true) => {
   let schema = Yup.string()
     .min(3, `${field} must be at least 3 characters`)
+    .max(200, `${field} must be at Max 200 characters`)
     .matches(/^\S.*\S$/, `${field} cannot start or end with a space`);
 
   if (required) {
@@ -45,7 +46,7 @@ const getValidContent = (
       "no-leading-trailing-space",
       `${field} cannot start or end with a space`,
       (value) => {
-        if (!value) return !required; // allow empty if optional
+        if (!value) return !required;
         return value.trim().length === value.length;
       },
     );
@@ -113,30 +114,13 @@ const getValidBool = (field: string, required: boolean = true) => {
 
   return schema;
 };
-const getValidDate = (
-  field: string,
-  required: boolean = true,
-  allowPast: boolean = false,
-) => {
-  let schema = Yup.date().typeError(`${field} must be a valid date`).nullable();
-
-  if (!allowPast) {
-    schema = schema.min(new Date(), `${field} cannot be in the past`);
-  }
-
-  if (required) {
-    schema = schema.required(`${field} is required`);
-  } else {
-    schema = schema.optional();
-  }
-
-  return schema;
-};
 
 export const userEditValidation = Yup.object({
   username: getValidUsername("Username"),
   name: getValidString("Your Name"),
   mobile_no: getValidPhone("Mobile Number"),
+  title: getValidString("Title", false),
+  about: getValidContent("about", false),
 });
 export const userLocationEditValidation = Yup.object({
   address: getValidString("Address"),

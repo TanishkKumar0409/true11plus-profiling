@@ -1,4 +1,3 @@
-
 import { getDataFromToken } from "../../utils/getDataFromToken.js";
 import UserExperience from "../../models/user-models/ExperienceModal.js";
 
@@ -16,9 +15,9 @@ export const createUserExperience = async (req, res) => {
 
     const userId = await getDataFromToken(req);
 
-    if (!userId || !title || !company || !start_date || !description) {
+    if (!userId || !title || !company || !start_date) {
       return res.status(400).json({
-        error: "title, company, start_date, description are required",
+        error: "title, company, start_date are required",
       });
     }
 
@@ -51,7 +50,7 @@ export const createUserExperience = async (req, res) => {
             description: description.trim(),
           },
         },
-        { new: true }
+        { new: true },
       );
 
       if (!updated) {
@@ -97,26 +96,31 @@ export const createUserExperience = async (req, res) => {
   }
 };
 
-
 export const getExperienceByUserId = async (req, res) => {
   try {
-    const { userId } = req.params
-    const experience = await UserExperience.find({ userId })
+    const { userId } = req.params;
+    const experience = await UserExperience.find({ userId });
 
-    return res.status(200).json(experience)
+    return res.status(200).json(experience);
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error: "Something went wrong. please try again later." })
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. please try again later." });
   }
-}
+};
 export const deleteExperiece = async (req, res) => {
   try {
-    const { objectId } = req.params
-    const delExp = await UserExperience.findOneAndDelete({ _id: objectId })
-    if (!delExp) return res.status(404).json({ error: "No Experience Found" })
-    return res.status(200).json({ message: "Your Expereinece Has Been Deleted" })
+    const { objectId } = req.params;
+    const delExp = await UserExperience.findOneAndDelete({ _id: objectId });
+    if (!delExp) return res.status(404).json({ error: "No Experience Found" });
+    return res
+      .status(200)
+      .json({ message: "Your Expereinece Has Been Deleted" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error: "Something went wrong. please try again later." })
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. please try again later." });
   }
-}
+};

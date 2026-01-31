@@ -55,7 +55,9 @@ export default function UserList() {
         [],
       );
 
-      setUsers(finalData);
+      setUsers(
+        finalData?.filter((item: UserProps) => item?.role !== "student"),
+      );
     } catch (error) {
       getErrorResponse(error, true);
     } finally {

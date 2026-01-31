@@ -16,6 +16,8 @@ export interface UserProps extends Record<string, unknown> {
   avatar: string[];
   banner: string[];
   website: string;
+  title: string;
+  about: string;
 }
 
 export interface RoleProps {
