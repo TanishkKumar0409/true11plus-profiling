@@ -20,15 +20,23 @@ import useGetLocations from "../../hooks/useGetLocations";
 import { phoneInputStyle } from "../../common/ExtraData";
 import { userUpdateValidation } from "../../contexts/ValidationSchema";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
+import {
+  InputGroup,
+  SelectGroup,
+  TextareaGroup,
+} from "../../ui/form/FormComponents";
+import { ButtonGroup } from "../../ui/button/Button";
+import UserEditSkeleton from "../../ui/loading/pages/UserEditSkeleton";
 
 const inputClass =
-  "w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-50 disabled:text-gray-400";
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5 ml-1";
+  "w-full paragraph px-4 py-1.5 border border-(--border) rounded-custom focus:ring-1 focus:ring-(--border) focus:outline-none text-(--text-color-emphasis) bg-transparent font-semibold";
+const labelClass = "block text-xs text-(--text-color) mb-1";
 
 export default function UserEdit() {
   const { objectId } = useParams();
   const redirector = useNavigate();
-  const { allStatus, roles } = useOutletContext<DashboardOutletContextProps>();
+  const { allStatus, roles, startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
 
   const [user, setUser] = useState<UserProps | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +45,7 @@ export default function UserEdit() {
   const [filteredCities, setFilteredCities] = useState<CityProps[]>([]);
 
   const getUserDetails = useCallback(async () => {
+    startLoadingBar();
     setLoading(true);
     try {
       const response = await API.get(`/user/${objectId}`);
@@ -45,6 +54,7 @@ export default function UserEdit() {
       getErrorResponse(error, true);
     } finally {
       setLoading(false);
+      stopLoadingBar();
     }
   }, [objectId]);
 
@@ -71,6 +81,7 @@ export default function UserEdit() {
     },
     validationSchema: userUpdateValidation,
     onSubmit: async (values, { setSubmitting }) => {
+      startLoadingBar();
       setSubmitting(true);
       try {
         const payload = { ...values };
@@ -94,6 +105,7 @@ export default function UserEdit() {
         getErrorResponse(error);
       } finally {
         setSubmitting(false);
+        stopLoadingBar();
       }
     },
   });
@@ -114,7 +126,7 @@ export default function UserEdit() {
     formik.setFieldValue("verified", !formik.values.verified);
   };
 
-  if (loading) return <>User Edit Loading...</>;
+  if (loading) return <UserEditSkeleton />;
 
   return (
     <div className="space-y-6 mx-auto pb-10">
@@ -131,42 +143,37 @@ export default function UserEdit() {
         ]}
       />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-(--primary-bg) rounded-custom shadow-custom">
         <form onSubmit={formik.handleSubmit} className="p-8 space-y-8">
-          {/* --- Section 1: Personal Info --- */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Username */}
               <div>
-                <label className={labelClass}>Username</label>
-                <input
-                  type="text"
+                <InputGroup
+                  label="Username"
+                  id="username"
                   {...formik.getFieldProps("username")}
                   placeholder="Enter username"
-                  className={inputClass}
                 />
                 {getFormikError(formik, "username")}
               </div>
 
               <div>
-                <label className={labelClass}>Full Name</label>
-                <input
-                  type="text"
+                <InputGroup
+                  label="Full Name"
+                  id="name"
                   {...formik.getFieldProps("name")}
-                  placeholder="Enter full name"
-                  className={inputClass}
+                  placeholder="Enter name"
                 />
                 {getFormikError(formik, "name")}
               </div>
 
-              {/* Email */}
               <div>
-                <label className={labelClass}>Email Address</label>
-                <input
+                <InputGroup
+                  label="Email Address"
                   type="email"
+                  id="email"
                   {...formik.getFieldProps("email")}
                   placeholder="Enter email address"
-                  className={inputClass}
                 />
                 {getFormikError(formik, "email")}
               </div>
@@ -191,84 +198,59 @@ export default function UserEdit() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className={labelClass}>Address</label>
-                <input
-                  type="text"
+                <TextareaGroup
                   {...formik.getFieldProps("address")}
-                  placeholder="Enter full address"
-                  className={inputClass}
+                  id="address"
+                  label="Address"
                 />
                 {getFormikError(formik, "address")}
               </div>
 
-              {/* Pincode */}
               <div>
-                <label className={labelClass}>Pincode</label>
-                <input
+                <InputGroup
+                  label="Pincode"
                   type="text"
+                  id="pincode"
                   {...formik.getFieldProps("pincode")}
                   placeholder="Enter pincode"
-                  className={inputClass}
                 />
                 {getFormikError(formik, "pincode")}
               </div>
 
-              {/* Country Select */}
               <div>
-                <label className={labelClass}>Country</label>
-                <select
+                <SelectGroup
+                  label="Country"
+                  options={country?.map((item) => item?.country_name)}
+                  id="country"
                   {...formik.getFieldProps("country")}
-                  className={inputClass}
-                >
-                  <option value="">Select Country</option>
-                  {country?.map((c, i) => (
-                    <option key={i} value={c?.country_name}>
-                      {c?.country_name}
-                    </option>
-                  ))}
-                </select>
+                />
                 {getFormikError(formik, "country")}
               </div>
 
               {/* State Select */}
               <div>
-                <label className={labelClass}>State</label>
-                <select
+                <SelectGroup
+                  label="State"
+                  options={filteredStates?.map((item) => item?.name)}
+                  id="state"
                   {...formik.getFieldProps("state")}
-                  className={inputClass}
-                  disabled={!formik.values.country}
-                >
-                  <option value="">Select State</option>
-                  {filteredStates?.map((s, i) => (
-                    <option key={i} value={s.name}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                />
                 {getFormikError(formik, "state")}
               </div>
 
               {/* City Select */}
               <div>
-                <label className={labelClass}>City</label>
-                <select
+                <SelectGroup
+                  label="City"
+                  options={filteredCities?.map((item) => item?.name)}
+                  id="city"
                   {...formik.getFieldProps("city")}
-                  className={inputClass}
-                  disabled={!formik.values.state}
-                >
-                  <option value="">Select City</option>
-                  {filteredCities?.map((c, i) => (
-                    <option key={i} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                />
                 {getFormikError(formik, "city")}
               </div>
             </div>
           </div>
 
-          {/* --- Section 3: Account Settings --- */}
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Role Select */}
@@ -293,20 +275,14 @@ export default function UserEdit() {
               </div>
 
               <div>
-                <label className={labelClass}>Status</label>
-                <select
+                <SelectGroup
+                  label="Status"
+                  options={getStatusAccodingToField(allStatus, "user")?.map(
+                    (item) => item?.status_name,
+                  )}
                   {...formik.getFieldProps("status")}
-                  className={inputClass}
-                >
-                  <option value="" disabled>
-                    Set Status
-                  </option>
-                  {getStatusAccodingToField(allStatus, "user").map((s, i) => (
-                    <option key={i} value={s.status_name}>
-                      {s.status_name}
-                    </option>
-                  ))}
-                </select>
+                  id="status"
+                />
                 {getFormikError(formik, "status")}
               </div>
 
@@ -319,22 +295,12 @@ export default function UserEdit() {
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex justify-end pt-6 border-t border-gray-100 gap-3">
-            <button
-              type="button"
-              onClick={() => redirector(-1)}
-              className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
+          <div className="flex justify-end pt-6 gap-3">
+            <ButtonGroup
+              label={formik.isSubmitting ? "Saving..." : "Save Changes"}
               type="submit"
-              disabled={formik.isSubmitting}
-              className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {formik.isSubmitting ? "Saving..." : "Save Changes"}
-            </button>
+              disable={formik.isSubmitting}
+            />
           </div>
         </form>
       </div>

@@ -21,13 +21,13 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 }
 
 const variants: Record<BadgeVariant, string> = {
-  primary: "bg-purple-50 text-purple-700 border border-purple-200",
-  secondary: "bg-gray-50 text-gray-600 border border-gray-200",
-  success: "bg-green-50 text-green-700 border border-green-200",
-  warning: "bg-yellow-50 text-yellow-700 border-yellow-200",
-  danger: "bg-red-50 text-red-700 border border-red-200",
-  blue: "bg-blue-50 text-blue-700 border border-blue-200",
-  outline: "bg-transparent text-gray-500 border border-gray-300",
+  primary: "bg-(--main-subtle) text-(--main) border border-(--main)",
+  secondary: "bg-(--main-subtle) text-(--main) border border-(--main)",
+  success: "bg-(--success-subtle) text-(--success) border border-(--success)",
+  warning: "bg-(--warning-subtle) text-(--warning) border border-(--warning)",
+  danger: "bg-(--danger-subtle) text-(--danger) border border-(--danger)",
+  blue: "bg-(--blue-subtle) text-(--blue) border border-(--blue)",
+  outline: "bg-(--gray-subtle) text-(--gray) border border-(--gray)",
 };
 
 const sizes: Record<BadgeSize, string> = {
@@ -37,13 +37,13 @@ const sizes: Record<BadgeSize, string> = {
 };
 
 const dotColors: Record<BadgeVariant, string> = {
-  primary: "bg-purple-500",
-  secondary: "bg-gray-400",
-  success: "bg-green-500",
-  warning: "bg-yellow-500",
-  danger: "bg-red-500",
-  blue: "bg-blue-500",
-  outline: "bg-gray-400",
+  primary: "bg-(--main)",
+  secondary: "bg-(--main)",
+  success: "bg-(--success)",
+  warning: "bg-(--warning)",
+  danger: "bg-(--danger)",
+  blue: "bg-(--blue)",
+  outline: "bg-(--gray)",
 };
 
 export default function Badge({

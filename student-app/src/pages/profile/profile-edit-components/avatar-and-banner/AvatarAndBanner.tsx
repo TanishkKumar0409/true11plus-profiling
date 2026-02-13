@@ -8,14 +8,26 @@ interface ProfileImagesEditProps {
 
 export default function ProfileImagesEdit({ user }: ProfileImagesEditProps) {
   return (
-    <div className="w-full bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6">
-      <div className="mb-6 border-b border-gray-100 pb-4">
-        <h2 className="text-lg font-bold text-gray-900">Profile Branding</h2>
-        <p className="text-sm text-gray-500">Manage your public appearance.</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <AvatarUpload user={user} />
+    <div className="w-full">
+      <div className="bg-(--primary-bg) overflow-hidden shadow-custom rounded-custom">
         <BannerUpload user={user} />
+        <div className="px-6 md:px-10 pb-10">
+          <div className="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 md:-mt-20">
+            <div className="relative z-10 mt-8">
+              <AvatarUpload user={user} />
+            </div>
+            <div className="flex-1 flex flex-col md:flex-row justify-between items-center md:items-end gap-4 w-full pb-2">
+              <div className="text-center md:text-left">
+                <h3 className="text-xl font-bold text-(--text-color)">
+                  {user?.name}
+                </h3>
+                {user?.title && (
+                  <p className="text-sm text-(--text-subtle)">{user?.title}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ export interface DashboardOutletContextProps {
   authUser: UserProps | null;
   authLoading: boolean;
   getAuthUser: () => void;
+  startLoadingBar: () => void;
+  stopLoadingBar: () => void;
 }
 
 export interface CityProps {
@@ -27,4 +29,9 @@ export interface CategoryProps {
   createdAt: string;
   description: string;
   status: string;
+}
+
+export interface FieldDataSimple {
+  title: string;
+  value: number;
 }

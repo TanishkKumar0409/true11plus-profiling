@@ -48,7 +48,6 @@ export function Table<T>({
     }
   }, [currentPage, totalPages, setCurrentPage]);
 
-  // --- 2. Sorting Logic ---
   const sortedData = useMemo(() => {
     if (!sortColumn || !sortDirection) return data;
     const col = columns.find((c, idx) => {
@@ -76,19 +75,15 @@ export function Table<T>({
     });
   }, [data, sortColumn, sortDirection, columns]);
 
-  // --- 3. Pagination Logic (Slicing) ---
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * rowsPerPage;
     return sortedData.slice(start, start + rowsPerPage);
   }, [sortedData, currentPage, rowsPerPage]);
 
-  // --- 4. Smart Page Number Generation ---
-  // Returns an array like [1, 2, 3, "...", 10]
   const getPageNumbers = () => {
-    const siblingCount = 1; // How many numbers to show around current page
-    const totalPageNumbers = siblingCount + 5; // e.g., 1 ... 4 5 6 ... 10
+    const siblingCount = 1;
+    const totalPageNumbers = siblingCount + 5;
 
-    // Case 1: If pages are few, show all
     if (totalPages <= totalPageNumbers) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
@@ -99,14 +94,12 @@ export function Table<T>({
     const showLeftDots = leftSiblingIndex > 2;
     const showRightDots = rightSiblingIndex < totalPages - 1;
 
-    // Case 2: No Left Dots, Show Right Dots (Start of list)
     if (!showLeftDots && showRightDots) {
       const leftItemCount = 3 + 2 * siblingCount;
       const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
       return [...leftRange, "...", totalPages];
     }
 
-    // Case 3: No Right Dots, Show Left Dots (End of list)
     if (showLeftDots && !showRightDots) {
       const rightItemCount = 3 + 2 * siblingCount;
       const rightRange = Array.from(
@@ -116,7 +109,6 @@ export function Table<T>({
       return [1, "...", ...rightRange];
     }
 
-    // Case 4: Show Both Dots (Middle of list)
     if (showLeftDots && showRightDots) {
       const middleRange = Array.from(
         { length: rightSiblingIndex - leftSiblingIndex + 1 },
@@ -129,14 +121,12 @@ export function Table<T>({
   };
 
   return (
-    <div className="w-full flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-      {/* Scrollable Area */}
+    <div className="w-full flex flex-col bg-(--primary-bg) rounded-custom shadow-sm overflow-hidden">
       <div className="overflow-x-auto custom-scrollbar">
-        <table className="min-w-full divide-y divide-gray-100">
-          {/* Header */}
-          <thead className="bg-purple-50">
+        <table className="min-w-full divide-y divide-(--border)">
+          <thead className="bg-(--main-subtle)">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider w-16">
+              <th className="px-6 py-4 text-left text-xs font-bold text-(--main) uppercase tracking-wider w-16">
                 #
               </th>
               {columns.map((col, idx) => {
@@ -150,19 +140,19 @@ export function Table<T>({
                   <th
                     key={idx}
                     onClick={() => onSort?.(colKey)}
-                    className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider cursor-pointer select-none group transition-colors hover:bg-purple-100/50"
+                    className="px-6 py-4 text-left text-xs font-bold text-(--main-emphasis) uppercase tracking-wider cursor-pointer select-none group transition-colors hover:bg-purple-100/50"
                   >
                     <div className="flex items-center gap-2">
                       {col.label}
-                      <span className="text-base text-purple-400">
+                      <span className="text-base text-(--main)">
                         {isSorted ? (
                           sortDirection === "asc" ? (
-                            <BiSortUp className="text-purple-700" />
+                            <BiSortUp />
                           ) : (
-                            <BiSortDown className="text-purple-700" />
+                            <BiSortDown />
                           )
                         ) : (
-                          <BiSortAlt2 className="opacity-0 group-hover:opacity-50 transition-opacity" />
+                          <BiSortAlt2 className="opacity-0 group-hover:opacity-100 transition-opacity" />
                         )}
                       </span>
                     </div>
@@ -173,19 +163,19 @@ export function Table<T>({
           </thead>
 
           {/* Body */}
-          <tbody className="bg-white divide-y divide-gray-100">
+          <tbody className="bg-(--primary-bg) divide-y divide-(--border)">
             {paginatedData.map((row, idx) => (
               <tr
                 key={idx}
-                className="hover:bg-purple-50/60 transition-colors duration-200"
+                className="hover:bg-(--main-subtle)/60 transition-colors duration-200"
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-(--text-color) font-medium">
                   {(currentPage - 1) * rowsPerPage + idx + 1}
                 </td>
                 {columns.map((col, cidx) => (
                   <td
                     key={cidx}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-700"
+                    className="px-6 py-4 whitespace-nowrap text-sm text-(--text-color)"
                   >
                     {typeof col.value === "function"
                       ? col.value(row)
@@ -199,7 +189,7 @@ export function Table<T>({
               <tr>
                 <td
                   colSpan={columns.length + 1}
-                  className="px-6 py-16 text-center text-gray-400"
+                  className="px-6 py-16 text-center text-(--text-color)"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
                     <p className="text-sm">No data available</p>
@@ -211,19 +201,21 @@ export function Table<T>({
         </table>
       </div>
 
-      {/* Footer / Pagination Controls */}
-      <div className="px-6 py-4 border-t border-gray-100 bg-white">
+      <div className="px-6 py-4 border-t border-(--border) bg-(--primary-bg)">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-(--text-color)">
             Showing{" "}
-            <span className="font-bold text-gray-800">
+            <span className="font-bold text-(--text-color-emphasis)">
               {(currentPage - 1) * rowsPerPage + 1}
             </span>{" "}
             to{" "}
-            <span className="font-bold text-gray-800">
+            <span className="font-bold text-(--text-color-emphasis)">
               {Math.min(currentPage * rowsPerPage, data.length)}
             </span>{" "}
-            of <span className="font-bold text-gray-800">{data.length}</span>{" "}
+            of{" "}
+            <span className="font-bold text-(--text-color-emphasis)">
+              {data.length}
+            </span>{" "}
             entries
           </div>
 
@@ -231,14 +223,14 @@ export function Table<T>({
             {/* Rows Per Page Selector */}
             {setRowsPerPage && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Rows:</span>
+                <span className="text-sm text-(--text-color)">Rows:</span>
                 <select
                   value={rowsPerPage}
                   onChange={(e) => {
                     setRowsPerPage(Number(e.target.value));
                     setCurrentPage(1);
                   }}
-                  className="block w-full rounded-lg border-gray-200 bg-gray-50 py-1.5 pl-3 pr-8 text-sm focus:border-purple-500 focus:ring-purple-500 cursor-pointer outline-none"
+                  className="block w-full rounded-lg border-(--border) bg-(--main-subtle) text-(--main) py-1.5 pl-3 pr-8 text-sm focus:border-(--main) focus:ring-(--main) cursor-pointer outline-none"
                 >
                   {rowsPerPageOptions.map((option) => (
                     <option key={option} value={option}>
@@ -249,13 +241,11 @@ export function Table<T>({
               </div>
             )}
 
-            {/* Pagination Buttons */}
             <div className="flex items-center gap-1">
-              {/* First Page */}
               <button
                 onClick={() => setCurrentPage(1)}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-purple-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-custom text-(--text-color) hover:bg-(--secondary-bg) hover:text-(--main) disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
                 title="First Page"
               >
                 <BiChevronsLeft className="h-5 w-5" />
@@ -265,7 +255,7 @@ export function Table<T>({
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-purple-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-custom text-(--text-color) hover:bg-(--secondary-bg) hover:text-(--main) disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
                 title="Previous Page"
               >
                 <BiChevronLeft className="h-5 w-5" />
@@ -277,7 +267,7 @@ export function Table<T>({
                   p === "..." ? (
                     <span
                       key={idx}
-                      className="px-3 py-1 text-gray-400 select-none"
+                      className="px-3 py-1 text-(--text-color) select-none"
                     >
                       ...
                     </span>
@@ -288,8 +278,8 @@ export function Table<T>({
                       className={classNames(
                         "min-w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all",
                         currentPage === p
-                          ? "bg-purple-600 text-white shadow-md shadow-purple-200"
-                          : "text-gray-600 hover:bg-purple-50 hover:text-purple-700",
+                          ? "bg-(--main) text-(--main-subtle) shadow-custom"
+                          : "text-(--text-color) hover:bg-(--main-subtle) hover:text-(--main)",
                       )}
                     >
                       {p}
@@ -298,23 +288,21 @@ export function Table<T>({
                 )}
               </div>
 
-              {/* Next Page */}
               <button
                 onClick={() =>
                   setCurrentPage(Math.min(totalPages, currentPage + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-purple-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-custom text-(--text-color) hover:bg-(--secondary-bg) hover:text-(--main) disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
                 title="Next Page"
               >
                 <BiChevronRight className="h-5 w-5" />
               </button>
 
-              {/* Last Page */}
               <button
                 onClick={() => setCurrentPage(totalPages)}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-purple-600 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
+                className="p-2 rounded-custom text-(--text-color) hover:bg-(--secondary-bg) hover:text-(--main) disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-all"
                 title="Last Page"
               >
                 <BiChevronsRight className="h-5 w-5" />

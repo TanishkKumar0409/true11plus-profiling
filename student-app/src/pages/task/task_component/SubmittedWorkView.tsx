@@ -1,15 +1,11 @@
 import { useState } from "react";
 import {
   BiFile,
-  BiImage,
-  BiMessageDetail,
-  BiCalendar,
   BiDownload,
-  BiCheckCircle,
   BiMedal,
-  BiCommentCheck,
   BiInfoCircle,
   BiShareAlt,
+  BiCheckShield,
 } from "react-icons/bi";
 import { formatDate, getStatusColor } from "../../../contexts/CallBacks";
 import Badge from "../../../ui/badge/Badge";
@@ -36,6 +32,7 @@ export interface SubmissionData {
   files: FileEntry[];
   images: ImageEntry[];
   createdAt: string;
+  updatedAt: string;
   status: string;
   grade?: string;
   remark?: string;
@@ -49,14 +46,14 @@ interface SubmittedWorkViewProps {
 
 const getFileIcon = (fileName: string) => {
   const ext = fileName.split(".").pop()?.toLowerCase();
-  if (ext === "pdf") return <BiFile className="text-red-500" size={24} />;
+  if (ext === "pdf") return <BiFile className="text-(--danger)" size={24} />;
   if (["doc", "docx"].includes(ext || ""))
-    return <BiFile className="text-blue-500" size={24} />;
+    return <BiFile className="text-(--blue)" size={24} />;
   if (["xls", "xlsx", "csv"].includes(ext || ""))
-    return <BiFile className="text-green-500" size={24} />;
+    return <BiFile className="text-(--success)" size={24} />;
   if (["ppt", "pptx"].includes(ext || ""))
-    return <BiFile className="text-orange-500" size={24} />;
-  return <BiFile className="text-gray-500" size={24} />;
+    return <BiFile className="text-(--warning)" size={24} />;
+  return <BiFile className="text-(--gray)" size={24} />;
 };
 
 export default function SubmittedWorkView({
@@ -69,96 +66,77 @@ export default function SubmittedWorkView({
   const status = submission?.status?.toLowerCase();
   const isApproved = status === "approved" || status === "completed";
   const isRejected = status === "rejected";
+  const isFinalized = isApproved || isRejected;
 
   const showFeedback =
     (isApproved || isRejected) && (submission?.grade || submission?.remark);
 
   const theme = isRejected
     ? {
-        bg: "from-red-50 to-orange-50/30",
-        border: "border-red-100",
-        textMain: "text-red-800",
         textSub: "text-red-700",
         textLabel: "text-red-600",
-        cardBg: "bg-white/60",
-        cardBorder: "border-red-100",
-        decor: "bg-red-200",
         icon: <BiInfoCircle size={18} />,
         label: "Reason for Rejection",
       }
     : {
-        bg: "from-green-50 to-emerald-50/30",
-        border: "border-green-100",
-        textMain: "text-green-800",
         textSub: "text-green-700",
         textLabel: "text-green-600",
-        cardBg: "bg-white/60",
-        cardBorder: "border-green-100",
         decor: "bg-green-200",
         icon: <BiMedal size={18} />,
         label: "Mentor Assessment",
       };
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden animate-fade-in-up">
-      {/* Header */}
-      <div className="bg-gray-50/50 px-8 py-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-(--primary-bg) rounded-custom shadow-custom overflow-hidden animate-fade-in-up">
+      <div className="px-6 py-4 border-b border-(--border) flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-white rounded-lg shadow-sm text-purple-600 border border-gray-100">
-            <BiCheckCircle size={24} />
-          </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
-            <p className="text-xs text-gray-500 font-medium">
-              Submitted on {formatDate(submission?.createdAt)}
-            </p>
+            <h2 className="text-lg font-bold text-(--text-color-emphasis)">
+              {title}
+            </h2>
+            <div className="flex flex-col">
+              <p className="text-xs text-(--text-color) font-medium">
+                Submitted on {formatDate(submission?.createdAt)}
+              </p>
+              {isFinalized && (
+                <p className="text-[10px] text-(--main) font-bold uppercase tracking-tight mt-0.5 flex items-center gap-1">
+                  <BiCheckShield size={12} /> Verdict on {formatDate(submission?.updatedAt)}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <Badge
             children={submission?.status}
+            dot
             variant={getStatusColor(submission?.status)}
           />
 
-          {/* SHARE BUTTON: Only if Approved */}
           {isApproved && !submission?.is_posted && (
             <button
               onClick={() => setShowShareModal(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-full border border-purple-100 transition-colors"
+              className="flex items-center gap-1.5 text-xs font-bold text-(--main) bg-(--main-subtle) px-3 py-0.5 rounded-full border border-(--main) transition-colors"
               title="Share to Activity Feed"
             >
               <BiShareAlt size={14} /> Share
             </button>
           )}
-
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-white px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
-            <BiCalendar size={14} />
-            {formatDate(submission?.createdAt)}
-          </div>
         </div>
       </div>
 
       <div className="p-8 space-y-8">
-        {/* --- MENTOR FEEDBACK SECTION --- */}
         {showFeedback && (
           <div
-            className={`bg-liear-to-br ${theme.bg} rounded-2xl p-6 border ${theme.border} relative overflow-hidden`}
+            className={`bg-(--secondary-bg) rounded-custom shadow-custom p-6 relative overflow-hidden`}
           >
-            <div
-              className={`absolute top-0 right-0 w-32 h-32 ${theme.decor} rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2`}
-            ></div>
-
-            <h4
-              className={`text-sm font-bold ${theme.textMain} uppercase tracking-wide mb-4 flex items-center gap-2`}
-            >
-              {theme.icon} {theme.label}
-            </h4>
+            <h4 className="pb-3">{theme.label}</h4>
 
             <div className="flex flex-col md:flex-row gap-6">
               {isApproved && submission.grade && (
                 <div
-                  className={`bg-white/80 backdrop-blur-sm p-4 rounded-xl border ${theme.cardBorder} shadow-sm min-w-30 text-center`}
+                  className={`p-4 rounded-custom bg-(--primary-bg) shadow-custom min-w-30 text-center`}
                 >
                   <span
                     className={`block text-xs font-bold ${theme.textLabel} uppercase mb-1`}
@@ -176,15 +154,15 @@ export default function SubmittedWorkView({
               {submission.remark && (
                 <div className="flex-1">
                   <div
-                    className={`${theme.cardBg} backdrop-blur-sm p-4 rounded-xl border ${theme.cardBorder} h-full`}
+                    className={`p-4 rounded-custom bg-(--primary-bg) shadow-custom h-full`}
                   >
                     <span
-                      className={`flex items-center gap-2 text-xs font-bold ${theme.textSub} mb-2`}
+                      className={`flex items-center gap-2 text-xs font-bold ${theme.textLabel} mb-2`}
                     >
-                      <BiCommentCheck size={16} /> Mentor Remarks
+                      Mentor Remarks
                     </span>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {submission.remark}
+                    <p className="text-(--text-color)! leading-relaxed">
+                      "{submission.remark}"
                     </p>
                   </div>
                 </div>
@@ -193,46 +171,40 @@ export default function SubmittedWorkView({
           </div>
         )}
 
-        {/* --- STUDENT SUBMISSION CONTENT --- */}
         {submission?.message && (
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <BiMessageDetail className="text-gray-400" />
+            <h4 className="text-sm font-bold text-(--text-color) flex items-center gap-2">
               Student Notes
             </h4>
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-sm text-gray-700 leading-relaxed italic relative">
-              <span className="absolute top-2 left-2 text-3xl text-gray-200 font-serif -z-10">
-                “
-              </span>
-              {submission?.message}
+            <div className="bg-(--secondary-bg) p-4 rounded-xl text-sm text-(--text-color) leading-relaxed italic relative">
+              "{submission?.message}"
             </div>
           </div>
         )}
 
         {submission?.files && submission?.files?.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <BiFile className="text-gray-400" />
+            <h4 className="text-sm font-bold text-(--text-color) flex items-center gap-2">
               Attached Documents
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {submission.files.map((file) => (
                 <div
                   key={file._id}
-                  className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white hover:border-purple-200 transition-all group"
+                  className="flex items-center justify-between p-3 rounded-custom shadow-custom bg-(--primary-bg) hover:border-(--main) transition-all group"
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
                       {getFileIcon(file.fileName)}
                     </div>
                     <div className="min-w-0">
                       <p
-                        className="text-sm font-medium text-gray-700 truncate"
+                        className="text-sm text-(--text-color-emphasis)! font-semibold truncate"
                         title={file.fileName}
                       >
                         {file.fileName}
                       </p>
-                      <p className="text-[10px] text-gray-400 uppercase">
+                      <p className="text-(--text-color)! uppercase">
                         {file.fileName.split(".").pop()}
                       </p>
                     </div>
@@ -242,7 +214,7 @@ export default function SubmittedWorkView({
                     target="_blank"
                     rel="noreferrer"
                     download
-                    className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                    className="p-2 text-(--text-color) hover:text-(--main) hover:bg-(--main-subtle) rounded-custom transition-colors"
                   >
                     <BiDownload size={20} />
                   </a>
@@ -254,10 +226,7 @@ export default function SubmittedWorkView({
 
         {submission.images && submission.images.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <BiImage className="text-gray-400" />
-              Gallery
-            </h4>
+            <h4>Gallery</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {submission.images.map((img, idx) => (
                 <a
@@ -266,7 +235,7 @@ export default function SubmittedWorkView({
                   target="_blank"
                   rel="noreferrer"
                   download
-                  className="block relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group"
+                  className="block relative aspect-square rounded-custom shadow-custom overflow-hidden bg-(--secondary-bg) group"
                 >
                   <img
                     src={`${MEDIA_URL}${img.compressed || img.original}`}
@@ -275,7 +244,7 @@ export default function SubmittedWorkView({
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 backdrop-blur-[1px]">
-                    <span className="p-2 bg-white/90 rounded-full text-gray-900 shadow-lg">
+                    <span className="p-2 bg-(--white) rounded-full text-(--text-color) shadow-lg">
                       <BiDownload size={20} />
                     </span>
                   </div>

@@ -3,35 +3,65 @@ import { API } from "../contexts/API";
 import { getErrorResponse } from "../contexts/CallBacks";
 import type { CityProps, CountryProps, StateProps } from "../types/Types";
 
-export default function useGetLocations() {
+export default function useGetLocations({
+  selectedCountry,
+  selectedState,
+}: {
+  selectedCountry: string;
+  selectedState: string;
+}) {
   const [state, setState] = useState<StateProps[]>([]);
   const [city, setCity] = useState<CityProps[]>([]);
   const [country, setCountry] = useState<CountryProps[]>([]);
 
-  const getLocations = useCallback(async () => {
+  const getCountries = useCallback(async () => {
     try {
-      const [cityRes, stateRes, countryRes] = await Promise.allSettled([
-        API.get("/cities"),
-        API.get("/states"),
-        API.get("/countries"),
-      ]);
-
-      if (cityRes.status === "fulfilled") {
-        setCity(cityRes.value.data || []);
-      }
-      if (stateRes.status === "fulfilled") {
-        setState(stateRes.value.data || []);
-      }
-      if (countryRes.status === "fulfilled") {
-        setCountry(countryRes.value.data || []);
-      }
+      const countryRes = await API.get("/countries");
+      setCountry(countryRes.data || []);
     } catch (error) {
       getErrorResponse(error, true);
     }
   }, []);
 
+  const getStates = useCallback(async () => {
+    if (!selectedCountry) {
+      setState([]);
+      setCity([]);
+      return;
+    }
+    try {
+      const stateRes = await API.get(`/states/country/${selectedCountry}`);
+      setState(stateRes.data || []);
+      setCity([]);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, [selectedCountry]);
+
+  const getCities = useCallback(async () => {
+    if (!selectedState) {
+      setCity([]);
+      return;
+    }
+    try {
+      const cityRes = await API.get(`/cities/state/${selectedState}`);
+      setCity(cityRes.data || []);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, [selectedState]);
+
   useEffect(() => {
-    getLocations();
-  }, [getLocations]);
+    getCountries();
+  }, [getCountries]);
+
+  useEffect(() => {
+    getStates();
+  }, [getStates]);
+
+  useEffect(() => {
+    getCities();
+  }, [getCities]);
+
   return { city, state, country };
 }

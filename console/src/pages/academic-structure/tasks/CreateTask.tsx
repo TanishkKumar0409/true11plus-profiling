@@ -15,10 +15,10 @@ import type { DashboardOutletContextProps } from "../../../types/Types";
 import { durationType } from "../../../common/ExtraData";
 import { taskValidation } from "../../../contexts/ValidationSchema";
 import type { AcademicGroupProps } from "../../../types/AcademicStructureType";
+import { ButtonGroup } from "../../../ui/button/Button";
+import { InputGroup, SelectGroup } from "../../../ui/form/FormComponents";
 
-const inputClass =
-  "w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-50 disabled:text-gray-400";
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5 ml-1";
+const labelClass = "block text-xs text-(--text-color) mb-1";
 
 interface AcademicGroupOption {
   _id: string;
@@ -26,7 +26,8 @@ interface AcademicGroupOption {
 }
 
 export default function CreateTask() {
-  const { allCategory } = useOutletContext<DashboardOutletContextProps>();
+  const { allCategory, startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const navigate = useNavigate();
   const [academicGroups, setAcademicGroups] = useState<AcademicGroupOption[]>(
     [],
@@ -69,6 +70,7 @@ export default function CreateTask() {
     },
     validationSchema: taskValidation,
     onSubmit: async (values, { setSubmitting }) => {
+      startLoadingBar();
       setSubmitting(true);
       try {
         const payload = {
@@ -83,6 +85,7 @@ export default function CreateTask() {
         getErrorResponse(error);
       } finally {
         setSubmitting(false);
+        stopLoadingBar();
       }
     },
   });
@@ -98,18 +101,15 @@ export default function CreateTask() {
         ]}
       />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-(--primary-bg) rounded-custom shadow-custom">
         <form onSubmit={formik.handleSubmit} className="p-8 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className={labelClass}>Task Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formik.values.title}
-                onChange={formik.handleChange}
+              <InputGroup
+                label="Task Title"
+                id="title"
                 placeholder="e.g., Build a Portfolio Website"
-                className={inputClass}
+                {...formik.getFieldProps("title")}
               />
               {getFormikError(formik, "title")}
             </div>
@@ -120,7 +120,9 @@ export default function CreateTask() {
                 name="academic_group_id"
                 value={formik.values.academic_group_id}
                 onChange={formik.handleChange}
-                className={`${inputClass} capitalize`}
+                className="w-full text-xs border border-(--border) bg-(--primary-bg) 
+        text-(--text-color-emphasis) rounded-custom p-2 appearance-none 
+        focus:ring-1 focus:ring-(--border) outline-none font-semibold"
               >
                 <option value="" disabled>
                   -- Select Group --
@@ -140,7 +142,9 @@ export default function CreateTask() {
                 name="difficulty_level"
                 value={formik.values.difficulty_level}
                 onChange={formik.handleChange}
-                className={`${inputClass} capitalize`}
+                className="w-full text-xs border border-(--border) bg-(--primary-bg) 
+        text-(--text-color-emphasis) rounded-custom p-2 appearance-none 
+        focus:ring-1 focus:ring-(--border) outline-none font-semibold"
               >
                 <option value="" disabled>
                   --select level--
@@ -160,40 +164,36 @@ export default function CreateTask() {
             <div>
               <label className={labelClass}>Duration</label>
               <div className="flex gap-2">
-                <input
-                  type="number"
-                  name="duration_value"
-                  value={formik.values.duration_value}
-                  onChange={formik.handleChange}
-                  placeholder="e.g., 2"
-                  className={inputClass}
-                  min="1"
-                />
-                <select
-                  name="duration_type"
-                  value={formik.values.duration_type}
-                  onChange={formik.handleChange}
-                  className={`${inputClass} capitalize`}
-                >
-                  {durationType?.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-full">
+                  <InputGroup
+                    type="number"
+                    id="duration_value"
+                    placeholder="e.g., 2"
+                    {...formik.getFieldProps("duration_value")}
+                    min={1}
+                  />
+                </div>
+                <div className="w-full">
+                  <SelectGroup
+                    options={durationType}
+                    id="duration_type"
+                    {...formik.getFieldProps("duration_type")}
+                  />
+                </div>
               </div>
               {getFormikError(formik, "duration_value")}
               {getFormikError(formik, "duration_type")}
             </div>
 
-            {/* FIXED SECTION: Task Type */}
             <div>
               <label className={labelClass}>Task Type (Pillar)</label>
               <select
                 name="task_type"
                 value={formik.values.task_type}
                 onChange={formik.handleChange}
-                className={`${inputClass} capitalize`}
+                className="w-full text-xs border border-(--border) bg-(--primary-bg) 
+        text-(--text-color-emphasis) rounded-custom p-2 appearance-none 
+        focus:ring-1 focus:ring-(--border) outline-none font-semibold"
               >
                 <option value="" disabled>
                   --select type--
@@ -272,14 +272,11 @@ export default function CreateTask() {
             </div>
           </div>
 
-          <div className="flex justify-end pt-6 border-t border-gray-100 gap-3">
-            <button
+          <div className="flex justify-end gap-3">
+            <ButtonGroup
+              label={formik.isSubmitting ? "Creating..." : "Create Task"}
               type="submit"
-              disabled={formik.isSubmitting}
-              className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {formik.isSubmitting ? "Creating..." : "Create Task"}
-            </button>
+            />
           </div>
         </form>
       </div>

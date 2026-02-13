@@ -8,8 +8,13 @@ import { LuGroup } from "react-icons/lu";
 import { getErrorResponse } from "../../contexts/Callbacks";
 import { API } from "../../contexts/API";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
+import { useOutletContext } from "react-router-dom";
+import type { DashboardOutletContextProps } from "../../types/Types";
+import UserListSkeleton from "../../ui/loading/pages/UserListSkeleton";
 
 export default function AcademicStructure() {
+  const { startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [allAcademicClasses, setAllAcademicClassess] = useState<
     AcademicClassProps[]
   >([]);
@@ -17,6 +22,7 @@ export default function AcademicStructure() {
 
   const getAllAcademicClasses = useCallback(async () => {
     try {
+      startLoadingBar();
       setLoading(true);
       const res = await API.get("/academic/class/all");
       setAllAcademicClassess(Array.isArray(res.data) ? res.data : []);
@@ -24,6 +30,7 @@ export default function AcademicStructure() {
       getErrorResponse(error, true);
     } finally {
       setLoading(false);
+      stopLoadingBar();
     }
   }, []);
 
@@ -46,7 +53,7 @@ export default function AcademicStructure() {
     },
   ];
 
-  if (loading) <div className="py-4 text-sm text-gray-500">Loading...</div>;
+  if (loading) return <UserListSkeleton showProfile={false} />;
 
   return (
     <div>

@@ -17,14 +17,21 @@ import { DataTable } from "../../ui/table/DataTable";
 import Badge from "../../ui/badge/Badge";
 import TableButton from "../../ui/button/TableButton";
 import { Breadcrumbs } from "../../ui/breadcrumbs/Breadcrumbs";
+import UserListSkeleton from "../../ui/loading/pages/UserListSkeleton";
 
 export default function StudentList() {
   const [users, setUsers] = useState<UserProps[]>([]);
-  const { authUser, authLoading, getRoleById } =
-    useOutletContext<DashboardOutletContextProps>();
+  const {
+    authUser,
+    authLoading,
+    getRoleById,
+    startLoadingBar,
+    stopLoadingBar,
+  } = useOutletContext<DashboardOutletContextProps>();
 
   const [loading, setLoading] = useState(true);
   const getAllUsers = useCallback(async () => {
+    startLoadingBar();
     setLoading(true);
     try {
       const response = await API.get("/users/role/student");
@@ -39,6 +46,7 @@ export default function StudentList() {
       getErrorResponse(error, true);
     } finally {
       setLoading(false);
+      stopLoadingBar();
     }
   }, [getRoleById, authUser?.role]);
 
@@ -55,25 +63,27 @@ export default function StudentList() {
               <img
                 src={getUserAvatar(row?.avatar || [])}
                 alt={row?.name}
-                className="w-10 h-10 rounded-full border border-gray-200 object-cover"
+                className="w-10 h-10 rounded-full border-2 border-(--border) object-cover"
               />
             </div>
             <div className="flex flex-col">
               <div className="flex gap-1 items-center">
-                <span className="font-semibold text-gray-900">{row?.name}</span>
+                <span className="font-semibold text-(--text-color-emphasis)">
+                  {row?.name}
+                </span>
                 {row?.verified ? (
                   <BiBadgeCheck
-                    className="w-4 h-4 text-green-600"
+                    className="w-4 h-4 text-(--success)"
                     title="Verified"
                   />
                 ) : (
                   <LuBadgeX
-                    className="w-4 h-4 text-red-500"
+                    className="w-4 h-4 text-(--danger)"
                     title="Unverified"
                   />
                 )}
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-(--text-color)">
                 {maskSensitive(row?.email)}
               </span>
             </div>
@@ -85,7 +95,7 @@ export default function StudentList() {
       },
       {
         value: (row: UserProps) => (
-          <span className="text-sm text-gray-600 font-medium">
+          <span className="text-sm text-(--text-color) font-medium">
             @{row?.username}
           </span>
         ),
@@ -187,13 +197,7 @@ export default function StudentList() {
     ];
   }, [users, columns]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-100 text-purple-600">
-        <div className="animate-pulse">Loading Users...</div>
-      </div>
-    );
-  }
+  if (loading) return <UserListSkeleton/>
 
   return (
     <div className="space-y-6">

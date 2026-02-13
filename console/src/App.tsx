@@ -1,18 +1,15 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import AuthLayout from "./layout/AuthLayout";
 import DashboardLayout from "./layout/DashboardLayout";
 import ProtectedRoutes from "./contexts/ProtectedRoute";
-import {
-  AuthNavigations,
-  NonSidebarNavigations,
-  PublicNavigations,
-  SidbarNavigations,
-} from "./common/RouteData";
+import { NonSidebarNavigations, SidbarNavigations } from "./common/RouteData";
 import { useGetAuthUser } from "./hooks/useGetAuthUser";
 import PermissionContext from "./contexts/PermissionContext";
 import AccessDenied from "./pages/error/AccessDenied";
 import { useEffect } from "react";
+import NotFound from "./pages/error/NotFound";
+import ComingSoon from "./pages/error/CommingSoon";
+import MainLoader from "./ui/loading/pages/MainLoader";
 
 function App() {
   const { authUser, authLoading, getAuthUser, getRoleById, roles } =
@@ -29,7 +26,7 @@ function App() {
     }
   }, [authUser?.role, authLoading]);
 
-  if (authLoading) return <>Loading Application...</>;
+  if (authLoading) return <MainLoader />;
 
   return (
     <>
@@ -90,37 +87,10 @@ function App() {
             ))}
             <Route path="/dashboard/access-denied" element={<AccessDenied />} />
           </Route>
-          {/* Auth & Public Routes */}
-          <Route path="/" element={<AuthLayout />}>
-            {AuthNavigations.map((page, index) => (
-              <Route
-                path={page.href}
-                element={
-                  <ProtectedRoutes
-                    authUser={authUser}
-                    authLoading={authLoading}
-                  >
-                    <page.component />
-                  </ProtectedRoutes>
-                }
-                key={`auth-${index}`}
-              />
-            ))}
-            {PublicNavigations.map((page, index) => (
-              <Route
-                path={page.href}
-                element={
-                  <ProtectedRoutes
-                    authUser={authUser}
-                    authLoading={authLoading}
-                  >
-                    <page.component />
-                  </ProtectedRoutes>
-                }
-                key={`public-${index}`}
-              />
-            ))}
-          </Route>
+          <Route path="/not-found" element={<NotFound />} />
+          <Route path="/comming-soon" element={<ComingSoon />} />
+          <Route path="/" element={<Navigate to={`/dashboard`} replace />} />
+          <Route path="*" element={<Navigate to={`/not-found`} replace />} />
         </Routes>
       </BrowserRouter>
     </>

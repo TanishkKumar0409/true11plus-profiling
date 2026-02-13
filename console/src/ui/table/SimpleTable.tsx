@@ -8,15 +8,15 @@ interface SimpleTableProps<T> {
 
 export function SimpleTable<T>({ data, columns }: SimpleTableProps<T>) {
   return (
-    <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200">
+    <div className="overflow-x-auto bg-(--primary-bg) rounded-custom shadow-custom">
+      <table className="min-w-full divide-y divide-(--border)">
         {/* Header */}
-        <thead className="bg-purple-50">
+        <thead className="bg-(--main-subtle)">
           <tr>
             {columns.map((col, idx) => (
               <th
                 key={idx}
-                className="px-6 py-4 text-left text-xs font-bold text-purple-900 uppercase tracking-wider"
+                className="px-6 py-4 text-left text-xs font-bold text-(--main-emphasis) uppercase tracking-wider"
               >
                 {col.label}
               </th>
@@ -25,17 +25,17 @@ export function SimpleTable<T>({ data, columns }: SimpleTableProps<T>) {
         </thead>
 
         {/* Body */}
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-(--primary-bg) divide-y divide-(--border)">
           {data.length > 0 ? (
             data.map((row, idx) => (
               <tr
                 key={idx}
-                className="hover:bg-purple-50/50 transition-colors duration-150"
+                className="hover:bg-(--main-subtle)/50 transition-colors duration-150"
               >
                 {columns.map((col, cidx) => (
                   <td
                     key={cidx}
-                    className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap"
+                    className="px-6 py-4 text-sm text-(--text-color) whitespace-nowrap"
                   >
                     {typeof col.value === "function"
                       ? col.value(row)
@@ -48,7 +48,7 @@ export function SimpleTable<T>({ data, columns }: SimpleTableProps<T>) {
             <tr>
               <td
                 colSpan={columns?.length}
-                className="px-6 py-10 text-center text-gray-400 text-sm"
+                className="px-6 py-10 text-center text-(--text-color) text-sm"
               >
                 No data available
               </td>

@@ -22,11 +22,13 @@ export default function CommentFooter({
   inputRef,
   onCommentAdded,
 }: CommentFooterProps) {
-  const { authUser } = useOutletContext<DashboardOutletContextProps>();
+  const { authUser, startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [inputText, setInputText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    startLoadingBar();
     if (!inputText.trim() || !post?._id) return;
 
     setIsSubmitting(true);
@@ -42,12 +44,12 @@ export default function CommentFooter({
       setInputText("");
       setReplyingTo(null);
 
-      // Trigger refresh in parent
       onCommentAdded();
     } catch (error) {
       getErrorResponse(error);
     } finally {
       setIsSubmitting(false);
+      stopLoadingBar();
     }
   };
 
@@ -59,13 +61,16 @@ export default function CommentFooter({
   };
 
   return (
-    <div className="flex gap-3 items-end">
-      <img
-        src={getUserAvatar(authUser?.avatar || [])}
-        className="w-9 h-9 rounded-full mb-1 border border-gray-200"
-        alt="Me"
-      />
-      <div className="flex-1 bg-gray-100 rounded-2xl p-1.5 flex items-center transition-all focus-within:ring-2 focus-within:ring-blue-100 focus-within:bg-white border border-transparent focus-within:border-blue-200">
+    <div className="flex items-center gap-3 max-w-4xl mx-auto">
+      <div className="w-10 h-10 rounded-full bg-(--secondary-bg) overflow-hidden border-2 border-(--border) shadow-custom">
+        <img
+          src={getUserAvatar(authUser?.avatar || [])}
+          alt={authUser?.username}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      <div className="relative grow">
         <textarea
           ref={inputRef}
           value={inputText}
@@ -76,13 +81,13 @@ export default function CommentFooter({
               ? `Reply to ${replyingTo.userId?.name || "user"}...`
               : "Write a comment..."
           }
-          className="w-full bg-transparent border-none outline-none focus:ring-0 text-sm px-3 py-2 resize-none max-h-24 min-h-10 text-gray-800 placeholder-gray-400"
+          className="w-full bg-(--secondary-bg) border border-(--border) rounded-custom py-2.5 px-5 pr-14 focus:ring-1 focus:ring-(--main-subtle) focus:bg-(--primary-bg) paragraph"
           rows={1}
         />
         <button
           onClick={handleSubmit}
           disabled={!inputText.trim() || isSubmitting}
-          className="p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all mr-0.5 shadow-sm active:scale-95 flex items-center justify-center"
+          className="absolute right-2 bottom-2 p-2 bg-(--main) text-(--white) hover:bg-(--main-emphasis) transition-all active:scale-95 disabled:opacity-30 shadow-custom rounded-custom"
         >
           {isSubmitting ? (
             <BiLoaderAlt className="animate-spin" />

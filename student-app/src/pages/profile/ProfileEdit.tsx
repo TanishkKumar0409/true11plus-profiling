@@ -5,10 +5,10 @@ import {
   BiAward,
   BiGlobe,
   BiLink,
+  BiLocationPlus,
 } from "react-icons/bi";
 import Tabs from "../../ui/tabs/Tab";
 import AvatarAndBanner from "./profile-edit-components/avatar-and-banner/AvatarAndBanner";
-import { ImImage } from "react-icons/im";
 import { useOutletContext } from "react-router-dom";
 import type { DashboardOutletContextProps } from "../../types/Types";
 import BasicDetails from "./profile-edit-components/basic-detials/BasicDetails";
@@ -24,21 +24,16 @@ export default function ProfileEdit() {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
   const tabData = [
     {
-      label: "Avatar & Banner",
-      value: "avatar-and-banner",
-      icon: <ImImage />,
-      component: <AvatarAndBanner user={authUser} />,
-    },
-    {
       label: "Basic Details",
       value: "basic-details",
       icon: <BiUser />,
-      component: (
-        <>
-          <BasicDetails />
-          <AddressDetails />
-        </>
-      ),
+      component: <BasicDetails />,
+    },
+    {
+      label: "Location",
+      value: "location",
+      icon: <BiLocationPlus />,
+      component: <AddressDetails />,
     },
     {
       label: "Experience",
@@ -79,12 +74,14 @@ export default function ProfileEdit() {
   return (
     <div>
       <Breadcrumbs
-        title="Profile"
+        title="Profile Edit"
         breadcrumbs={[
           { label: "Dashboard", path: "/" },
-          { label: authUser?.username || "Profile" },
+          { label: authUser?.username || "Profile", path: "/profile" },
+          { label: "edit" },
         ]}
       />
+      <AvatarAndBanner user={authUser} />
       <Tabs tabs={tabData} defaultTab="basic-details" paramKey="tab" />
     </div>
   );

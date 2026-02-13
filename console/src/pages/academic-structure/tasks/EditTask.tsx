@@ -16,10 +16,13 @@ import { taskValidation } from "../../../contexts/ValidationSchema";
 import { Breadcrumbs } from "../../../ui/breadcrumbs/Breadcrumbs";
 import { durationType } from "../../../common/ExtraData";
 import type { AcademicGroupProps } from "../../../types/AcademicStructureType";
+import { InputGroup, SelectGroup } from "../../../ui/form/FormComponents";
+import { ButtonGroup } from "../../../ui/button/Button";
+import UserEditSkeleton from "../../../ui/loading/pages/UserEditSkeleton";
 
 const inputClass =
-  "w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-50 disabled:text-gray-400";
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5 ml-1";
+  "w-full text-xs border border-(--border) bg-(--primary-bg) text-(--text-color-emphasis) rounded-custom p-2 appearance-none focus:ring-1 focus:ring-(--border) outline-none font-semibold";
+const labelClass = "block text-xs text-(--text-color) mb-1";
 
 interface AcademicGroupOption {
   _id: string;
@@ -28,7 +31,7 @@ interface AcademicGroupOption {
 
 export default function EditTask() {
   const { objectId } = useParams();
-  const { allCategory, allStatus } =
+  const { allCategory, allStatus, startLoadingBar, stopLoadingBar } =
     useOutletContext<DashboardOutletContextProps>();
   const navigate = useNavigate();
 
@@ -46,6 +49,7 @@ export default function EditTask() {
   const editorConfig = useMemo(() => getEditorConfig(), []);
 
   const fetchData = useCallback(async () => {
+    startLoadingBar();
     try {
       setLoadingData(true);
 
@@ -87,6 +91,7 @@ export default function EditTask() {
       navigate("/dashboard/tasks");
     } finally {
       setLoadingData(false);
+      stopLoadingBar();
     }
   }, [objectId, navigate]);
 
@@ -129,16 +134,7 @@ export default function EditTask() {
     },
   });
 
-  if (loadingData) {
-    return (
-      <div className="flex items-center justify-center min-h-125 flex-col gap-3">
-        <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-        <p className="text-purple-600 font-medium animate-pulse">
-          Loading Task Data...
-        </p>
-      </div>
-    );
-  }
+  if (loadingData) return <UserEditSkeleton />;
 
   return (
     <div className="space-y-6 mx-auto max-w-7xl pb-10">
@@ -155,18 +151,15 @@ export default function EditTask() {
         ]}
       />
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-(--primary-bg) rounded-custom shadow-custom">
         <form onSubmit={formik.handleSubmit} className="p-8 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <label className={labelClass}>Task Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formik.values.title}
-                onChange={formik.handleChange}
+              <InputGroup
+                label="Task Title"
+                id="title"
                 placeholder="e.g., Build a Portfolio Website"
-                className={inputClass}
+                {...formik.getFieldProps("title")}
               />
               {getFormikError(formik, "title")}
             </div>
@@ -259,34 +252,28 @@ export default function EditTask() {
             <div>
               <label className={labelClass}>Duration</label>
               <div className="flex gap-2">
-                <input
-                  type="number"
-                  name="duration_value"
-                  value={formik.values.duration_value}
-                  onChange={formik.handleChange}
-                  placeholder="e.g., 2"
-                  className={inputClass}
-                  min="1"
-                />
-                <select
-                  name="duration_type"
-                  value={formik.values.duration_type}
-                  onChange={formik.handleChange}
-                  className={`${inputClass} capitalize`}
-                >
-                  {durationType?.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-full">
+                  <InputGroup
+                    type="number"
+                    id="duration_value"
+                    placeholder="e.g., 2"
+                    {...formik.getFieldProps("duration_value")}
+                    min={1}
+                  />
+                </div>
+                <div className="w-full">
+                  <SelectGroup
+                    options={durationType}
+                    id="duration_type"
+                    {...formik.getFieldProps("duration_type")}
+                  />
+                </div>
               </div>
               {getFormikError(formik, "duration_value")}
               {getFormikError(formik, "duration_type")}
             </div>
           </div>
 
-          {/* Editors Section */}
           <div className="space-y-8">
             <div>
               <label className={labelClass}>Objective</label>
@@ -349,21 +336,11 @@ export default function EditTask() {
             </div>
           </div>
 
-          <div className="flex justify-end pt-6 border-t border-gray-100 gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
+          <div className="flex justify-end gap-3">
+            <ButtonGroup
+              label={formik.isSubmitting ? "Updating..." : "Update Task"}
               type="submit"
-              disabled={formik.isSubmitting}
-              className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {formik.isSubmitting ? "Updating..." : "Update Task"}
-            </button>
+            />
           </div>
         </form>
       </div>

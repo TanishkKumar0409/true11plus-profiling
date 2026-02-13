@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useSearchParams } from "react-router-dom";
 import { BiChevronLeft, BiChevronRight } from "react-icons/bi";
 
@@ -43,14 +44,15 @@ export default function Tabs({
           prev.set(paramKey, activeTab.value);
           return prev;
         },
-        { replace: true }
+        { replace: true },
       );
     }
   }, [activeTab, paramKey, searchParams, setSearchParams]);
 
   const handleScrollCheck = () => {
     if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
       setShowLeftArrow(scrollLeft > 1);
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
     }
@@ -78,7 +80,7 @@ export default function Tabs({
         prev.set(paramKey, value);
         return prev;
       },
-      { replace: false }
+      { replace: false },
     );
   };
 
@@ -86,12 +88,12 @@ export default function Tabs({
 
   return (
     // Added min-w-0 here to prevent page overflow
-    <div className={`w-full min-w-0 space-y-6 ${className}`}>
-      <div className="relative w-full bg-white border border-gray-200 rounded-lg shadow-sm group overflow-hidden">
+    <div className={`w-full min-w-0 mt-6 ${className}`}>
+      <div className="relative w-full border-b border-(--border) mb-4">
         {showLeftArrow && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-0 bottom-0 z-20 w-10 bg-gradient-to-r from-white via-white to-transparent flex items-center justify-center text-gray-500 hover:text-purple-600 transition-colors"
+            className="absolute left-0 top-0 bottom-0 z-30 w-10 bg-linear-to-r from-(--white) via-(--white) to-transparent flex items-center justify-center text-(--text-color) hover:text-(--main) transition-colors"
           >
             <BiChevronLeft size={24} />
           </button>
@@ -100,7 +102,7 @@ export default function Tabs({
         <div
           ref={scrollContainerRef}
           onScroll={handleScrollCheck}
-          className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-1.5 px-2 w-full scroll-smooth"
+          className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 w-full scroll-smooth"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {visibleTabs.map((tab) => {
@@ -109,14 +111,21 @@ export default function Tabs({
               <button
                 key={tab.value}
                 onClick={() => handleTabClick(tab.value)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 select-none ${
+                className={`relative flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors duration-200 whitespace-nowrap select-none ${
                   isActive
-                    ? "bg-purple-50 text-purple-700 shadow-sm ring-1 ring-purple-200"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "text-(--main)"
+                    : "text-(--text-color) hover:text-(--text-color-emphasis)"
                 }`}
               >
                 {tab.icon && <span className="text-lg">{tab.icon}</span>}
                 {tab.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabUnderline"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-(--main) z-10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
               </button>
             );
           })}
@@ -125,15 +134,24 @@ export default function Tabs({
         {showRightArrow && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-0 bottom-0 z-20 w-10 bg-gradient-to-l from-white via-white to-transparent flex items-center justify-center text-gray-500 hover:text-purple-600 transition-colors"
+            className="absolute right-0 top-0 bottom-0 z-30 w-10 bg-linear-to-l from-(--white) via-(--white) to-transparent flex items-center justify-center text-(--text-color) hover:text-(--main) transition-colors"
           >
             <BiChevronRight size={24} />
           </button>
         )}
       </div>
-
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-        {activeTab?.component}
+      <div className="overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTabValue}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            {activeTab?.component}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

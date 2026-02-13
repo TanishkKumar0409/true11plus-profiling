@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { BiSave, BiShield, BiLockAlt } from "react-icons/bi";
+import { BiSave, BiLockAlt } from "react-icons/bi";
 import { API } from "../../../contexts/API";
 import { getErrorResponse } from "../../../contexts/Callbacks";
 import ToggleButton from "../../../ui/button/ToggleButton";
 import type { UserProps } from "../../../types/UserProps";
 import { useOutletContext } from "react-router-dom";
 import type { DashboardOutletContextProps } from "../../../types/Types";
+import { ButtonGroup } from "../../../ui/button/Button";
 
 export default function UserPermissions({ user }: { user: UserProps | null }) {
-  const { getRoleById } = useOutletContext<DashboardOutletContextProps>();
+  const { getRoleById, startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [allPermissions, setAllPermissions] = useState<any[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<
     Record<string, string[]>
@@ -18,6 +20,7 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
   const [loading, setLoading] = useState(false);
 
   const getPermissions = useCallback(async () => {
+    startLoadingBar();
     if (!user || !user.role) return;
 
     try {
@@ -35,15 +38,11 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
       );
 
       setAllPermissions(applicableGroups);
-
-      // Default to first category if available
       if (applicableGroups.length) {
         setSelectedCategory(applicableGroups[0]._id);
       }
 
-      // Pre-fill existing user permissions
       if (user.permissions && user.permissions.length > 0) {
-        // Normalize to IDs
         const userPermIds = user.permissions.map((p: any) =>
           typeof p === "string" ? p : p._id,
         );
@@ -62,14 +61,14 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
       }
     } catch (error) {
       getErrorResponse(error, true);
+    } finally {
+      stopLoadingBar();
     }
   }, [user]);
 
   useEffect(() => {
     getPermissions();
   }, [getPermissions]);
-
-  // --- 2. Handlers ---
 
   const handleSelectAllByTitle = (titleId: string, value: boolean) => {
     setSelectedPermissions((prev) => {
@@ -117,10 +116,9 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
 
   if (!user) return null;
 
-  // --- Edge Case: No applicable permissions ---
   if (allPermissions.length === 0 && !loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 flex flex-col items-center justify-center text-center h-100">
+      <div className="bg-(--primary-bg) rounded-custom shadow-custom p-6 flex flex-col items-center justify-center text-center h-100">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 text-gray-400">
           <BiLockAlt size={32} />
         </div>
@@ -139,19 +137,14 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-150 lg:flex-row">
-      {/* --- Sidebar (Groups) --- */}
-      <aside className="w-full lg:w-72 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col">
-        <div className="p-4 border-b border-gray-100 bg-white lg:bg-gray-50">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
-            <BiShield className="text-purple-600" size={18} />
-            Permission Groups
-          </h3>
+    <div className="bg-(--primary-bg) rounded-custom shadow-custom overflow-hidden flex flex-col h-150 lg:flex-row gap-2 p-6">
+      <aside className="w-full lg:w-72 bg-(--secondary-bg) rounded-custom shadow-custom flex flex-col">
+        <div className="p-4">
+          <p className="font-bold text-(--text-color)">Permission Groups</p>
         </div>
 
-        {/* Scrollable Group List */}
         <div className="flex-1 overflow-x-auto lg:overflow-y-auto lg:overflow-x-hidden custom-scrollbar">
-          <ul className="flex lg:flex-col min-w-max lg:min-w-0 p-2 lg:p-0">
+          <ul className="flex lg:flex-col min-w-max lg:min-w-0 p-1.5">
             {allPermissions.map((group) => {
               const isActive = selectedCategory === group._id;
               const count = group.permissions.length;
@@ -161,18 +154,20 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
                 <li key={group._id}>
                   <button
                     onClick={() => setSelectedCategory(group._id)}
-                    className={`w-full text-left px-4 py-3 flex items-center justify-between transition-all duration-200 border-l-4 ${
+                    className={`w-full text-left py-3 px-4 flex items-center justify-between transition-all duration-200  rounded-custom ${
                       isActive
-                        ? "bg-white border-purple-600 shadow-sm text-purple-700 font-medium"
-                        : "bg-transparent border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                    } ${"lg:border-l-4 lg:border-b-0 border-b-4 border-l-0 rounded-lg lg:rounded-none mx-1 lg:mx-0"}`}
+                        ? "bg-(--main-subtle) text-(--main) font-medium shadow-custom"
+                        : "bg-transparent border-transparent text-(--text-color) hover:bg-(--primary-bg) hover:text-(--text-color-emphasis)"
+                    } ${"mx-1 lg:mx-0"}`}
                   >
-                    <span className="truncate pr-2">{group.title}</span>
+                    <span className="truncate pr-2 capitalize">
+                      {group.title}
+                    </span>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                        selectedCount > 0
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-gray-200 text-gray-500"
+                        Number(selectedCount) > 0
+                          ? "bg-(--main)/5 text-(--main)"
+                          : "bg-(--gray-subtle) text-(--gray)"
                       }`}
                     >
                       {selectedCount}/{count}
@@ -185,8 +180,7 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
         </div>
       </aside>
 
-      {/* --- Main Content (Permissions) --- */}
-      <main className="flex-1 flex flex-col min-h-0 bg-white">
+      <main className="flex-1 flex flex-col min-h-0 bg-(--secondary-bg) rounded-custom shadow-custom">
         {allPermissions
           .filter((group) => group._id === selectedCategory)
           .map((group) => {
@@ -196,21 +190,18 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
 
             return (
               <div key={group._id} className="flex flex-col h-full">
-                {/* Header: Title + Select All */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white shrink-0">
+                <div className="flex items-center justify-between px-6 py-4 shrink-0">
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900">
-                      {group.title} Access
-                    </h2>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <h4 className="capitalize">{group.title} Access</h4>
+                    <p>
                       Role:{" "}
-                      <span className="font-semibold text-purple-600">
+                      <span className="font-semibold text-(--main) capitalize">
                         {user.role}
                       </span>
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 font-medium hidden sm:inline">
+                    <span className="text-sm text-(--text-color) font-medium hidden sm:inline">
                       Select All
                     </span>
                     <ToggleButton
@@ -220,9 +211,8 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
                   </div>
                 </div>
 
-                {/* Permissions List */}
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     {group.permissions.map((perm: any, idx: number) => {
                       const isSelected =
                         selectedPermissions[group._id]?.includes(perm._id) ||
@@ -231,20 +221,20 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
                       return (
                         <div
                           key={idx}
-                          className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+                          className={`flex items-center justify-between p-3 rounded-custom transition-all duration-200 ${
                             isSelected
-                              ? "bg-purple-50 border-purple-200 shadow-sm"
-                              : "bg-white border-gray-100 hover:border-gray-300"
+                              ? "bg-(--white) shadow-custom"
+                              : "bg-(--gray-subtle)/50 "
                           }`}
                         >
                           <div className="flex flex-col pr-4">
                             <span
-                              className={`text-sm font-semibold ${isSelected ? "text-purple-800" : "text-gray-700"}`}
+                              className={`text-sm font-semibold capitalize ${isSelected ? "text-(--main)" : "text-(--text-color"}`}
                             >
                               {perm.title}
                             </span>
                             {perm.description && (
-                              <span className="text-xs text-gray-500 mt-0.5">
+                              <span className="text-xs text-(--text-subtle) mt-0.5">
                                 {perm.description}
                               </span>
                             )}
@@ -262,21 +252,13 @@ export default function UserPermissions({ user }: { user: UserProps | null }) {
                   </div>
                 </div>
 
-                {/* Footer: Save Button */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end shrink-0">
-                  <button
-                    disabled={loading}
+                <div className="p-4 border-t border-(--border) flex justify-end shrink-0">
+                  <ButtonGroup
                     onClick={handleUpdatePermissions}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
-                  >
-                    {loading ? (
-                      "Saving..."
-                    ) : (
-                      <>
-                        <BiSave size={18} /> Update Permissions
-                      </>
-                    )}
-                  </button>
+                    className="flex justify-center items-center gap-3"
+                    Icon={BiSave}
+                    label={loading ? "Saving..." : "Update Permissions"}
+                  />
                 </div>
               </div>
             );

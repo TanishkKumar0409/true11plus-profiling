@@ -5,6 +5,7 @@ import UserTaskSubmission from "../../models/user-academics/UserTaskSubmission.j
 export const upsertUserTask = async (req, res) => {
   try {
     const { user_id, tasks } = req.body;
+
     if (!user_id || !mongoose.Types.ObjectId.isValid(user_id)) {
       return res.status(400).json({ error: "Valid user_id is required" });
     }
@@ -14,38 +15,62 @@ export const upsertUserTask = async (req, res) => {
     }
 
     const studentObjectId = new mongoose.Types.ObjectId(user_id);
+
     const incomingTaskIds = tasks
       .filter((t) => t?.task_id && mongoose.Types.ObjectId.isValid(t.task_id))
       .map((t) => String(t.task_id));
 
-    let userTask = await UserTask.findOne({
-      user_id: studentObjectId,
-    });
+    let userTask = await UserTask.findOne({ user_id: studentObjectId });
 
     if (!userTask) {
+      const newTasks = incomingTaskIds.map((id) => ({
+        task_id: new mongoose.Types.ObjectId(id),
+        status: "assign",
+        assign_date: new Date(),
+      }));
+
       userTask = await UserTask.create({
         user_id: studentObjectId,
-        tasks: incomingTaskIds.map((id) => ({
-          task_id: new mongoose.Types.ObjectId(id),
-        })),
+        tasks: newTasks,
       });
 
       return res.status(201).json(userTask);
     }
 
+    for (const existing of userTask.tasks) {
+      const idStr = String(existing.task_id);
+
+      const removedFromIncoming = !incomingTaskIds.includes(idStr);
+      const lockedTask = existing.status !== "assign";
+
+      if (removedFromIncoming && lockedTask) {
+        return res.status(400).json({
+          error: `Task cannot be removed because status is '${existing.status}'`,
+        });
+      }
+    }
+
+    // ---------------- UPDATE ----------------
     const existingTasksMap = new Map(
       userTask.tasks.map((t) => [String(t.task_id), t]),
     );
 
-    const updatedTasks = incomingTaskIds.map((taskId) => {
+    const finalTasks = [];
+
+    // keep existing or add new
+    for (const taskId of incomingTaskIds) {
       if (existingTasksMap.has(taskId)) {
-        return existingTasksMap.get(taskId);
+        finalTasks.push(existingTasksMap.get(taskId));
+      } else {
+        finalTasks.push({
+          task_id: new mongoose.Types.ObjectId(taskId),
+          status: "assign",
+          assign_date: new Date(),
+        });
       }
+    }
 
-      return { task_id: new mongoose.Types.ObjectId(taskId) };
-    });
-
-    userTask.tasks = updatedTasks;
+    userTask.tasks = finalTasks;
     await userTask.save();
 
     return res.status(200).json(userTask);
@@ -54,6 +79,7 @@ export const upsertUserTask = async (req, res) => {
     return res.status(500).json({ error: "Something went wrong" });
   }
 };
+
 export const getUserTasks = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -71,7 +97,7 @@ export const getUserTasks = async (req, res) => {
     }).lean();
 
     if (!userTask) {
-      return res.status(200).json({ error: "Task Not Found" });
+      return res.status(400).json({ error: "Task Not Found" });
     }
 
     return res.status(200).json(userTask);

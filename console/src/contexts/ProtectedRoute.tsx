@@ -1,11 +1,6 @@
 import React, { useMemo } from "react";
 import { matchPath, Navigate, useLocation } from "react-router-dom";
-import {
-  SidbarNavigations,
-  AuthNavigations,
-  PublicNavigations,
-  NonSidebarNavigations,
-} from "../common/RouteData";
+import { SidbarNavigations, NonSidebarNavigations } from "../common/RouteData";
 import type { UserProps } from "../types/UserProps";
 
 interface ProtectedRoutesProps {
@@ -29,18 +24,12 @@ export default function ProtectedRoutes({
 
   if (authLoading) return <>ProtectedROutes Loader...</>;
 
-  if (isPathMatching(PublicNavigations.map((r) => r.href))) {
-    return children;
-  }
   if (!authLoading && authUser?.role === "User") {
     window.location.href = import.meta.env.VITE_MAIN_URL;
     return null;
   }
 
-  const guestRoutes = AuthNavigations.filter((r) => r.guestOnly).map(
-    (r) => r.href,
-  );
-  if (memoizedUser && isPathMatching(guestRoutes)) {
+  if (path === "/") {
     return <Navigate to="/dashboard" />;
   }
 

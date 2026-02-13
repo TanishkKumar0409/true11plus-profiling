@@ -3,9 +3,8 @@ import {
   BiHeart,
   BiReply,
   BiX,
-  BiCommentDetail,
-  BiLoaderAlt,
   BiTrash,
+  BiMessageSquare,
 } from "react-icons/bi";
 import { FaHeart } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -21,6 +20,8 @@ import {
 import { Link, useOutletContext } from "react-router-dom";
 import CommentFooter from "./CommentFooter";
 import type { DashboardOutletContextProps } from "../../../types/Types";
+import { FiMessageCircle } from "react-icons/fi";
+import PostCommentSectionSkeleton from "../../../ui/loading/pages/PostCommentSectionSkeleton";
 
 const normalizeComment = (data: any): CommentProps => {
   return {
@@ -46,7 +47,6 @@ const normalizeComment = (data: any): CommentProps => {
   };
 };
 
-// --- 3. NESTING LOGIC ---
 const nestComments = (comments: CommentProps[]): CommentProps[] => {
   const commentMap: { [key: string]: CommentProps } = {};
   const roots: CommentProps[] = [];
@@ -61,7 +61,6 @@ const nestComments = (comments: CommentProps[]): CommentProps[] => {
       if (parent) {
         parent.replies = parent.replies || [];
         parent.replies.push(commentMap[c._id]);
-      } else {
       }
     } else {
       roots.push(commentMap[c._id]);
@@ -116,54 +115,67 @@ const SingleCommentDisplay = ({
   };
 
   return (
-    <div
-      className={`flex gap-3 mb-3 group animate-in fade-in slide-in-from-bottom-1 ${isReply ? "mt-2" : ""}`}
-    >
-      <img
-        src={getUserAvatar(comment.userId.avatar)}
-        alt={comment.userId.name}
-        className={`${isReply ? "w-7 h-7" : "w-8 h-8"} rounded-full object-cover shrink-0 mt-1 cursor-pointer`}
-      />
-      <div className="flex-1 min-w-0">
-        <div className="bg-gray-50 rounded-2xl rounded-tl-none px-3 py-2 border border-gray-100 relative group/box">
-          <div className="flex justify-between items-center mb-0.5">
-            <Link
-              to={`${import.meta.env.VITE_FRONT_URL}/profile/${comment.userId.username}`}
-              target="_blank"
-              className="font-bold text-xs text-gray-900 cursor-pointer hover:underline"
-            >
-              {comment.userId.username}
-            </Link>
-            <span className="text-[10px] text-gray-400">
+    <div className={`flex gap-4 ${isReply ? "mt-4" : ""}`}>
+      <Link
+        to={`${import.meta.env.VITE_FRONT_URL}/profile/${comment.userId.username}`}
+        target="_blank"
+        className="shrink-0"
+      >
+        <div
+          className={`${isReply ? "w-8 h-8" : "w-10 h-10"} rounded-full bg-(--main-subtle) flex items-center justify-center text-(--main) font-bold text-xs border border-(--border) shadow-custom overflow-hidden`}
+        >
+          <img
+            src={getUserAvatar(comment.userId.avatar)}
+            alt={comment.userId.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </Link>
+
+      <div className="grow space-y-2 min-w-0">
+        <div className="bg-(--secondary-bg) p-3 rounded-lg rounded-tl-none shadow-custom">
+          <div className="flex justify-between items-center mb-1 gap-2">
+            <span className="font-bold text-xs text-(--text-color)! truncate">
+              {comment.userId.name}
+            </span>
+            <span className="text-[10px] font-semibold uppercase text-(--text-subtle) shrink-0">
               {formatDate(comment.createdAt)}
             </span>
           </div>
-          <p className="text-sm text-gray-700 leading-snug whitespace-pre-wrap">
+          <p className="text-sm text-(--text-color) leading-snug whitespace-pre-wrap wrap-break-word">
             {comment.content}
           </p>
         </div>
 
-        <div className="flex items-center gap-4 mt-1 ml-2 select-none">
+        <div className="flex items-center gap-6 px-1 text-(--text-subtle)">
           <button
             onClick={handleLike}
-            className={`text-[11px] font-semibold flex items-center gap-1 transition-colors ${isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"}`}
+            className={`flex items-center gap-1 text-xs font-bold transition-colors ${
+              isLiked ? "text-(--danger)" : "hover:text-(--danger)"
+            }`}
           >
-            {isLiked ? <FaHeart size={10} /> : <BiHeart size={12} />}
-            {likeCount > 0 ? likeCount : "Like"}
+            {isLiked ? <FaHeart size={12} /> : <BiHeart size={12} />}
+            {likeCount > 0 && likeCount} Like
           </button>
-          <button
-            onClick={() => onReply(comment)}
-            className="text-[11px] font-semibold text-gray-500 hover:text-blue-600 flex items-center gap-1 transition-colors"
-          >
-            <BiReply size={12} /> Reply
-          </button>
+
+          {/* User cannot reply to a reply - Button hidden if isReply is true */}
+          {!isReply && (
+            <button
+              onClick={() => onReply(comment)}
+              className="flex items-center gap-1 text-xs font-bold hover:text-(--main) transition-colors"
+            >
+              <BiReply size={14} />
+              Reply
+            </button>
+          )}
+
           {isOwner && (
             <button
               onClick={() => onDelete(comment._id)}
-              className="text-[11px] font-semibold text-gray-500 hover:text-red-600 flex items-center gap-1 transition-colors"
-              title="Delete"
+              className="flex items-center gap-1 text-xs font-bold hover:text-(--danger) transition-colors ml-auto"
             >
-              <BiTrash size={12} /> Delete
+              <BiTrash size={12} />
+              Delete
             </button>
           )}
         </div>
@@ -172,7 +184,6 @@ const SingleCommentDisplay = ({
   );
 };
 
-// --- 5. WRAPPER COMPONENT ---
 const CommentTreeItem = ({
   comment,
   authUser,
@@ -193,33 +204,36 @@ const CommentTreeItem = ({
         onDelete={onDelete}
       />
       {comment.replies && comment.replies.length > 0 && (
-        <div className="pl-10 relative">
-          <div className="absolute left-4 top-0 bottom-4 w-0.5 bg-gray-100"></div>
-          {comment.replies.map((reply) => (
-            <SingleCommentDisplay
-              key={reply._id}
-              comment={reply}
-              authUser={authUser}
-              onReply={onReply}
-              onDelete={onDelete}
-              isReply={true}
-            />
-          ))}
+        <div className="pl-10 mt-4 relative">
+          <div className="absolute left-5 top-0 bottom-4 w-0.5 bg-(--border)"></div>
+          <div className="space-y-4">
+            {comment.replies.map((reply) => (
+              <SingleCommentDisplay
+                key={reply._id}
+                comment={reply}
+                authUser={authUser}
+                onReply={onReply}
+                onDelete={onDelete}
+                isReply={true}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// --- 6. MAIN CONTAINER ---
 export default function CommentSection({ post }: { post: PostProps | null }) {
-  const { authUser } = useOutletContext<DashboardOutletContextProps>();
+  const { authUser, startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [rawComments, setRawComments] = useState<CommentProps[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState<CommentProps | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const fetchComments = useCallback(async () => {
+    startLoadingBar();
     if (!post?._id) return;
     try {
       const response = await API.get(`/user/post/comment/${post._id}`);
@@ -231,14 +245,14 @@ export default function CommentSection({ post }: { post: PostProps | null }) {
       getErrorResponse(error);
     } finally {
       setLoading(false);
+      stopLoadingBar();
     }
-  }, [post?._id]);
+  }, [post?._id, , startLoadingBar, stopLoadingBar]);
 
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
 
-  // --- DELETE LOGIC ---
   const handleDelete = async (commentId: string) => {
     const result = await Swal.fire({
       title: "Delete Comment?",
@@ -251,6 +265,7 @@ export default function CommentSection({ post }: { post: PostProps | null }) {
 
     if (result.isConfirmed) {
       try {
+        startLoadingBar();
         const response = await API.delete(
           `/user/post/delete/comment/${commentId}`,
         );
@@ -258,6 +273,8 @@ export default function CommentSection({ post }: { post: PostProps | null }) {
         fetchComments();
       } catch (error) {
         getErrorResponse(error);
+      } finally {
+        stopLoadingBar();
       }
     }
   };
@@ -272,41 +289,40 @@ export default function CommentSection({ post }: { post: PostProps | null }) {
     if (inputRef.current) inputRef.current.focus();
   };
 
-  const handleCancelReply = () => {
+  const onCommentAdded = () => {
+    fetchComments();
     setReplyingTo(null);
   };
 
-  const onCommentAdded = () => {
-    fetchComments();
-  };
-
-  if (loading) {
-    return (
-      <div className="flex h-40 items-center justify-center text-gray-400">
-        <BiLoaderAlt className="animate-spin w-6 h-6" />
-      </div>
-    );
-  }
+  if (loading) return <PostCommentSectionSkeleton />;
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white z-10">
-        <h3 className="font-bold text-gray-800 flex items-center gap-2">
-          <BiCommentDetail className="text-blue-600" />
-          Comments
-          <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-semibold">
+    <div className="w-full flex flex-col overflow-hidden bg-(--primary-bg) shadow-custom rounded-custom h-132">
+      <div className="px-6 py-3 border-b border-(--border) bg-(--primary-bg) backdrop-blur-md z-10 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BiMessageSquare size={18} className="text-(--main)" />
+          <h4 className="font-bold">Comments</h4>
+          <span className="bg-(--secondary-bg) text-(--main) text-sm font-bold py-1 px-2 rounded-custom">
             {rawComments.length}
           </span>
-        </h3>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 custom-scrollbar bg-gray-50/30">
+      <div className="grow overflow-y-auto p-6 space-y-8">
         {nestedComments.length === 0 ? (
-          <div className="text-center text-gray-400 py-10 text-sm">
-            No comments yet. Be the first to share your thoughts!
+          <div className="h-full flex flex-col items-center justify-center text-center rounded-custom bg-(--main-subtle)">
+            <div className="mb-4 w-16 h-16 flex items-center justify-center rounded-full bg-(--white) shadow-sm">
+              <FiMessageCircle className="w-8 h-8 text-(--main)" />
+            </div>
+            <h4 className="font-semibold text-(--text-color)">
+              No comments yet
+            </h4>
+            <p className="mt-1 max-w-xs text-(--text-subtle) text-sm px-4">
+              Be the first to share your thoughts and start the conversation.
+            </p>
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-8">
             {nestedComments.map((comment) => (
               <CommentTreeItem
                 key={comment._id}
@@ -320,28 +336,30 @@ export default function CommentSection({ post }: { post: PostProps | null }) {
         )}
       </div>
 
-      <div className="bg-white border-t border-gray-100 p-4">
+      <div className="px-6 py-3 border-t border-(--border) bg-(--primary-bg)">
         {replyingTo && (
-          <div className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg mb-2 text-xs text-blue-700 animate-in slide-in-from-bottom-2">
-            <span>
-              Replying to <b>{replyingTo.userId?.name}</b>
+          <div className="flex items-center justify-between bg-(--main-subtle) px-3 py-1.5 rounded-custom border border-(--border) text-[11px] text-(--main) animate-in slide-in-from-bottom-2">
+            <span className="font-medium">
+              Replying to <b className="font-bold">{replyingTo.userId?.name}</b>
             </span>
             <button
-              onClick={handleCancelReply}
-              className="hover:bg-blue-100 p-1 rounded-full"
+              onClick={() => setReplyingTo(null)}
+              className="hover:bg-(--white) p-0.5 rounded-full transition-colors"
             >
-              <BiX size={16} />
+              <BiX size={14} />
             </button>
           </div>
         )}
 
-        <CommentFooter
-          post={post}
-          replyingTo={replyingTo as any}
-          setReplyingTo={setReplyingTo as any}
-          inputRef={inputRef}
-          onCommentAdded={onCommentAdded}
-        />
+        <div className={`${replyingTo ? "pt-2" : ""}`}>
+          <CommentFooter
+            post={post}
+            replyingTo={replyingTo as any}
+            setReplyingTo={setReplyingTo as any}
+            inputRef={inputRef}
+            onCommentAdded={onCommentAdded}
+          />
+        </div>
       </div>
     </div>
   );

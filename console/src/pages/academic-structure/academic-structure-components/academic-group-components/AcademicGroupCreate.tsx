@@ -9,22 +9,20 @@ import {
   getFormikError,
   getStatusAccodingToField,
 } from "../../../../contexts/Callbacks";
-import { reactSelectDesignClass } from "../../../../common/ExtraData";
+import { customStyles } from "../../../../common/ExtraData";
 import type {
   AcademicClassProps,
   AcademicGroupProps,
 } from "../../../../types/AcademicStructureType";
 import { useOutletContext } from "react-router-dom";
 import type { DashboardOutletContextProps } from "../../../../types/Types";
+import { InputGroup, SelectGroup } from "../../../../ui/form/FormComponents";
+import { ButtonGroup, SecondButton } from "../../../../ui/button/Button";
 
 interface ClassOption {
   value: string;
   label: string;
 }
-
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5 ml-1";
-const inputClass =
-  "w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all shadow-sm disabled:bg-gray-50 disabled:text-gray-400";
 
 interface AcademicGroupCreateProps {
   allAcademicClasses: AcademicClassProps[];
@@ -41,7 +39,8 @@ export default function AcademicGroupCreate({
   isAdding,
   getAllAcademicGroups,
 }: AcademicGroupCreateProps) {
-  const { allStatus } = useOutletContext<DashboardOutletContextProps>();
+  const { allStatus, startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [classOptions, setClassOptions] = useState<ClassOption[]>([]);
 
   useEffect(() => {
@@ -89,6 +88,7 @@ export default function AcademicGroupCreate({
       status: Yup.string().required("Status is required"),
     }),
     onSubmit: async (values, { setSubmitting }) => {
+      startLoadingBar();
       setSubmitting(true);
       try {
         const payload: any = {
@@ -110,67 +110,54 @@ export default function AcademicGroupCreate({
         getErrorResponse(error);
       } finally {
         setSubmitting(false);
+        stopLoadingBar();
       }
     },
   });
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-        {/* Header */}
-        <div className="px-8 py-6 border-b border-gray-100 bg-gray-50/30">
-          <h2 className="text-xl font-bold text-gray-900">
-            {isEditMode ? "Edit Academic Group" : "Create Academic Group"}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
+      <div className="bg-(--primary-bg) rounded-custom shadow-custom">
+        <div className="px-8 py-6">
+          <p className="font-bold text-(--text-color) ">
             {isEditMode
               ? "Update group name, status, or modify assigned classes."
               : "Define a new group and assign associated classes."}
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={formik.handleSubmit} className="p-8 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Group Name */}
             <div className={isEditMode ? "" : "md:col-span-2"}>
-              <label className={labelClass}>Academic Group Name</label>
-              <input
-                type="text"
-                name="academic_group"
-                value={formik.values.academic_group}
-                onChange={formik.handleChange}
+              <InputGroup
+                id="academic_group"
+                label="Academic Group Name"
                 placeholder="e.g., Primary Section, Science Stream"
-                className={inputClass}
+                {...formik.getFieldProps("academic_group")}
               />
               {getFormikError(formik, "academic_group")}
             </div>
 
-            {/* Status Dropdown - ONLY Visible in Edit Mode */}
             {isEditMode && (
               <div>
-                <label className={labelClass}>Status</label>
-                <select
-                  name="status"
-                  value={formik.values.status}
-                  onChange={formik.handleChange}
-                  className={inputClass}
-                >
-                  {getStatusAccodingToField(allStatus, "academic group").map(
-                    (s, i) => (
-                      <option key={i} value={s.status_name}>
-                        {s.status_name}
-                      </option>
-                    ),
-                  )}
-                </select>
+                <SelectGroup
+                  label="Status"
+                  {...formik.getFieldProps("status")}
+                  id="status"
+                  options={
+                    getStatusAccodingToField(allStatus, "academic group")
+                      ?.filter((item) => item?.status_name)
+                      ?.map((item) => item.status_name) || []
+                  }
+                />
                 {getFormikError(formik, "status")}
               </div>
             )}
 
-            {/* Classes Select - Full Width */}
             <div className="md:col-span-2">
-              <label className={labelClass}>Assign Classes</label>
+              <label className="block text-xs text-(--text-color) mb-1">
+                Assign Classes
+              </label>
               <Select
                 isMulti
                 name="academic_classess"
@@ -181,36 +168,29 @@ export default function AcademicGroupCreate({
                 }
                 onBlur={() => formik.setFieldTouched("academic_classess", true)}
                 classNamePrefix="select"
-                classNames={reactSelectDesignClass}
+                styles={customStyles}
                 placeholder="Select classes..."
               />
               {getFormikError(formik, "academic_classess")}
-              <p className="text-xs text-gray-400 mt-1.5 ml-1">
+              <p className="text-xs text-(--text-color) mt-1.5 ml-1">
                 You can select multiple classes for this group.
               </p>
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex justify-end pt-6 border-t border-gray-100 gap-3">
-            <button
-              type="button"
-              onClick={() => setIsAdding(false)}
-              className="px-6 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
+          <div className="flex justify-end gap-3">
+            <SecondButton onClick={() => setIsAdding(false)} label="Cancel" />
+            <ButtonGroup
               type="submit"
-              disabled={formik.isSubmitting}
-              className="px-6 py-2.5 rounded-lg text-sm font-bold text-white bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {formik.isSubmitting
-                ? "Saving..."
-                : isEditMode
-                  ? "Update Group"
-                  : "Create Group"}
-            </button>
+              disable={formik.isSubmitting}
+              label={
+                formik.isSubmitting
+                  ? "Saving..."
+                  : isEditMode
+                    ? "Update Group"
+                    : "Create Group"
+              }
+            />
           </div>
         </form>
       </div>

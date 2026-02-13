@@ -1,22 +1,17 @@
-"use client";
-
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { UserProps } from "@/types/UserProps";
-import { API } from "@/contexts/API";
 import {
-  BiX,
+  BiChevronRight,
   BiLogOut,
   BiUser,
-  BiChevronRight,
   BiCog,
-  BiGridAlt,
+  BiLinkExternal,
 } from "react-icons/bi";
+import { API } from "../../contexts/API";
 import toast from "react-hot-toast";
-import { getUserAvatar, getErrorResponse } from "@/contexts/Callbacks";
-import { IconType } from "react-icons";
+import type { UserProps } from "../../types/UserProps";
+import { getErrorResponse, getUserAvatar } from "../../contexts/Callbacks";
+import Link from "next/link";
+import { LuLayoutDashboard } from "react-icons/lu";
 
 interface Role {
   _id: string;
@@ -26,8 +21,8 @@ interface Role {
 interface SidebarItem {
   label: string;
   href: string;
-  icon: IconType;
-  external: boolean;
+  icon: React.ElementType;
+  external?: boolean;
 }
 
 interface SidebarSection {
@@ -35,18 +30,18 @@ interface SidebarSection {
   items: SidebarItem[];
 }
 
-interface ProfileSidebarProps {
+interface ProfileOffcanvasProps {
   isOpen: boolean;
   onClose: () => void;
-  profile: UserProps | null;
+  authUser: UserProps | null;
 }
 
-export default function ProfileSidebar({
+export function ProfileSidebar({
   isOpen,
   onClose,
-  profile,
-}: ProfileSidebarProps) {
-  const router = useRouter();
+  authUser,
+}: ProfileOffcanvasProps) {
+  const FRONT_URL = process.env.NEXT_PUBLIC_BASE_URL;
   const [roles, setRoles] = useState<Role[]>([]);
 
   const getRoles = useCallback(async () => {
@@ -63,197 +58,187 @@ export default function ProfileSidebar({
   }, [getRoles]);
 
   const roleName = useMemo(() => {
-    if (!profile?.role || roles.length === 0) return "";
-    const foundRole = roles.find((r) => r._id === profile.role);
+    if (!authUser?.role || roles.length === 0) return "";
+    const foundRole = roles.find((r) => r._id === authUser.role);
     return foundRole?.role?.toLowerCase() || "";
-  }, [profile, roles]);
+  }, [authUser, roles]);
 
-  const sidebarSections: SidebarSection[] = useMemo(() => {
-    const sections: SidebarSection[] = [];
+  const isStudent = roleName === "student";
 
-    if (roleName && roleName !== "student") {
-      sections.push({
-        label: "Administration",
-        items: [
-          {
-            label: "Console",
-            href: process.env.NEXT_PUBLIC_CONSOLE_URL || "#",
-            icon: BiGridAlt,
-            external: true,
-          },
-        ],
-      });
-    }
-
-    const accountItems: SidebarItem[] = [
-      {
-        label: "My Profile",
-        href: profile?.username ? `/profile/${profile.username}` : "#",
-        icon: BiUser,
-        external: false,
-      },
-    ];
-
-    if (roleName === "student") {
-      accountItems.push({
-        label: "Settings",
-        href: process.env.NEXT_PUBLIC_STUDENT_APP_URL || "#",
-        icon: BiCog,
-        external: true,
-      });
-    }
-
-    sections.push({
-      label: "Account",
-      items: accountItems,
-    });
-
-    return sections;
-  }, [roleName, profile]);
+  const SIDEBAR_SECTIONS: SidebarSection[] = isStudent
+    ? [
+        {
+          label: "Account",
+          items: [
+            {
+              label: "My Profile",
+              href: `${process.env.NEXT_PUBLIC_STUDENT_APP_URL}/profile`,
+              icon: BiUser,
+              external: true,
+            },
+            {
+              label: "Edit Profile",
+              href: `${process.env.NEXT_PUBLIC_STUDENT_APP_URL}/profile/edit`,
+              icon: BiCog,
+              external: true,
+            },
+          ],
+        },
+        {
+          label: "Public",
+          items: [
+            {
+              label: "View Public Profile",
+              href: `${FRONT_URL}/profile/${authUser?.username || ""}`,
+              icon: BiLinkExternal,
+              external: true,
+            },
+          ],
+        },
+      ]
+    : [
+        {
+          label: "Account",
+          items: [
+            {
+              label: "Console",
+              href: `${process.env.NEXT_PUBLIC_CONSOLE_URL}`,
+              icon: LuLayoutDashboard,
+              external: true,
+            },
+          ],
+        },
+      ];
 
   const handleLogout = async () => {
     try {
       await API.get("/auth/logout");
       toast.success("Logged out successfully");
-      router.push("/auth/login");
-      router.refresh();
+      window.location.reload();
     } catch (error) {
-      console.error("Logout failed", error);
-      router.push("/auth/login");
+      getErrorResponse(error, true);
     }
   };
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-50 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-(--text-color-emphasis)/20 backdrop-blur-sm z-50 transition-opacity duration-300 ${
           isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
       />
-
-      {/* Sidebar Panel */}
-      <div
-        className={`fixed top-0 right-0 h-full w-[320px] bg-white shadow-2xl z-60 transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col border-l border-slate-100 ${
+      <aside
+        className={`fixed top-0 right-0 h-full w-75 sm:w-95 bg-(--primary-bg) z-101 transform transition-transform duration-300 ease-out shadow-xl border-l border-(--border) ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* HEADER */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
-          <Link
-            href={profile?.username ? `/profile/${profile.username}` : "#"}
-            onClick={onClose}
-            className="flex items-center gap-3 overflow-hidden group"
-          >
-            <div className="relative w-10 h-10 min-w-10 rounded-full border border-slate-200 overflow-hidden bg-white shadow-sm">
-              <Image
-                src={getUserAvatar(profile?.avatar || [])}
-                fill
-                className="object-cover"
-                alt="Avatar"
-              />
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-bold text-slate-900 truncate max-w-40 group-hover:text-indigo-600 transition-colors">
-                {profile?.name || "User"}
-              </h3>
-              <p className="text-xs text-slate-500 truncate max-w-40">
-                @{profile?.username || "username"}
-              </p>
-            </div>
-          </Link>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500 transition-colors"
-          >
-            <BiX size={24} />
-          </button>
-        </div>
-
-        {/* BODY LINKS */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {sidebarSections.map((section) => (
-            <div key={section.label}>
-              <SectionLabel label={section.label} />
-              <div className="space-y-1 mt-2">
-                {section.items.map((item) => (
-                  <SidebarLink
-                    key={item.label}
-                    href={item.href}
-                    icon={item.icon}
-                    label={item.label}
-                    onClick={onClose}
-                    external={item.external}
-                  />
-                ))}
+        <div className="flex flex-col h-full overflow-y-auto">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-(--border)">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={getUserAvatar(authUser?.avatar || [])}
+                  alt="User"
+                  className="w-12 h-12 rounded-full object-cover border border-(--border)"
+                />
+              </div>
+              <div>
+                <h4 className="font-semibold text-(--text-main)">
+                  {authUser?.name || "Guest User"}
+                </h4>
+                <p className="text-sm text-(--text-muted)">{roleName}</p>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* FOOTER */}
-        <div className="p-5 border-t border-slate-100 bg-white">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 transition-all text-sm font-semibold duration-200 shadow-sm"
-          >
-            <BiLogOut size={18} />
-            Sign Out
-          </button>
+          <div className="flex-1">
+            {SIDEBAR_SECTIONS.map((section, idx) => (
+              <div
+                key={section.label}
+                className={`px-4 py-3 ${idx !== SIDEBAR_SECTIONS.length - 1 ? "border-b border-(--border)" : ""}`}
+              >
+                <p className="px-2 mb-2 text-xs font-bold uppercase tracking-wider text-(--text-muted)">
+                  {section.label}
+                </p>
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <ProfileItem
+                      key={item.label}
+                      item={item}
+                      onClick={onClose}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-auto px-4 py-4 border-t border-(--border) bg-(--secondary-bg)/30">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-4 w-full p-2 hover:bg-(--danger-subtle) transition-colors group rounded-custom"
+            >
+              <span className="w-10 h-10 flex items-center justify-center rounded-full bg-(--danger-subtle) group-hover:bg-(--danger) text-(--danger) group-hover:text-(--white) transition-all">
+                <BiLogOut size={18} />
+              </span>
+              <p className="font-semibold text-(--danger)">Logout</p>
+            </button>
+          </div>
         </div>
-      </div>
+      </aside>
     </>
   );
 }
 
-// --- Helper Components ---
-
-const SectionLabel = ({
-  label,
-  className = "",
-}: {
-  label: string;
-  className?: string;
-}) => (
-  <p
-    className={`px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 ${className}`}
-  >
-    {label}
-  </p>
-);
-
-const SidebarLink = ({
-  href,
-  icon: Icon,
-  label,
+function ProfileItem({
+  item,
   onClick,
-  external,
 }: {
-  href: string;
-  icon: IconType;
-  label: string;
+  item: SidebarItem;
   onClick: () => void;
-  external: boolean;
-}) => (
-  <Link
-    href={href}
-    onClick={onClick}
-    target={external ? "_blank" : "_self"}
-    className="flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 group transition-all duration-200"
-  >
-    <div className="flex items-center gap-3">
-      <Icon
-        size={20}
-        className="text-slate-400 group-hover:text-indigo-600 transition-colors"
+}) {
+  const { href, icon: Icon, label, external } = item;
+
+  const content = (
+    <>
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-(--secondary-bg) group-hover:bg-(--main) group-hover:text-(--white) group-hover:shadow-sm transition-all text-(--text-main)">
+          <Icon size={18} />
+        </div>
+        <p className="font-medium group-hover:text-(--main) transition-colors">
+          {label}
+        </p>
+      </div>
+      <BiChevronRight
+        size={18}
+        className="text-(--text-muted) group-hover:text-(--main) transition-all"
       />
-      <span className="text-sm font-medium">{label}</span>
-    </div>
-    <BiChevronRight
-      size={18}
-      className="text-slate-300 group-hover:text-indigo-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
-    />
-  </Link>
-);
+    </>
+  );
+
+  const className =
+    "flex items-center justify-between p-2 hover:bg-(--main-subtle) text-(--text-color) transition-all group rounded-custom";
+
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        onClick={onClick}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={href} className={className} onClick={onClick}>
+      {content}
+    </Link>
+  );
+}

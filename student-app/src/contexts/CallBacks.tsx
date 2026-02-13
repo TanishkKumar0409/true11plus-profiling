@@ -2,6 +2,8 @@ import type { AxiosError, AxiosResponse } from "axios";
 import type { FormikProps } from "formik";
 import type { JSX } from "react";
 import toast from "react-hot-toast";
+import { LuCalendarClock } from "react-icons/lu";
+import type { FieldDataSimple } from "../types/Types";
 
 export const getSuccessResponse = (response: unknown, hide = false): void => {
   const res = response as AxiosResponse<{ message: string }>;
@@ -121,3 +123,23 @@ export const getStatusColor = (status: string) => {
       return "primary";
   }
 };
+
+export const showComingSoonToast = () => {
+  toast.success("Coming Soon", {
+    icon: <LuCalendarClock className="text-(--main)" />,
+  });
+};
+
+export function getFieldDataSimple<T>(
+  data: T[],
+  field: keyof T,
+): FieldDataSimple[] {
+  const uniqueValues = Array.from(
+    new Set(data.map((item) => item[field]).filter(Boolean)),
+  );
+
+  return uniqueValues.map((val) => ({
+    title: String(val),
+    value: data.filter((item) => item[field] === val).length,
+  }));
+}

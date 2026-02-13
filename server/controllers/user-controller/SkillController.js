@@ -1,76 +1,115 @@
-import mongoose from "mongoose";
 import { getDataFromToken } from "../../utils/getDataFromToken.js";
 import UserSkills from "../../models/user-models/UserSkills.js";
+import Skills from "../../models/extra-models/Skills.js";
+import mongoose from "mongoose";
 
 export const addUserSkill = async (req, res) => {
   try {
     const { skill } = req.body;
+
     const userId = await getDataFromToken(req);
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
-
-    if (!skill || typeof skill !== "string" || !skill.trim())
+    if (!skill || typeof skill !== "string" || !skill.trim()) {
       return res.status(400).json({ error: "Skill is required" });
+    }
 
     const cleanSkill = skill.trim().toLowerCase();
 
-    const existingSkill = await UserSkills.findOne({
-      userId,
-      skill: cleanSkill,
-    });
+    let skillDoc = await Skills.findOne({ skill: cleanSkill });
 
-    if (existingSkill) {
-      return res.status(409).json({ error: "Skill already exists" });
+    if (!skillDoc) {
+      skillDoc = await Skills.create({
+        skill: cleanSkill,
+      });
     }
 
-    const newSkill = await UserSkills.create({
-      userId,
-      skill: cleanSkill,
-    });
+    const skillId = skillDoc._id;
 
-    return res.status(201).json({
+    let userSkillDoc = await UserSkills.findOne({ userId });
+
+    if (!userSkillDoc) {
+      const newDoc = await UserSkills.create({
+        userId,
+        skill: [skillId],
+      });
+
+      return res.status(201).json({
+        message: "Skill added successfully",
+        data: newDoc,
+      });
+    }
+
+    const exists = userSkillDoc.skill.some(
+      (id) => id.toString() === skillId.toString(),
+    );
+
+    if (exists) {
+      return res.status(200).json({
+        message: "Skill already exists",
+        data: userSkillDoc,
+      });
+    }
+
+    userSkillDoc.skill.push(skillId);
+    await userSkillDoc.save();
+
+    return res.status(200).json({
       message: "Skill added successfully",
-      data: newSkill,
+      data: userSkillDoc,
     });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Something went wrong. Please try again." });
+    console.error("addUserSkills error:", error);
+    return res.status(500).json({ error: "Something went wrong" });
   }
 };
 
 export const deleteUserSkill = async (req, res) => {
   try {
     const { objectId } = req.params;
-    const userId = await getDataFromToken(req);
 
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    const userIdRaw = await getDataFromToken(req);
+    if (!userIdRaw) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId))
-      return res.status(400).json({ error: "Invalid skillId" });
+    if (!objectId || !mongoose.Types.ObjectId.isValid(objectId)) {
+      return res.status(400).json({ error: "Invalid objectId" });
+    }
 
-    const deletedSkill = await UserSkills.findOneAndDelete({
-      _id: objectId,
-      userId,
+    const userId = new mongoose.Types.ObjectId(userIdRaw);
+    const skillObjectId = new mongoose.Types.ObjectId(objectId);
+
+    const updatedDoc = await UserSkills.findOneAndUpdate(
+      { userId },
+      {
+        $pull: { skill: skillObjectId },
+      },
+      { new: true },
+    );
+
+    if (!updatedDoc) {
+      return res.status(404).json({ error: "User skills not found" });
+    }
+
+    return res.status(200).json({
+      message: "Skill deleted successfully",
+      data: updatedDoc,
     });
-
-    if (!deletedSkill)
-      return res.status(404).json({ error: "Skill not found" });
-
-    return res.status(200).json({ message: "Skill deleted successfully" });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Something went wrong. Please try again." });
+    console.error("deleteUserSkill error:", error);
+    return res.status(500).json({
+      error: "Something went wrong. Please try again.",
+    });
   }
 };
 
 export const getSkillsByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
-    const skills = await UserSkills.find({ userId }).sort({ createdAt: -1 });
+    const skills = await UserSkills.findOne({ userId }).sort({ createdAt: -1 });
     return res.status(200).json(skills);
   } catch (error) {
     console.error(error);

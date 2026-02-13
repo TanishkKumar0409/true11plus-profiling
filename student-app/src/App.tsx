@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { NonSidebarNavigations, SidbarNavigations } from "./common/RouteData";
 import { Toaster } from "react-hot-toast";
 import DashboardLayout from "./layout/DashboardLayout";
@@ -6,6 +6,10 @@ import { useCallback, useEffect, useState } from "react";
 import type { RoleProps, UserProps } from "./types/UserTypes";
 import { API } from "./contexts/API";
 import { getErrorResponse } from "./contexts/CallBacks";
+import NotFound from "./pages/error/NotFound";
+import ComingSoon from "./pages/error/CommingSoon";
+import { SkeletonTheme } from "react-loading-skeleton";
+import MainLoader from "./ui/loading/pages/MainLoader";
 
 function App() {
   const [authUser, setAuthUser] = useState<UserProps | null>(null);
@@ -33,7 +37,7 @@ function App() {
       const rol = roles?.find((item) => item._id === id);
       return rol?.role;
     },
-    [roles]
+    [roles],
   );
 
   const getAuthUser = useCallback(async () => {
@@ -67,39 +71,47 @@ function App() {
     }
   }, [authLoading, authUser]);
 
-  if (authLoading) return <>Auth User Loading...</>;
+  if (authLoading) return <MainLoader/>;
 
   return (
     <>
       <BrowserRouter>
         <Toaster position="top-right" />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <DashboardLayout
-                authUser={authUser}
-                authLoading={authLoading}
-                getAuthUser={getAuthUser}
-              />
-            }
-          >
-            {SidbarNavigations?.map((page, index) => (
+        <SkeletonTheme>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <DashboardLayout
+                  authUser={authUser}
+                  authLoading={authLoading}
+                  getAuthUser={getAuthUser}
+                />
+              }
+            >
+              {SidbarNavigations?.map((page, index) => (
+                <Route
+                  path={page.href}
+                  element={<page.component />}
+                  key={index}
+                />
+              ))}
+              {NonSidebarNavigations?.map((page, index) => (
+                <Route
+                  path={page.href}
+                  element={<page.component />}
+                  key={index}
+                />
+              ))}
+              <Route path="/not-found" element={<NotFound />} />
+              <Route path="/comming-soon" element={<ComingSoon />} />
               <Route
-                path={page.href}
-                element={<page.component />}
-                key={index}
+                path="*"
+                element={<Navigate to={`/not-found`} replace />}
               />
-            ))}
-            {NonSidebarNavigations?.map((page, index) => (
-              <Route
-                path={page.href}
-                element={<page.component />}
-                key={index}
-              />
-            ))}
-          </Route>
-        </Routes>
+            </Route>
+          </Routes>
+        </SkeletonTheme>
       </BrowserRouter>
     </>
   );

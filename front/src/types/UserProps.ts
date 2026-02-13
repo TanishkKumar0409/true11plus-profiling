@@ -2,7 +2,7 @@ export interface UserProps {
   _id: string;
   username: string;
   name: string;
-  banner:string[];
+  banner: string[];
   avatar: string[];
   email: string;
   mobile_no: string;
@@ -13,5 +13,6 @@ export interface UserProps {
   country: string;
   verified: boolean;
   role: string;
-  website:string
+  website: string;
+  about: string;
 }

@@ -3,12 +3,44 @@ import type { ClassNamesConfig } from "react-select";
 export const phoneInputStyle = {
   container: "!w-full",
   input:
-    "!w-full !h-[42px] !text-sm !text-gray-900 !bg-white !border-gray-200 !rounded-lg focus:!ring-2 focus:!ring-purple-500 focus:!border-transparent !pl-12",
+    "!w-full paragraph !text-gray-900 !bg-white rounded-custom border! border-(--border)! focus:!ring-2 focus:!ring-purple-500 focus:!border-transparent",
   button: "!bg-gray-50 !border-gray-200 !rounded-l-lg hover:!bg-gray-100",
-  dropdown: "!bg-white !shadow-lg !rounded-lg !border-gray-100",
+  dropdown: "!bg-white !shadow-lg rounded-custom !border-gray-100",
 };
 
-// --- React Select Custom Styles (Tailwind) ---
+export const customStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    borderColor: state.isFocused ? "#9333ea" : "#d1d5db",
+    boxShadow: state.isFocused ? "0 0 0 1px #9333ea" : "none",
+    "&:hover": {
+      borderColor: "#9333ea",
+    },
+    padding: "2px",
+    borderRadius: "0.5rem",
+    fontSize: "0.875rem",
+    minHeight: "42px",
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#9333ea"
+      : state.isFocused
+        ? "#f3e8ff"
+        : "white",
+    color: state.isSelected ? "white" : "#374151",
+    fontSize: "0.875rem",
+    cursor: "pointer",
+  }),
+  menu: (base: any) => ({
+    ...base,
+    zIndex: 50,
+    borderRadius: "0.5rem",
+    boxShadow:
+      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+  }),
+};
+
 export const reactSelectDesignClass: ClassNamesConfig<any, true> = {
   control: (state) =>
     `!rounded-lg !border !bg-white !px-1 !min-h-[42px] !shadow-sm transition-all ${

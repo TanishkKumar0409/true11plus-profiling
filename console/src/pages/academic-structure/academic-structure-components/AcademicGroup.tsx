@@ -7,23 +7,30 @@ import type {
   AcademicClassProps,
   AcademicGroupProps,
 } from "../../../types/AcademicStructureType";
+import type { DashboardOutletContextProps } from "../../../types/Types";
+import { useOutletContext } from "react-router-dom";
 
 export default function AcademicGroup({
   allAcademicClasses,
 }: {
   allAcademicClasses: AcademicClassProps[];
 }) {
+  const { startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [allAcademicGroups, setAllAcademicGroups] = useState<
     AcademicGroupProps[]
   >([]);
   const [isAdding, setIsAdding] = useState<AcademicGroupProps | boolean>(false);
 
   const getAllAcademicGroups = useCallback(async () => {
+    startLoadingBar();
     try {
       const response = await API.get(`/academic/group/all`);
       setAllAcademicGroups(response.data);
     } catch (error) {
       getErrorResponse(error, true);
+    } finally {
+      stopLoadingBar();
     }
   }, []);
 

@@ -4,12 +4,18 @@ import type { PostProps } from "../../../types/PostTypes";
 import { getErrorResponse } from "../../../contexts/Callbacks";
 import { API } from "../../../contexts/API";
 import Posts from "./post_compoent/Posts";
+import { useOutletContext } from "react-router-dom";
+import type { DashboardOutletContextProps } from "../../../types/Types";
+import PostCardSkeleton from "../../../ui/loading/ui/card/PostCardSkeleton";
 
 export default function StudentPostTab({ user }: { user: UserProps | null }) {
+  const { startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [posts, setPosts] = useState<PostProps[]>([]);
   const [isFetching, setIsFetching] = useState(true);
 
   const getPosts = useCallback(async () => {
+    startLoadingBar();
     if (!user?._id) return;
 
     setIsFetching(true);
@@ -37,6 +43,10 @@ export default function StudentPostTab({ user }: { user: UserProps | null }) {
           );
           return {
             ...po,
+            all_images: po?.images?.map(
+              (item) =>
+                `${import.meta.env?.VITE_MEDIA_URL}/${item?.compressed}`,
+            ),
             totalLikes: likeFound?.totalLikes || 0,
           };
         });
@@ -46,6 +56,7 @@ export default function StudentPostTab({ user }: { user: UserProps | null }) {
       getErrorResponse(error, true);
     } finally {
       setIsFetching(false);
+      stopLoadingBar();
     }
   }, [user?._id]);
 
@@ -53,7 +64,16 @@ export default function StudentPostTab({ user }: { user: UserProps | null }) {
     getPosts();
   }, [getPosts]);
 
-  if (isFetching) return <>Loading post....</>;
+  if (isFetching)
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {Array(6)
+          .fill(true)
+          ?.map((_, i) => (
+            <PostCardSkeleton key={i} />
+          ))}
+      </div>
+    );
   return (
     <div>
       <Posts user={user} posts={posts} getPosts={getPosts} />

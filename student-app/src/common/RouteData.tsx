@@ -1,12 +1,12 @@
 import { MdDashboard } from "react-icons/md";
 import Dashboard from "../pages/dashboard/Dashboard";
-import Activity from "../pages/activity/Activity";
-import { CgWorkAlt } from "react-icons/cg";
+import { CgProfile } from "react-icons/cg";
 import ProfileEdit from "../pages/profile/ProfileEdit";
 import { BiTask } from "react-icons/bi";
 import Task from "../pages/task/Task";
 import TaskView from "../pages/task/TaskView";
 import SinglePostPage from "../pages/activity/PostComments";
+import Profile from "../pages/profile/Profile";
 
 export const SidbarNavigations = [
   {
@@ -17,11 +17,11 @@ export const SidbarNavigations = [
     component: Dashboard,
   },
   {
-    name: "Activity",
-    id: "activity",
-    icon: CgWorkAlt,
-    href: "/activity",
-    component: Activity,
+    name: "Profile",
+    id: "profile",
+    icon: CgProfile,
+    href: "/profile",
+    component: Profile,
   },
   {
     name: "Tasks",

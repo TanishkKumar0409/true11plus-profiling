@@ -1,33 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { IconType } from "react-icons";
-import { FiHome } from "react-icons/fi";
-import { BiMenu, BiX } from "react-icons/bi";
-import Image from "next/image";
-
+import { Button } from "@/ui/button/Button";
+import { BsArrowRight } from "react-icons/bs";
+import { BiChevronDown, BiMenu, BiX } from "react-icons/bi";
+import { usePathname } from "next/navigation";
 import { UserProps } from "@/types/UserProps";
 import { getErrorResponse, getUserAvatar } from "@/contexts/Callbacks";
 import { API } from "@/contexts/API";
-import ProfileSidebar from "./ProfileSidebar";
+import { ProfileSidebar } from "./ProfileSidebar";
 
-interface NavItem {
-  name: string;
-  href: string;
-  icon: IconType;
-}
-
-const NAV_ITEMS: NavItem[] = [{ name: "Home", href: "/", icon: FiHome }];
-
-const Navbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+export default function Navbar() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
   const [profile, setProfile] = useState<UserProps | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleProfileClick = () => {
+    setIsSidebarOpen(true);
+    setIsOpen(false);
+  };
 
   const getUserProfile = useCallback(async () => {
     setLoading(true);
@@ -46,166 +43,170 @@ const Navbar = () => {
     getUserProfile();
   }, [getUserProfile]);
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
 
-  const handleProfileClick = () => {
-    setIsSidebarOpen(true);
-    setIsMobileMenuOpen(false);
-  };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Courses", href: "/comming-soon" },
+    { name: "Mentors", href: "/comming-soon" },
+    { name: "Scholarships", href: "/comming-soon" },
+    { name: "Success Stories", href: "/comming-soon" },
+  ];
 
   return (
     <>
-      <nav className="bg-(--primary-bg) border-b border-(--border) sticky top-0 z-50">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 justify-between items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <img
-                src="/img/logo/logo.png"
-                alt="true11plus"
-                className="h-10 w-auto object-contain"
+      <motion.nav
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 px-6 py-4 md:px-12 ${
+          scrolled
+            ? "bg-(--primary-bg) backdrop-blur-lg py-3 shadow-sm"
+            : "bg-(--primary-bg) py-3"
+        }`}
+      >
+        <div className="px-4 sm:px-8 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-1 group">
+            <div className="">
+              <img src="/img/logo/logo.png" alt="Logo" className="h-10" />
+            </div>
+          </Link>
+
+          {/* DESKTOP NAVIGATION */}
+          <div className="hidden lg:flex items-center gap-8">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`text-sm font-bold uppercase tracking-widest transition-colors hover:text-(--main) ${
+                    isActive ? "text-(--main)" : "text-(--text-color)"
+                  }`}
+                >
+                  {link.name}
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeNav"
+                      className="h-0.5 w-full bg-(--main) mt-1"
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="hidden lg:flex items-center gap-4">
+            {loading ? (
+              <div className="h-10 w-24 animate-pulse bg-(--secondary-bg) rounded-md" />
+            ) : profile ? (
+              <Button
+                label={profile?.name}
+                variant="secondary"
+                onClick={handleProfileClick}
+                icon={
+                  <img
+                    src={getUserAvatar(profile?.avatar || [])}
+                    alt={profile?.username}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                }
+                className="flex items-center gap-3"
               />
-            </Link>
-
-            {/* Desktop Nav */}
-            <div className="hidden md:flex items-center space-x-2">
-              {NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
-                      ${
-                        active
-                          ? "text-(--main) bg-(--main-light)"
-                          : "text-(--text-color) hover:text-(--main) hover:bg-(--main-light)"
-                      }`}
-                  >
-                    <Icon size={16} />
-                    {item.name}
-                  </Link>
-                );
-              })}
-
-              {/* Desktop Right Side */}
-              {loading ? (
-                <div className="ml-2 flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full border border-(--border) opacity-70">
-                  <div className="w-8 h-8 rounded-full bg-(--gray-subtle)" />
-                  <div className="h-3 w-20 rounded bg-(--gray-subtle)" />
-                </div>
-              ) : profile ? (
-                <button
-                  onClick={handleProfileClick}
-                  className="ml-2 flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-full border border-transparent hover:border-(--border) hover:bg-(--gray-subtle) transition-all"
-                >
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-(--border)">
-                    <Image
-                      src={getUserAvatar(profile?.avatar || [])}
-                      fill
-                      className="object-cover"
-                      alt={profile?.name || "User"}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-(--text-color-emphasis)">
-                    {profile?.username}
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  href="/auth/login"
-                  className="ml-2 px-4 py-2 rounded-lg text-sm font-medium text-(--text-color) hover:text-(--main) hover:bg-(--main-light) transition"
-                >
-                  Login
-                </Link>
-              )}
-            </div>
-
-            {/* Mobile Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-              className="md:hidden text-(--text-color) p-2 hover:bg-(--gray-subtle) rounded-lg transition"
-              aria-label="Toggle menu"
-            >
-              {isMobileMenuOpen ? <BiX size={24} /> : <BiMenu size={24} />}
-            </button>
+            ) : (
+              <Button
+                label="Login"
+                href="/auth/login"
+                icon={<BsArrowRight size={16} />}
+                className="flex items-center gap-3"
+              />
+            )}
           </div>
+
+          {/* MOBILE MENU TOGGLE */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 text-(--text-color) z-110"
+          >
+            {isOpen ? <BiX size={28} /> : <BiMenu size={28} />}
+          </button>
         </div>
+      </motion.nav>
 
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-(--primary-bg) border-t border-(--border)">
-            <div className="px-4 py-4 space-y-2">
-              {NAV_ITEMS.map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.href);
-
+      {/* MOBILE OVERLAY MENU */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-90 bg-(--primary-bg) lg:hidden flex flex-col pt-24 px-8"
+          >
+            <div className="flex flex-col gap-6">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href;
                 return (
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={closeMobileMenu}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition
-                      ${
-                        active
-                          ? "text-(--main) bg-(--main-light)"
-                          : "text-(--text-color) hover:text-(--main) hover:bg-(--main-light)"
-                      }`}
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`text-xl font-bold transition-colors flex items-center justify-between ${
+                      isActive ? "text-(--main)" : "text-(--text-color)"
+                    } hover:text-(--main)`}
                   >
-                    <Icon size={20} />
-                    {item.name}
+                    {link.name}
+                    <BiChevronDown className="-rotate-90 text-(--text-subtle)" />
                   </Link>
                 );
               })}
+            </div>
 
-              {/* Mobile Profile/Login */}
-              {loading ? (
-                <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border-t border-(--gray-subtle) mt-2 pt-4 opacity-70">
-                  <div className="w-8 h-8 rounded-full bg-(--gray-subtle)" />
-                  <div className="h-3 w-24 rounded bg-(--gray-subtle)" />
-                </div>
-              ) : profile ? (
-                <button
+            <div className="mt-auto mb-12 flex flex-col gap-4">
+              {profile ? (
+                <Button
                   onClick={handleProfileClick}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition text-(--text-color) hover:text-(--main) hover:bg-(--main-light) border-t border-(--gray-subtle) mt-2 pt-4"
-                >
-                  <div className="relative w-8 h-8 rounded-full overflow-hidden border border-(--border)">
-                    <Image
+                  label="My Profile"
+                  variant="primary"
+                  icon={
+                    <img
                       src={getUserAvatar(profile?.avatar || [])}
-                      fill
-                      className="object-cover"
-                      alt={profile?.name || "User"}
+                      className="h-6 w-6 rounded-full"
+                      alt=""
                     />
-                  </div>
-                  <span className="text-sm font-medium text-(--text-color-emphasis)">
-                    {profile?.username}
-                  </span>
-                </button>
+                  }
+                />
               ) : (
-                <Link
-                  href="/auth/login"
-                  onClick={closeMobileMenu}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition text-(--text-color) hover:text-(--main) hover:bg-(--main-light) border-t border-(--gray-subtle) mt-2 pt-4"
-                >
-                  Login
-                </Link>
+                <>
+                  <Button
+                    variant="secondary"
+                    label="Sign In"
+                    href="/auth/login"
+                  />
+                  <Button
+                    label="Join Free"
+                    href="/auth/register"
+                    icon={<BsArrowRight size={16} />}
+                    className="flex items-center gap-3 justify-center"
+                  />
+                </>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
-      </nav>
+      </AnimatePresence>
 
       <ProfileSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        profile={profile}
+        authUser={profile}
       />
     </>
   );
-};
-
-export default Navbar;
+}

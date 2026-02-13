@@ -19,6 +19,10 @@ const userTaskSchema = mongoose.Schema(
             default: "assign",
             lowercase: true,
           },
+          assign_date: {
+            type: Date,
+            default: Date.now,
+          },
         },
       ],
     },

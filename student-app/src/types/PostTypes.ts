@@ -9,6 +9,7 @@ export interface PostProps {
   post_type: string;
   is_private: boolean;
   totalLikes: number;
+  all_images: string[];
 }
 
 export interface CommentProps {

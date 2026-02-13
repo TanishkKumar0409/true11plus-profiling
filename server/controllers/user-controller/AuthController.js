@@ -232,7 +232,6 @@ export const AuthUserDetails = async (req, res) => {
 
     const decoded = await DecodeJwtToken(token);
     const userDoc = await User.findById(decoded.id);
-
     if (!userDoc) {
       await removeToken(res);
       return res.status(404).json({ error: "User not found" });

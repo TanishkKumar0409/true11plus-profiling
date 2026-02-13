@@ -147,13 +147,13 @@ export default function BasicInfo({ user }: { user: UserProps | null }) {
           )}
 
           {/* Languages */}
-          {userLanguages.length > 0 && (
+          {userLanguages?.length > 0 && (
             <div>
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-1">
                 Languages
               </h4>
               <div className="flex flex-wrap gap-2">
-                {userLanguages.map((item, index) => {
+                {userLanguages?.map((item, index) => {
                   const resolvedName =
                     getLanguageById(item.languageId) ||
                     item.language ||

@@ -2,13 +2,6 @@ import { LuUsers } from "react-icons/lu";
 import { FiTool } from "react-icons/fi";
 import { BiCategory, BiHome, BiLabel, BiSitemap, BiTask } from "react-icons/bi";
 
-import LoginPage from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import ResetPassword from "../pages/auth/ResetPassword";
-import ResetPasswordConfirm from "../pages/auth/ResetPasswordConfirm";
-import ResetPasswordSend from "../pages/auth/ResetPasswordEmailSend";
-import VerifyEmailConfirm from "../pages/auth/VerifyEmailConfrim";
-import VerifyEmail from "../pages/auth/VerifyEmailSend";
 import Dashboard from "../pages/dashboard/Dashboard";
 import UserList from "../pages/users/UserList";
 import UserView from "../pages/users/UserView";
@@ -31,10 +24,7 @@ import StudentList from "../pages/students/StudentsList";
 import StudentView from "../pages/students/StudentView";
 import StudentTaskAssign from "../pages/students/StudentTaskAssign";
 import StudentTaskView from "../pages/students/StudentTaskView";
-
-// Import your components (Dashboard, UserList, etc.) here
-// import Dashboard from "...";
-// ...
+import StudentParticularPost from "../pages/students/StudentParticularPost";
 
 export const SidbarNavigations = [
   {
@@ -96,7 +86,7 @@ export const SidbarNavigations = [
     icon: BiTask,
     href: "/dashboard/tasks",
     component: Tasks,
-    roles: ["bot admin", "admin"],
+    roles: ["bot admin", "admin", "editor"],
     permission: "read task",
   },
   {
@@ -151,6 +141,14 @@ export const NonSidebarNavigations = [
     permission: "read student task",
   },
   {
+    name: "Student Post",
+    id: "student-post",
+    href: "/dashboard/student/:userId/post/:postId",
+    component: StudentParticularPost,
+    roles: ["bot admin", "admin", "mentor"],
+    permission: "read student post",
+  },
+  {
     name: "Status Create",
     id: "status-create",
     href: "/dashboard/status/create",
@@ -203,7 +201,7 @@ export const NonSidebarNavigations = [
     id: "task-create",
     href: "/dashboard/task/create",
     component: CreateTask,
-    roles: ["bot admin", "admin"],
+    roles: ["bot admin", "admin", "editor"],
     permission: "create task",
   },
   {
@@ -211,7 +209,7 @@ export const NonSidebarNavigations = [
     id: "task-view",
     href: "/dashboard/task/:objectId",
     component: TaskView,
-    roles: ["bot admin", "admin"],
+    roles: ["bot admin", "admin", "editor"],
     permission: "read task",
   },
   {
@@ -219,55 +217,7 @@ export const NonSidebarNavigations = [
     id: "task-edit",
     href: "/dashboard/task/:objectId/edit",
     component: EditTask,
-    roles: ["bot admin", "admin"],
+    roles: ["bot admin", "admin", "editor"],
     permission: "update task",
-  },
-];
-export const AuthNavigations = [
-  {
-    name: "Login",
-    id: "login",
-    href: "/",
-    component: LoginPage,
-    guestOnly: true,
-  },
-  {
-    name: "Register",
-    id: "register",
-    href: "/auth/register",
-    component: Register,
-    guestOnly: true,
-  },
-  {
-    name: "Verify Swal",
-    href: "/auth/verify-email/:email",
-    component: VerifyEmail,
-    public: true,
-  },
-  {
-    name: "Verify Email",
-    href: "/auth/verify-email/confirm/:token",
-    component: VerifyEmailConfirm,
-    public: true,
-  },
-];
-export const PublicNavigations = [
-  {
-    name: "Forgot Password",
-    href: "/auth/reset-password",
-    component: ResetPassword,
-    public: true,
-  },
-  {
-    name: "Forgot Password Swal",
-    href: "/auth/reset-password/send/:email",
-    component: ResetPasswordSend,
-    public: true,
-  },
-  {
-    name: "Reset Password",
-    href: "/auth/reset-password/confirm/:token",
-    component: ResetPasswordConfirm,
-    public: true,
   },
 ];

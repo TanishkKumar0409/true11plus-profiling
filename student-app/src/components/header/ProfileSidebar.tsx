@@ -1,24 +1,21 @@
-"use client";
-
+import React from "react";
+import { Link } from "react-router-dom";
+import type { UserProps } from "../../types/UserTypes";
+import { getErrorResponse, getUserAvatar } from "../../contexts/CallBacks";
 import {
-  BiX,
+  BiChevronRight,
   BiLogOut,
   BiUser,
-  BiChevronRight,
   BiCog,
   BiLinkExternal,
 } from "react-icons/bi";
-import toast from "react-hot-toast";
-import type { IconType } from "react-icons/lib";
-import type { UserProps } from "../../types/UserTypes";
 import { API } from "../../contexts/API";
-import { getErrorResponse, getUserAvatar } from "../../contexts/CallBacks";
-import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 interface SidebarItem {
   label: string;
   href: string;
-  icon: IconType;
+  icon: React.ElementType;
   external?: boolean;
 }
 
@@ -27,31 +24,30 @@ interface SidebarSection {
   items: SidebarItem[];
 }
 
-interface ProfileSidebarProps {
+interface ProfileOffcanvasProps {
   isOpen: boolean;
   onClose: () => void;
-  profile: UserProps | null;
+  authUser: UserProps | null;
 }
 
-export default function ProfileSidebar({
+export function ProfileSidebar({
   isOpen,
   onClose,
-  profile,
-}: ProfileSidebarProps) {
-  const FRONT_URL = import.meta.env.VITE_FRONT_URL || "";
+  authUser,
+}: ProfileOffcanvasProps) {
+  const FRONT_URL = import.meta.env.VITE_FRONT_URL;
 
-  // Dynamic sections based on profile data
   const SIDEBAR_SECTIONS: SidebarSection[] = [
     {
       label: "Account",
       items: [
         {
           label: "My Profile",
-          href: "/",
+          href: "/profile",
           icon: BiUser,
         },
         {
-          label: "Settings",
+          label: "Edit Profile",
           href: "/profile/edit",
           icon: BiCog,
         },
@@ -62,7 +58,7 @@ export default function ProfileSidebar({
       items: [
         {
           label: "View Public Profile",
-          href: `${FRONT_URL}/profile/${profile?.username}`,
+          href: `${FRONT_URL}/profile/${authUser?.username || ""}`,
           icon: BiLinkExternal,
           external: true,
         },
@@ -82,146 +78,123 @@ export default function ProfileSidebar({
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm z-60 transition-opacity duration-300 ${
-          isOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-100 transition-opacity duration-300 mobile-overlay cursor-pointer ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={onClose}
       />
-
-      {/* Sidebar Panel */}
-      <div
-        className={`fixed top-0 right-0 h-full w-[320px] bg-white shadow-2xl z-70 transform transition-transform duration-300 cubic-bezier(0.4, 0, 0.2, 1) flex flex-col border-l border-gray-100 ${
+      <aside
+        className={`fixed top-0 right-0 h-full w-75 sm:w-95 bg-(--primary-bg) z-101 transform transition-transform duration-300 ease-out shadow-xl border-l border-(--border) ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* 1. HEADER */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/50">
-          <Link
-            to="/"
-            onClick={onClose}
-            className="flex items-center gap-3 overflow-hidden group"
-          >
-            <div className="relative w-10 h-10 min-w-10 rounded-full border-2 border-white shadow-sm overflow-hidden bg-gray-200">
-              <img
-                src={getUserAvatar(profile?.avatar || [])}
-                className="object-cover w-full h-full"
-                alt="Avatar"
-              />
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-bold text-gray-900 truncate max-w-40 group-hover:text-purple-600 transition-colors">
-                {profile?.name || "User"}
-              </h3>
-              <p className="text-xs text-gray-500 truncate max-w-40">
-                @{profile?.username || "username"}
-              </p>
-            </div>
-          </Link>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg text-gray-500 hover:bg-purple-50 hover:text-purple-600 transition-colors"
-          >
-            <BiX size={22} />
-          </button>
-        </div>
-
-        {/* 2. BODY LINKS */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1">
-          {SIDEBAR_SECTIONS.map((section, index) => (
-            <div key={section.label} className={index > 0 ? "mt-4" : ""}>
-              <SectionLabel label={section.label} />
-              {section.items.map((item) => (
-                <SidebarLink
-                  key={item.label} // unique key
-                  href={item.href}
-                  icon={item.icon}
-                  label={item.label}
-                  onClick={onClose}
-                  external={item.external}
+        <div className="flex flex-col h-full overflow-y-auto">
+          <div className="px-6 py-5 flex items-center justify-between border-b border-(--border)">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={getUserAvatar(authUser?.avatar || [])}
+                  alt="User"
+                  className="w-12 h-12 rounded-full object-cover border border-(--border)"
                 />
-              ))}
+              </div>
+              <div>
+                <h4 className="font-semibold text-(--text-main)">
+                  {authUser?.name || "Guest User"}
+                </h4>
+                <p className="text-sm text-(--text-muted)">
+                  {authUser?.role || "Member"}
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* 3. FOOTER */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50/30">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-red-50 hover:border-red-100 hover:text-red-600 transition-all text-sm font-medium duration-200 shadow-sm hover:shadow-md"
-          >
-            <BiLogOut size={18} />
-            Sign Out
-          </button>
+          <div className="flex-1">
+            {SIDEBAR_SECTIONS.map((section, idx) => (
+              <div
+                key={section.label}
+                className={`px-4 py-3 ${idx !== SIDEBAR_SECTIONS.length - 1 ? "border-b border-(--border)" : ""}`}
+              >
+                <p className="px-2 mb-2 text-xs font-bold uppercase tracking-wider text-(--text-muted)">
+                  {section.label}
+                </p>
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <ProfileItem
+                      key={item.label}
+                      item={item}
+                      onClick={onClose}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-auto px-4 py-4 border-t border-(--border) bg-(--secondary-bg)/30">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-4 w-full p-2 hover:bg-(--danger-subtle) transition-colors group rounded-custom"
+            >
+              <span className="w-10 h-10 flex items-center justify-center rounded-full bg-(--danger-subtle) group-hover:bg-(--danger) text-(--danger) group-hover:text-(--white) transition-all">
+                <BiLogOut size={18} />
+              </span>
+              <p className="font-semibold text-(--danger)">Logout</p>
+            </button>
+          </div>
         </div>
-      </div>
+      </aside>
     </>
   );
 }
 
-// --- Helper Components ---
-
-const SectionLabel = ({
-  label,
-  className = "",
+function ProfileItem({
+  item,
+  onClick,
 }: {
-  label: string;
-  className?: string;
-}) => (
-  <p
-    className={`px-3 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider ${className}`}
-  >
-    {label}
-  </p>
-);
+  item: SidebarItem;
+  onClick: () => void;
+}) {
+  const { href, icon: Icon, label, external } = item;
 
-const SidebarLink = ({ href, icon: Icon, label, onClick, external }: any) => {
-  // Determine if we use react-router Link or standard anchor tag
+  const content = (
+    <>
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 flex items-center justify-center rounded-full bg-(--secondary-bg) group-hover:bg-(--main) group-hover:text-(--white) group-hover:shadow-sm transition-all text-(--text-main)">
+          <Icon size={18} />
+        </div>
+        <p className="font-medium group-hover:text-(--main) transition-colors">
+          {label}
+        </p>
+      </div>
+      <BiChevronRight
+        size={18}
+        className="text-(--text-muted) group-hover:text-(--main) transition-all"
+      />
+    </>
+  );
+
+  const className =
+    "flex items-center justify-between p-2 hover:bg-(--main-subtle) text-(--text-color) transition-all group rounded-custom";
+
   if (external) {
     return (
       <a
         href={href}
-        onClick={onClick}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-600 hover:bg-purple-50 hover:text-purple-700 group transition-all duration-200"
+        className={className}
+        onClick={onClick}
       >
-        <div className="flex items-center gap-3">
-          <Icon
-            size={18}
-            className="text-gray-400 group-hover:text-purple-600 transition-colors"
-          />
-          <span className="text-sm font-medium">{label}</span>
-        </div>
-        <BiLinkExternal
-          size={16}
-          className="text-gray-300 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
-        />
+        {content}
       </a>
     );
   }
 
   return (
-    <Link
-      to={href}
-      onClick={onClick}
-      className="flex items-center justify-between px-3 py-2.5 rounded-xl text-gray-600 hover:bg-purple-50 hover:text-purple-700 group transition-all duration-200"
-    >
-      <div className="flex items-center gap-3">
-        <Icon
-          size={18}
-          className="text-gray-400 group-hover:text-purple-600 transition-colors"
-        />
-        <span className="text-sm font-medium">{label}</span>
-      </div>
-      <BiChevronRight
-        size={16}
-        className="text-gray-300 group-hover:text-purple-500 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
-      />
+    <Link to={href} className={className} onClick={onClick}>
+      {content}
     </Link>
   );
-};
+}

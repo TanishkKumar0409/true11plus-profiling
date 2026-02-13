@@ -23,6 +23,7 @@ export const DecodeJwtToken = (token) => {
     if (error.name === "TokenExpiredError") {
       return { expired: true };
     }
+    if (error.message === "invalid signature") return { expired: true };
     throw error;
   }
 };

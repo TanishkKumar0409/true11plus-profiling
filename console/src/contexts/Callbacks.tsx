@@ -19,7 +19,7 @@ export function getFormikError<T>(
     return null;
   }
 
-  return <p className="text-xs text-red-500 ml-1">{error}</p>;
+  return <p className="text-xs text-(--danger)! ml-1">{error}</p>;
 }
 
 export const getErrorResponse = (error: unknown, hide = false): void => {

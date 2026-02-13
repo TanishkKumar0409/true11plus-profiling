@@ -23,6 +23,7 @@ export interface TaskProps extends Record<string, unknown> {
     duration_value: number;
     duration_type: string;
   };
+  assign_date?: string;
   objective: string;
   steps_to_implement: string;
   final_deliverable: string;

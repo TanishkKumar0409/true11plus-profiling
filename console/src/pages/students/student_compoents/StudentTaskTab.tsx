@@ -1,44 +1,107 @@
-import { useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import {
-  BiPlus,
-  BiTask,
-  BiTimeFive,
-  BiDotsHorizontalRounded,
-} from "react-icons/bi";
-import {
-  getErrorResponse,
-  getStatusColor,
-  stripHtml,
-} from "../../../contexts/Callbacks";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getErrorResponse } from "../../../contexts/Callbacks";
 import type { TaskProps } from "../../../types/AcademicStructureType";
 import { API } from "../../../contexts/API";
-import Badge from "../../../ui/badge/Badge";
+import type { UserProps } from "../../../types/UserProps";
+import TaskHeader from "./all_task_components/TaskHeader";
+import TasksColumn from "./all_task_components/TaskColumn";
+import { useOutletContext } from "react-router-dom";
+import type { DashboardOutletContextProps } from "../../../types/Types";
+import TaskTabSkeleton from "../../../ui/loading/ui/tabs_compoents/TaskTabSkeleton";
 
 interface AssignedTaskEntry {
-  task_id: string | { _id: string };
+  task_id: string;
   status: string;
   _id: string;
 }
 
-interface MergedTask extends TaskProps {
+export interface MergedTask extends TaskProps {
   status: string;
   assignment_id: string;
+  colId: string;
 }
 
-export default function StudentTaskTab() {
-  const { objectId } = useParams(); // Student ID
-  const navigate = useNavigate();
+const COLUMN_MAPPING = [
+  {
+    id: "col-1",
+    title: "Rejected",
+    color: "border-red-400",
+    bg: "bg-red-400",
+    weight: 10,
+    statuses: ["rejected"],
+  },
+  {
+    id: "col-2",
+    title: "Not started",
+    color: "border-gray-400",
+    bg: "bg-gray-400",
+    weight: 0,
+    statuses: ["assign"],
+  },
+  {
+    id: "col-3",
+    title: "Started",
+    color: "border-blue-400",
+    bg: "bg-blue-400",
+    weight: 28,
+    statuses: ["started"],
+  },
+  {
+    id: "col-4",
+    title: "Submitted",
+    color: "border-indigo-400",
+    bg: "bg-indigo-400",
+    weight: 80,
+    statuses: ["submitted", "pending"],
+  },
+  {
+    id: "col-5",
+    title: "On hold",
+    color: "border-orange-400",
+    bg: "bg-orange-400",
+    weight: 40,
+    statuses: ["hold"],
+  },
+  {
+    id: "col-6",
+    title: "Completed",
+    color: "border-green-400",
+    bg: "bg-green-400",
+    weight: 100,
+    statuses: ["approved", "completed"],
+  },
+];
+
+export default function StudentTaskTab({ user }: { user: UserProps | null }) {
+  const { startLoadingBar, stopLoadingBar } =
+    useOutletContext<DashboardOutletContextProps>();
   const [loading, setLoading] = useState(true);
   const [myTasks, setMyTasks] = useState<MergedTask[]>([]);
+  const [colWidths, setColWidths] = useState<Record<string, number>>({
+    "col-1": 320,
+    "col-2": 320,
+    "col-3": 320,
+    "col-4": 320,
+    "col-5": 320,
+    "col-6": 320,
+  });
+  const [visibleCols, setVisibleCols] = useState<string[]>(() => {
+    const saved = localStorage.getItem("task_visible_columns");
+    return saved ? JSON.parse(saved) : COLUMN_MAPPING.map((c) => c.id);
+  });
+  const [resizingCol, setResizingCol] = useState<{
+    id: string;
+    startX: number;
+    startWidth: number;
+  } | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!objectId) return;
+    startLoadingBar();
+    if (!user?._id) return;
     try {
-      setLoading(true);
       const [allTasksRes, assignedRes] = await Promise.all([
         API.get("/task/all"),
-        API.get(`/user/task/${objectId}`),
+        API.get(`/user/task/${user?._id}`),
       ]);
 
       const allTasks: TaskProps[] =
@@ -47,144 +110,140 @@ export default function StudentTaskTab() {
         assignedRes.data?.assignment || assignedRes.data || {};
       const assignedEntries: AssignedTaskEntry[] = assignmentData.tasks || [];
 
-      // Map assigned tasks
       const assignmentMap = new Map<string, { status: string; id: string }>();
-
       assignedEntries.forEach((entry) => {
-        const tId =
-          typeof entry.task_id === "object" ? entry.task_id._id : entry.task_id;
-        if (tId) {
-          assignmentMap.set(tId, {
+        if (entry.task_id) {
+          assignmentMap.set(entry.task_id, {
             status: entry.status.toLowerCase(),
             id: entry._id,
           });
         }
       });
 
-      // Filter and Merge
       const merged: MergedTask[] = allTasks
         .filter((t) => assignmentMap.has(t._id))
         .map((t) => {
           const details = assignmentMap.get(t._id)!;
+          const targetCol =
+            COLUMN_MAPPING.find((c) => c.statuses.includes(details.status)) ||
+            COLUMN_MAPPING[1];
           return {
             ...t,
             status: details.status,
             assignment_id: details.id,
+            colId: targetCol.id,
           };
         });
 
       setMyTasks(merged);
     } catch (error) {
-      getErrorResponse(error);
+      getErrorResponse(error, true);
     } finally {
       setLoading(false);
+      stopLoadingBar();
     }
-  }, [objectId]);
+  }, [user?._id]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  const dynamicColumns = useMemo(() => {
+    const total = myTasks.length;
+    return COLUMN_MAPPING.map((col) => {
+      const tasksInCol = myTasks.filter((t) => t.colId === col.id).length;
+      return {
+        ...col,
+        width: colWidths[col.id],
+        percentage: total > 0 ? Math.round((tasksInCol / total) * 100) : 0,
+        count: tasksInCol,
+      };
+    });
+  }, [myTasks, colWidths]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  const progressMetrics = useMemo(() => {
+    const total = myTasks.length;
+    if (total === 0) return { totalTasks: 0, globalProgress: 0 };
+    const totalWeightSum = myTasks.reduce((acc, task) => {
+      const column = COLUMN_MAPPING.find((c) => c.id === task.colId);
+      return acc + (column ? column.weight : 0);
+    }, 0);
+    return {
+      totalTasks: total,
+      globalProgress: Math.round(totalWeightSum / total),
+    };
+  }, [myTasks]);
+
+  // --- Resize Handlers ---
+  const startResizing = (colId: string, e: React.MouseEvent) => {
+    setResizingCol({
+      id: colId,
+      startX: e.clientX,
+      startWidth: colWidths[colId],
+    });
+  };
+
+  const doResizing = useCallback(
+    (e: MouseEvent) => {
+      if (!resizingCol) return;
+      const delta = e.clientX - resizingCol.startX;
+      const newWidth = Math.max(resizingCol.startWidth + delta, 200);
+      setColWidths((prev) => ({ ...prev, [resizingCol.id]: newWidth }));
+    },
+    [resizingCol],
+  );
+
+  useEffect(() => {
+    if (resizingCol) {
+      window.addEventListener("mousemove", doResizing);
+      window.addEventListener("mouseup", () => setResizingCol(null));
+    }
+    return () => {
+      window.removeEventListener("mousemove", doResizing);
+      window.removeEventListener("mouseup", () => setResizingCol(null));
+    };
+  }, [resizingCol, doResizing]);
+
+  const toggleColumn = (id: string) => {
+    setVisibleCols((prev) => {
+      const updated = prev.includes(id)
+        ? prev.filter((i) => i !== id)
+        : [...prev, id];
+
+      localStorage.setItem("task_visible_columns", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  if (loading) return <TaskTabSkeleton />;
 
   return (
-    <div className="space-y-6">
-      {/* Tab Header Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-        <div>
-          <h3 className="text-lg font-bold text-gray-900">Assigned Tasks</h3>
-          <p className="text-sm text-gray-500">
-            Manage and track tasks assigned to this student.
-          </p>
-        </div>
-        <button
-          onClick={() =>
-            navigate(`/dashboard/student/${objectId}/tasks/assign`)
-          }
-          className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold shadow-md shadow-purple-200 transition-all"
+    <div
+      className={`min-h-screen flex flex-col overflow-hidden font-sans ${resizingCol ? "cursor-col-resize select-none" : ""}`}
+    >
+      <TaskHeader
+        columns={dynamicColumns}
+        visibleCols={visibleCols}
+        toggleColumn={toggleColumn}
+        progressMetrics={progressMetrics}
+      />
+      <main className="flex-1 overflow-x-auto p-6 scrollbar-hide">
+        <div
+          className="flex flex-row h-full items-start"
+          style={{ minWidth: "min-content" }}
         >
-          <BiPlus size={20} />
-          Assign New Task
-        </button>
-      </div>
-
-      {/* Task List */}
-      {myTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-white border-2 border-dashed border-gray-100 rounded-2xl">
-          <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-4">
-            <BiTask size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-gray-700">No Tasks Assigned</h3>
-          <p className="text-gray-500 text-sm mt-1">
-            This student has not been assigned any tasks yet.
-          </p>
+          {dynamicColumns
+            .filter((c) => visibleCols.includes(c.id))
+            .map((column) => (
+              <TasksColumn
+                key={column.id}
+                column={column}
+                tasks={myTasks.filter((t) => t.colId === column.id)}
+                onResize={startResizing}
+                isResizingActive={resizingCol?.id === column.id}
+              />
+            ))}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {myTasks.map((task) => (
-            <div
-              key={task._id}
-              className="group bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden"
-            >
-              {/* Background Decoration */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-              <div className="relative z-10 space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 pr-4">
-                    <Link
-                      to={`/dashboard/student/${objectId}/tasks/${task._id}`}
-                      className="text-base font-bold text-gray-900 line-clamp-1 hover:text-purple-600 transition-colors"
-                    >
-                      {task.title}
-                    </Link>
-                    <div className="text-xs text-gray-500 mt-1 line-clamp-2 min-h-[2.5em]">
-                      {stripHtml(task.objective, 100)}
-                    </div>
-                  </div>
-                  <div className="shrink-0">
-                    <Badge
-                      children={task?.status}
-                      variant={getStatusColor(task.status)}
-                    />
-                  </div>
-                </div>
-
-                {/* Footer / Meta */}
-                <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-xs font-medium text-gray-400">
-                    <div className="flex items-center gap-1.5">
-                      <BiTimeFive />
-                      {task.duration
-                        ? `${task.duration.duration_value} ${task.duration.duration_type}`
-                        : "N/A"}
-                    </div>
-                    {typeof task.difficulty_level === "object" && (
-                      <span className="capitalize">
-                        {task.difficulty_level?.category_name}
-                      </span>
-                    )}
-                  </div>
-
-                  <Link
-                    to={`/dashboard/task/${task._id}`}
-                    className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                    title="View Details"
-                  >
-                    <BiDotsHorizontalRounded size={20} />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      </main>
     </div>
   );
 }

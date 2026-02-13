@@ -23,6 +23,8 @@ export interface DashboardOutletContextProps {
   getAllStatus: () => void;
   allCategory: CategoryProps[];
   getAllCategory: () => void;
+  startLoadingBar: () => void;
+  stopLoadingBar: () => void;
 }
 
 export interface FieldDataSimple {
@@ -58,5 +60,5 @@ export interface CategoryProps extends Record<string, unknown> {
   parent_category: string;
   createdAt: string;
   description: string;
-  status:string
+  status: string;
 }

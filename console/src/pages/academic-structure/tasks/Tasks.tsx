@@ -16,17 +16,25 @@ import TableButton from "../../../ui/button/TableButton";
 import { LuEye, LuPencil, LuTrash2 } from "react-icons/lu";
 import { DataTable } from "../../../ui/table/DataTable";
 import Badge from "../../../ui/badge/Badge";
+import UserListSkeleton from "../../../ui/loading/pages/UserListSkeleton";
 
 export default function Tasks() {
   const [alltask, setAllTasks] = useState<TaskProps[]>([]);
-  const { authLoading, authUser } =
+  const { authLoading, authUser, startLoadingBar, stopLoadingBar } =
     useOutletContext<DashboardOutletContextProps>();
+  const [loading, setLoading] = useState(true);
+
   const getAllTask = useCallback(async () => {
+    startLoadingBar();
+    setLoading(true);
     try {
       const response = await API.get(`/task/all`);
       setAllTasks(response.data);
     } catch (error) {
       getErrorResponse(error, true);
+    } finally {
+      setLoading(false);
+      stopLoadingBar();
     }
   }, []);
   useEffect(() => {
@@ -35,6 +43,7 @@ export default function Tasks() {
 
   const handleDelete = useCallback(
     async (id: string) => {
+      startLoadingBar();
       try {
         const result = await Swal.fire({
           title: "Are you sure?",
@@ -53,6 +62,8 @@ export default function Tasks() {
         }
       } catch (error) {
         getErrorResponse(error);
+      } finally {
+        stopLoadingBar();
       }
     },
     [getAllTask],
@@ -127,6 +138,8 @@ export default function Tasks() {
     ],
     [handleDelete, authLoading, authUser?.permissions],
   );
+
+  if (loading) return <UserListSkeleton showProfile={false} cards />;
 
   return (
     <div>
