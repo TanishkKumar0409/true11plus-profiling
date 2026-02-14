@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BiMinus, BiPlus } from "react-icons/bi";
 import { LuSparkles } from "react-icons/lu";
 import { trueFaqs } from "@/common/FaqData";
-import { UserProps } from "@/types/UserProps";
-import { getUserAvatar } from "@/contexts/Callbacks";
+import { trueTestimonials } from "@/common/TestimonialsData";
+import Image from "next/image";
 
-export default function FAQSection({ students }: { students: UserProps[] }) {
+export default function FAQSection() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   return (
@@ -28,7 +28,7 @@ export default function FAQSection({ students }: { students: UserProps[] }) {
             </div>
             <h2 className="text-5xl md:text-7xl font-black text-(--text-color) leading-[1.1] tracking-tighter">
               Answers to your <br />
-              <span className="text-(--main) italic font-serif">
+              <span className="text-main-gradient italic font-times-custom">
                 Big Questions
               </span>
             </h2>
@@ -40,22 +40,20 @@ export default function FAQSection({ students }: { students: UserProps[] }) {
 
             <div className="mt-12 flex items-center gap-6">
               <div className="flex -space-x-3">
-                {students
-                  ?.filter((item) => item?.avatar?.length > 0)
-                  ?.slice(0, 5)
-                  ?.map((student, idx) => (
-                    <div
-                      key={idx}
-                      className="relative w-12 h-12 rounded-full border-4 border-(--border) bg-(--secondary-bg) shadow-custom overflow-hidden"
-                      style={{ zIndex: 5 - idx }}
-                    >
-                      <img
-                        src={getUserAvatar(student?.avatar || [])}
-                        alt={student.name || "Student"}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
+                {trueTestimonials?.map((student, idx) => (
+                  <div
+                    key={idx}
+                    className="relative w-12 h-12 rounded-full border-4 border-(--border) bg-(--secondary-bg) shadow-custom overflow-hidden"
+                    style={{ zIndex: 5 - idx }}
+                  >
+                    <Image
+                      fill
+                      src={student?.img}
+                      alt={student.name || "Student"}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
               </div>
               <p className="text-sm font-medium text-(--text-color)">
                 <span className="text-(--text-color-emphasis) font-bold">

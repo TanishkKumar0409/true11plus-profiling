@@ -10,6 +10,7 @@ interface ButtonProps {
   disabled?: boolean;
   icon?: React.ReactNode;
   variant?: "primary" | "secondary";
+  hideText?: boolean;
 }
 
 export const Button = ({
@@ -21,6 +22,7 @@ export const Button = ({
   disabled = false,
   icon,
   variant = "primary",
+  hideText = false,
 }: ButtonProps) => {
   const variantClasses =
     variant === "secondary" ? "btn-shine-secondary" : "btn-shine";
@@ -28,10 +30,10 @@ export const Button = ({
     `${variantClasses} ${className} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`.trim();
 
   const content = (
-    <>
-      {label}
+    <div className="flex items-center gap-2 justify-center">
+      {!hideText && label}
       {icon}
-    </>
+    </div>
   );
 
   if (href && href.trim() !== "") {

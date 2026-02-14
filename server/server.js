@@ -9,6 +9,7 @@ import postRouter from "./routes/PostRoutes.js";
 import SystemAssetsRoutes from "./routes/SystemAssetsRoutes.js";
 import academicStructureRoutes from "./routes/AcademicStructureRoutes.js";
 import userAcademicRoutes from "./routes/userAcademicRoutes.js";
+import enquiryRoutes from "./routes/EnquiryRoutes.js";
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.use("/api", postRouter);
 app.use("/api", SystemAssetsRoutes);
 app.use("/api", academicStructureRoutes);
 app.use("/api", userAcademicRoutes);
+app.use("/api", enquiryRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

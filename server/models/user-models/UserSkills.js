@@ -16,5 +16,5 @@ const SkillSchema = mongoose.Schema(
   },
   { timestamps: true },
 );
-const UserSkills = MainDatabase.model("User-skills", SkillSchema);
+const UserSkills = MainDatabase.model("user-skills", SkillSchema);
 export default UserSkills;

@@ -1,121 +1,108 @@
 import { API } from "@/contexts/API";
 import { getErrorResponse } from "@/contexts/Callbacks";
 import { UserProps } from "@/types/UserProps";
+import EducationInfoSkeleton from "@/ui/loading/components/profile/EducationInfoSkeleton";
 import React, { useCallback, useEffect, useState, useMemo } from "react";
-import { BiCalendar, BiBuilding } from "react-icons/bi";
+import { BiCalendar } from "react-icons/bi";
 
 interface UserEducation {
-    _id: string;
-    student_class: string;
-    school: string;
-    academic_year: string;
-    description: string;
-    pursuing: boolean;
+  _id: string;
+  student_class: string;
+  school: string;
+  academic_year: string;
+  description: string;
+  pursuing: boolean;
 }
 
 export default function EducationInfo({ user }: { user: UserProps | null }) {
-    const [educations, setEducations] = useState<UserEducation[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+  const [educations, setEducations] = useState<UserEducation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const getEducation = useCallback(async () => {
-        if (!user?._id) return;
-        try {
-            const response = await API.get(`user/education/${user._id}`);
-            setEducations(response.data);
-        } catch (error) {
-            getErrorResponse(error, true);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user?._id]);
-
-    useEffect(() => {
-        getEducation();
-    }, [getEducation]);
-
-    // --- Grouping Logic: Group by School ---
-    const groupedEducations = useMemo(() => {
-        const groups: Record<string, UserEducation[]> = {};
-        educations.forEach((edu) => {
-            const schoolKey = edu.school.trim();
-            if (!groups[schoolKey]) {
-                groups[schoolKey] = [];
-            }
-            groups[schoolKey].push(edu);
-        });
-        return groups;
-    }, [educations]);
-
-    // --- CONDITIONAL RENDERING ---
-    if (!isLoading && educations.length === 0) {
-        return null;
+  const getEducation = useCallback(async () => {
+    if (!user?._id) return;
+    try {
+      const response = await API.get(`user/education/${user._id}`);
+      setEducations(response.data);
+    } catch (error) {
+      getErrorResponse(error, true);
+    } finally {
+      setIsLoading(false);
     }
+  }, [user?._id]);
 
-    return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900">Education</h3>
-            </div>
+  useEffect(() => {
+    getEducation();
+  }, [getEducation]);
 
-            <div className="p-5 space-y-8">
-                {Object.entries(groupedEducations).map(([schoolName, schoolClasses]) => (
-                    <div key={schoolName}>
-                        {/* School Header */}
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                <BiBuilding size={20} />
-                            </div>
-                            <h4 className="font-bold text-gray-800 text-lg">{schoolName}</h4>
-                        </div>
+  const groupedEducations = useMemo(() => {
+    const groups: Record<string, UserEducation[]> = {};
+    educations.forEach((edu) => {
+      const schoolKey = edu.school.trim();
+      if (!groups[schoolKey]) {
+        groups[schoolKey] = [];
+      }
+      groups[schoolKey].push(edu);
+    });
+    return groups;
+  }, [educations]);
 
-                        {/* List of Classes at this School */}
-                        <div className="space-y-6">
-                            {schoolClasses.map((edu) => (
-                                <div
-                                    key={edu._id}
-                                    className="relative pl-6 border-l-2 border-purple-100 last:border-0 ml-4"
-                                >
-                                    {/* Timeline Dot */}
-                                    <div className="absolute top-1.5 -left-[7px] w-3 h-3 rounded-full bg-purple-600 ring-4 ring-white"></div>
+  if (isLoading) return <EducationInfoSkeleton />;
+  if (!isLoading && educations.length <= 0) return;
 
-                                    <div className="group">
-                                        {/* Class Name */}
-                                        <h5 className="text-base font-semibold text-gray-800 leading-tight">
-                                            {edu.student_class}
-                                        </h5>
+  return (
+    <div className="bg-(--primary-bg) rounded-custom overflow-hidden shadow-custom">
+      <div className="px-5 pt-4">
+        <h3 className="font-semibold text-(--text-color)">Education</h3>
+      </div>
 
-                                        {/* Academic Year Badge */}
-                                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1 mb-2">
-                                            <span
-                                                className={`px-2 py-0.5 rounded flex items-center gap-1 font-medium ${edu.pursuing
-                                                    ? "bg-green-50 text-green-700"
-                                                    : "bg-gray-100 text-gray-600"
-                                                    }`}
-                                            >
-                                                {edu.pursuing ? (
-                                                    "Pursuing"
-                                                ) : (
-                                                    <>
-                                                        <BiCalendar size={11} /> {edu.academic_year}
-                                                    </>
-                                                )}
-                                            </span>
-                                        </div>
+      <div className="p-5 space-y-8">
+        {Object.entries(groupedEducations).map(
+          ([schoolName, schoolClasses]) => (
+            <div key={schoolName}>
+              <h5 className="font-medium text-sm text-(--text-color) mb-4">
+                {schoolName}
+              </h5>
 
-                                        {/* Description */}
-                                        {edu.description && (
-                                            <p className="text-sm text-gray-600 leading-relaxed mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                                {edu.description}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+              <div className="space-y-5">
+                {schoolClasses.map((edu, index) => (
+                  <div
+                    key={index}
+                    className="space-y-2 bg-(--secondary-bg) p-2 rounded-custom shadow-custom"
+                  >
+                    <h5 className="text-sm  font-semibold text-(--text-color-emphasis)">
+                      {edu.student_class}
+                    </h5>
+
+                    <div className="flex items-center gap-1.5 text-xs">
+                      <span
+                        className={`px-2 py-0. flex items-center gap-1 font-medium rounded-custom ${
+                          edu.pursuing
+                            ? "bg-(--success-subtle) text-(--success)"
+                            : "bg-(--primary-bg) text-(--main)"
+                        }`}
+                      >
+                        {edu.pursuing ? (
+                          "Pursuing"
+                        ) : (
+                          <>
+                            <BiCalendar size={12} />
+                            {edu.academic_year}
+                          </>
+                        )}
+                      </span>
                     </div>
+                    {edu.description && (
+                      <p className="text-xs text-(--text-color) opacity-80 mt-2">
+                        {edu.description}
+                      </p>
+                    )}
+                  </div>
                 ))}
+              </div>
             </div>
-        </div>
-    );
+          ),
+        )}
+      </div>
+    </div>
+  );
 }

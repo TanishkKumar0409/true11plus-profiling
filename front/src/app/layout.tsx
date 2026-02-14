@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import UnderConstructionToast from "@/ui/toast/UnderConstructionToast";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
+  variable: "--font-inter",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const timesNewRomanVariable = "--font-times";
 
 export const metadata: Metadata = {
   title: "True11plus",
@@ -27,9 +25,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} antialiased`}
+        style={
+          {
+            [timesNewRomanVariable as string]:
+              '"Times New Roman", Times, serif',
+          } as React.CSSProperties
+        }
       >
-        <Toaster position="top-right" />
+        <Toaster />
+        <UnderConstructionToast />
         {children}
       </body>
     </html>

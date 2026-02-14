@@ -14,6 +14,6 @@ const skillsSchema = mongoose.Schema(
   { timestamps: true },
 );
 
-const Skills = MainDatabase.model("Skills", skillsSchema);
+const Skills = MainDatabase.model("skills", skillsSchema);
 
 export default Skills;

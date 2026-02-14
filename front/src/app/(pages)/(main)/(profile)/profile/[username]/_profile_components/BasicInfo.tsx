@@ -1,178 +1,101 @@
-import { API } from "@/contexts/API";
-import {
-  comingSoonToast,
-  getErrorResponse,
-  getUserAvatar,
-} from "@/contexts/Callbacks";
+"use client";
+
+import { comingSoonToast, getUserAvatar } from "@/contexts/Callbacks";
 import { UserProps } from "@/types/UserProps";
-import React, { useCallback, useEffect, useState } from "react";
-import { BiMapPin, BiUserPlus } from "react-icons/bi";
-
-interface SkillItem {
-  skill: string;
-}
-
-interface GlobalLanguage {
-  _id: string;
-  language: string;
-}
-
-interface UserLanguage {
-  _id?: string;
-  languageId?: string;
-  language?: string;
-}
+import { Button } from "@/ui/button/Button";
+import ShareModal from "@/ui/modals/ShareModal";
+import Image from "next/image";
+import React, { useState } from "react";
+import { BiMapPin, BiShareAlt } from "react-icons/bi";
 
 export default function BasicInfo({ user }: { user: UserProps | null }) {
-  const [skills, setSkills] = useState<SkillItem[]>([]);
-  const [userLanguages, setUserLanguages] = useState<UserLanguage[]>([]);
-  const [allLanguages, setAllLanguages] = useState<GlobalLanguage[]>([]);
-
-  const getAllLanguages = useCallback(async () => {
-    try {
-      const response = await API.get(`/languages`);
-      setAllLanguages(response.data);
-    } catch (error) {
-      console.error("Failed to fetch global languages", error);
-    }
-  }, []);
-
-  useEffect(() => {
-    getAllLanguages();
-  }, [getAllLanguages]);
-
-  const getLanguageById = useCallback(
-    (id?: string) => {
-      if (!id) return null;
-      const lang = allLanguages.find((item) => item._id === id);
-      return lang?.language;
-    },
-    [allLanguages],
-  );
-
-  const getProfileData = useCallback(async () => {
-    if (!user?._id) return;
-    try {
-      const [skillsRes, langRes] = await Promise.all([
-        API.get(`/user/skills/${user._id}`),
-        API.get(`/user/language/${user._id}`),
-      ]);
-
-      setSkills(skillsRes.data);
-      setUserLanguages(langRes.data);
-    } catch (error) {
-      getErrorResponse(error, true);
-    }
-  }, [user?._id]);
-
-  useEffect(() => {
-    getProfileData();
-  }, [getProfileData]);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const location = [user?.city, user?.state, user?.country]
     ?.filter(Boolean)
     ?.join(", ");
 
+  const profileUrl = user?.username
+    ? `${window.location.origin}/profile/${user?.username}`
+    : "";
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-      {/* Banner */}
-      <div
-        className="h-42 bg-gray-300 relative"
-        style={{
-          backgroundImage: `url(${user?.banner?.[0] ? `${process.env.NEXT_PUBLIC_MEDIA_URL}${user?.banner?.[0]}` : ""})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      ></div>
-
-      <div className="px-5 pb-6">
-        <div className="flex flex-col items-start -mt-8">
-          <div className="flex justify-between w-full items-end">
-            {/* Avatar */}
-            <img
-              src={getUserAvatar(user?.avatar || [])}
-              alt={user?.name}
-              className="w-18 h-18 rounded-full border-4 border-white object-cover bg-white shadow-md z-10"
+    <div className="flex items-start justify-center bg-(--secondary-bg)">
+      <div className="w-full max-w-sm bg-(--primary-bg) rounded-custom shadow-custom overflow-hidden">
+        <div className="aspect-2/1 w-full relative bg-linear-to-b from-(--main) to-(--main-emphasis)">
+          {user?.banner?.[0] && (
+            <Image
+              src={`${process.env.NEXT_PUBLIC_MEDIA_URL}${user?.banner?.[0]}`}
+              alt="Banner"
+              fill
+              className="object-cover"
             />
+          )}
+        </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 mb-0">
-              <button
+        <div className="px-6 pb-8">
+          <div className="flex justify-between items-start">
+            <div className="relative -mt-8">
+              <div className="w-18 h-18 rounded-full border-4 border-(--border) overflow-hidden bg-(--white) shadow-custom">
+                <Image
+                  src={getUserAvatar(user?.avatar || [])}
+                  alt={user?.name || "Profile Picture"}
+                  fill
+                  className="rounded-full border-4 border-(--border) object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="pt-3 flex gap-2">
+              <Button
+                label="Follow"
                 onClick={() => comingSoonToast()}
-                className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full text-sm font-medium transition-colors shadow-sm"
-              >
-                <BiUserPlus className="w-4 h-4" />
-                <span className="hidden sm:inline">Follow</span>
-              </button>
+                className="flex gap-2 items-center py-1! px-4!"
+              />
+              <Button
+                hideText
+                icon={<BiShareAlt size={20} />}
+                variant="secondary"
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex gap-2 items-center py-1! px-4!"
+              />
             </div>
           </div>
 
-          {/* User Text Info */}
-          <div className="mt-3 w-full">
-            <h3 className="text-2xl font-bold text-gray-900 leading-tight">
+          <div className="mt-4">
+            <h1 className="text-xl font-bold text-(--text-color) tracking-tight">
               {user?.name}
-            </h3>
-            <p className="text-purple-600 font-medium text-sm">
+            </h1>
+            <p className="text-(--main) font-semibold text-sm">
               @{user?.username}
             </p>
-
             {location && (
-              <div className="flex items-center mt-2 text-gray-500 text-sm">
-                <BiMapPin className="w-4 h-4 mr-1 text-gray-400" />
-                <span>{location}</span>
+              <div className="flex items-center gap-2 sub-paragraph pt-3">
+                <BiMapPin size={18} className="text-(--text-subtle)" />
+                <span className="text-sm">{location}</span>
               </div>
+            )}
+
+            {user?.title && (
+              <p className="text-(--text-color) font-medium text-md mt-2">
+                {user.title}
+              </p>
+            )}
+
+            {user?.about && (
+              <p className="text-(--text-subtle) text-sm mt-2 leading-relaxed">
+                {user.about}
+              </p>
             )}
           </div>
         </div>
-
-        {/* --- DETAILS SECTION --- */}
-        <div className="mt-6 pt-4 border-t border-gray-100 space-y-5">
-          {/* Skills */}
-          {skills.length > 0 && (
-            <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
-                Skills
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {skills.map((item, index) => (
-                  <span
-                    key={index}
-                    className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium border border-gray-200 capitalize"
-                  >
-                    {item.skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {userLanguages?.length > 0 && (
-            <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 flex items-center gap-1">
-                Languages
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {userLanguages?.map((item, index) => {
-                  const resolvedName =
-                    getLanguageById(item.languageId) ||
-                    item.language ||
-                    "Unknown";
-
-                  return (
-                    <div
-                      key={index}
-                      className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium border border-gray-200 capitalize"
-                    >
-                      {resolvedName}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        postUrl={profileUrl}
+      />
     </div>
   );
 }

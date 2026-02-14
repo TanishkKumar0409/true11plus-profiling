@@ -45,7 +45,7 @@ export default function Heading({
         viewport={{ once: true }}
         className="text-4xl md:text-5xl font-black text-(--text-color) tracking-tight leading-tight"
       >
-        {titleNormal} <span className="text-transparent bg-clip-text bg-linear-to-br from-(--main) to-(--main-emphasis) ">{titleHighlight}</span>
+        {titleNormal} <span className="text-transparent font-times-custom bg-clip-text bg-linear-to-br from-(--main) to-(--main-emphasis) ">{titleHighlight}</span>
       </motion.h2>
     </div>
   );

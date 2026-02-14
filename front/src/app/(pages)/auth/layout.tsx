@@ -12,7 +12,7 @@ export default function AuthLayout({
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="flex min-h-screen w-full font-sans bg-slate-50">
+    <div className="flex min-h-screen w-full  bg-slate-50">
       <div className="hidden lg:flex w-1/2 sticky top-0 h-screen flex-col items-center justify-center text-white overflow-hidden">
         <div className="absolute inset-0 z-0 w-full h-full">
           <Image

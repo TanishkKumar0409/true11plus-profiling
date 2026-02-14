@@ -11,10 +11,14 @@ import { UserProps } from "@/types/UserProps";
 import { getErrorResponse, getUserAvatar } from "@/contexts/Callbacks";
 import { API } from "@/contexts/API";
 import { ProfileSidebar } from "./ProfileSidebar";
+import Image from "next/image";
+import { NavbarSkeleton } from "@/ui/loading/components/NavbarSkeleton";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
 
@@ -45,37 +49,47 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 20);
+
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Courses", href: "/comming-soon" },
+    { name: "Students", href: "/students" },
     { name: "Mentors", href: "/comming-soon" },
     { name: "Scholarships", href: "/comming-soon" },
-    { name: "Success Stories", href: "/comming-soon" },
+    { name: "Contact Us", href: "/contact" },
   ];
+
+  if (loading) return <NavbarSkeleton />;
 
   return (
     <>
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={`fixed top-0 w-full z-50 transition-all duration-300 px-6 py-4 md:px-12 ${
-          scrolled
-            ? "bg-(--primary-bg) backdrop-blur-lg py-3 shadow-sm"
-            : "bg-(--primary-bg) py-3"
+        initial={{ y: 0 }}
+        animate={{ y: isVisible ? 0 : -100 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 py-3 px-6 md:px-12 ${
+          scrolled ? "bg-(--primary-bg) backdrop-blur-lg shadow-sm" : ""
         }`}
       >
         <div className="px-4 sm:px-8 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-1 group">
-            <div className="">
-              <img src="/img/logo/logo.png" alt="Logo" className="h-10" />
-            </div>
+          <Link
+            href="/"
+            className="flex items-center gap-1 group h-15 w-32 relative"
+          >
+            <Image fill src="/img/logo/logo.png" alt="Logo" />
           </Link>
 
           {/* DESKTOP NAVIGATION */}
@@ -86,16 +100,13 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className={`text-sm font-bold uppercase tracking-widest transition-colors hover:text-(--main) ${
+                  className={`relative text-sm font-bold uppercase tracking-widest transition-colors hover:text-(--main) ${
                     isActive ? "text-(--main)" : "text-(--text-color)"
                   }`}
                 >
                   {link.name}
                   {isActive && (
-                    <motion.div 
-                      layoutId="activeNav"
-                      className="h-0.5 w-full bg-(--main) mt-1"
-                    />
+                    <div className="absolute -bottom-1 left-0 h-0.5 w-full bg-(--main)" />
                   )}
                 </Link>
               );
@@ -111,11 +122,14 @@ export default function Navbar() {
                 variant="secondary"
                 onClick={handleProfileClick}
                 icon={
-                  <img
-                    src={getUserAvatar(profile?.avatar || [])}
-                    alt={profile?.username}
-                    className="h-8 w-8 rounded-full object-cover"
-                  />
+                  <div className="h-8 w-8 rounded-full object-cover relative">
+                    <Image
+                      src={getUserAvatar(profile?.avatar || [])}
+                      alt={profile?.username}
+                      fill
+                      className="rounded-full"
+                    />
+                  </div>
                 }
                 className="flex items-center gap-3"
               />
@@ -129,7 +143,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* MOBILE MENU TOGGLE */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="lg:hidden p-2 text-(--text-color) z-110"
@@ -175,18 +188,21 @@ export default function Navbar() {
                   label="My Profile"
                   variant="primary"
                   icon={
-                    <img
-                      src={getUserAvatar(profile?.avatar || [])}
-                      className="h-6 w-6 rounded-full"
-                      alt=""
-                    />
+                    <div className="h-6 w-6 rounded-full object-cover relative">
+                      <Image
+                        src={getUserAvatar(profile?.avatar || [])}
+                        alt={profile?.username}
+                        fill
+                        className="rounded-full"
+                      />
+                    </div>
                   }
                 />
               ) : (
                 <>
                   <Button
                     variant="secondary"
-                    label="Sign In"
+                    label="Login"
                     href="/auth/login"
                   />
                   <Button

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface BlobImageProps {
   imageSrc: string;
@@ -37,12 +38,13 @@ export default function BlobImage({
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="w-full h-full bg-(--main) overflow-hidden"
+          className="w-full h-full bg-(--main) overflow-hidden relative"
         >
-          <img
+          <Image
             src={imageSrc}
             alt={altText}
             className="w-full h-full object-cover scale-110"
+            fill
           />
         </motion.div>
       </div>

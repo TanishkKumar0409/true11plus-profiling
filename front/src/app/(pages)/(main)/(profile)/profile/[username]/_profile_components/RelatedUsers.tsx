@@ -5,13 +5,25 @@ import {
   getUserAvatar,
 } from "@/contexts/Callbacks";
 import { UserProps } from "@/types/UserProps";
+import { Button } from "@/ui/button/Button";
+import ConnectionSkeleton from "@/ui/loading/components/profile/ConnectionSkeleton";
+import Image from "next/image";
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
-import { BiUserPlus } from "react-icons/bi";
+import { BiCheck, BiMapPin, BiUserPlus } from "react-icons/bi";
+import { BsArrowRight } from "react-icons/bs";
 
 export default function RelatedUsers({ user }: { user: UserProps | null }) {
   const [suggestions, setSuggestions] = useState<UserProps[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectedIds, setConnectedIds] = useState<string[]>([]);
+
+  const handleConnect = (id: string) => {
+    setConnectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    );
+    comingSoonToast();
+  };
 
   const getSuggestions = useCallback(async () => {
     if (!user?._id) return;
@@ -29,69 +41,98 @@ export default function RelatedUsers({ user }: { user: UserProps | null }) {
     getSuggestions();
   }, [getSuggestions]);
 
-  if (!isLoading && suggestions.length === 0) return null;
+  if (isLoading) return <ConnectionSkeleton />;
+  if (!isLoading && suggestions?.length <= 0) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 mt-6">
-      <h4 className="font-bold text-gray-900 text-base">People you may know</h4>
-      <p className="text-gray-500 text-xs mb-5 mt-1">
-        Based on your skills and profile
-      </p>
-
-      <div className="space-y-5">
-        {suggestions.map((person) => {
+    <div className="bg-(--primary-bg) rounded-custom shadow-custom">
+      <div className="p-6 pb-4 relative">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-bold text-md text-(--text-color-emphasis)">
+                People you may know
+              </h3>
+            </div>
+            <p className="font-medium paragraph">
+              Recommended based on your activity
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="px-3 pb-3 space-y-1">
+        {suggestions.map((person, index) => {
+          const personId = person._id || "";
+          const isConnected = connectedIds.includes(personId);
           const location = [person?.city, person?.state, person?.country]
             ?.filter(Boolean)
             ?.join(", ");
 
           return (
             <div
-              key={person._id}
-              className="pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+              key={personId || index}
+              className="group flex items-center gap-4 p-3 hover:bg-(--secondary-bg) transition-all duration-300 cursor-default rounded-custom"
             >
-              <div className="flex items-start space-x-3">
-                {/* Avatar */}
-                <Link href={`/profile/${person.username}`} className="shrink-0">
-                  <img
-                    src={getUserAvatar(person.avatar || [])}
-                    alt={person.name}
-                    className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm hover:opacity-90 transition-opacity"
-                  />
-                </Link>
+              <Link
+                href={`/profile/${person.username}`}
+                className="shrink-0 relative w-14 h-14 rounded-full bg-(--primary-bg) border-2 border-(--main) object-cover transition-transform duration-500 group-hover:scale-105 shadow-custom"
+              >
+                <Image
+                  fill
+                  src={getUserAvatar(person.avatar || [])}
+                  alt={person.name}
+                  className="rounded-full"
+                />
+              </Link>
+              <div className="flex-1 min-w-0">
+                <h4 className="truncate text-xs tracking-tight text-(--text-color-emphasis)">
+                  <Link href={`/profile/${person.username}`}>
+                    {person.name}
+                  </Link>
+                </h4>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <h4 className="text-sm font-bold text-gray-900 truncate hover:text-purple-600 transition-colors">
-                      <Link href={`/profile/${person.username}`}>
-                        {person.name}
-                      </Link>
-                    </h4>
+                <p className="font-medium text-xs truncate text-(--text-color)">
+                  @{person.username}
+                </p>
+                {location && (
+                  <div className="flex items-center gap-3 text-xs text-(--text-color-emphasis)">
+                    <div className="flex items-center gap-1">
+                      <BiMapPin className="w-3 h-3" />
+                      <span>{location}</span>
+                    </div>
                   </div>
-
-                  <p className="text-xs text-gray-500 truncate">
-                    @{person.username}
-                  </p>
-
-                  {location && (
-                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
-                      {location}
-                    </p>
-                  )}
-
-                  {/* Connect Button */}
-                  <button
-                    onClick={() => comingSoonToast()}
-                    className="mt-2.5 flex items-center space-x-1 px-3 py-1.5 border border-purple-200 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all duration-200"
-                  >
-                    <BiUserPlus className="w-4 h-4" />
-                    <span>Connect</span>
-                  </button>
-                </div>
+                )}
               </div>
+              <button
+                onClick={() => handleConnect(personId)}
+                title={isConnected ? "Request Sent" : "Connect"}
+                className={`
+                  shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-500 cursor-pointer
+                  ${
+                    isConnected
+                      ? "bg-(--success-subtle) text-(--success) scale-110"
+                      : "bg-(--secondary-bg) text-(--text-color) hover:bg-(--main) hover:text-(--white)"
+                  }
+                `}
+              >
+                {isConnected ? (
+                  <BiCheck className="w-5 h-5" />
+                ) : (
+                  <BiUserPlus className="w-5 h-5" />
+                )}
+              </button>
             </div>
           );
         })}
+      </div>
+      <div className="p-3 pt-0 text-(--text-color)">
+        <Button
+          variant="secondary"
+          label="Explore more suggestions"
+          className="w-full"
+          icon={<BsArrowRight className="w-4 h-4" />}
+          onClick={() => comingSoonToast()}
+        />
       </div>
     </div>
   );

@@ -50,11 +50,13 @@ import {
   addUserSkill,
   deleteUserSkill,
   getSkillsByUserId,
+  getSkillsByUserIdForShow,
 } from "../controllers/user-controller/SkillController.js";
 import {
   addUserLanguage,
   deleteUserLanguage,
   getUserLanguages,
+  getUserLanguagesForShow,
 } from "../controllers/user-controller/UserLanguageController.js";
 import {
   addOrUpdateUserSocialLinks,
@@ -118,11 +120,13 @@ router.get(`/user/education/:userId`, getEducationByUserId);
 
 router.post("/user/add/skill", addUserSkill);
 router.get("/user/skills/:userId", getSkillsByUserId);
+router.get("/user/skills/show/:userId",getSkillsByUserIdForShow);
 router.delete("/user/delete/skill/:objectId", deleteUserSkill);
 
 router.post("/user/add/language", addUserLanguage);
 router.delete("/user/delete/language/:objectId", deleteUserLanguage);
 router.get("/user/language/:userId", getUserLanguages);
+router.get("/user/language/show/:userId", getUserLanguagesForShow);
 
 router.post("/user/add/social-links", addOrUpdateUserSocialLinks);
 router.get("/user/social-links/:userId", getUserSocialLinksByUserId);

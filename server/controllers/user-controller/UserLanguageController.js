@@ -88,10 +88,24 @@ export const deleteUserLanguage = async (req, res) => {
 
 export const getUserLanguages = async (req, res) => {
   try {
-    const userId = await getDataFromToken(req);
+    const { userId } = req.params;
     const userLanguages = await UserLanguage.findOne({ userId }).sort({
       createdAt: -1,
     });
+    return res.status(200).json(userLanguages);
+  } catch (error) {
+    console.error("getUserLanguages error:", error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
+export const getUserLanguagesForShow = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userLanguages = await UserLanguage.findOne({ userId })
+      .sort({
+        createdAt: -1,
+      })
+      ?.populate("languageId");
     return res.status(200).json(userLanguages);
   } catch (error) {
     console.error("getUserLanguages error:", error);

@@ -218,7 +218,7 @@ export default function StudentTaskTab({ user }: { user: UserProps | null }) {
 
   return (
     <div
-      className={`min-h-screen flex flex-col overflow-hidden font-sans ${resizingCol ? "cursor-col-resize select-none" : ""}`}
+      className={`min-h-screen flex flex-col overflow-hidden ${resizingCol ? "cursor-col-resize select-none" : ""}`}
     >
       <TaskHeader
         columns={dynamicColumns}

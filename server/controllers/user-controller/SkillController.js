@@ -118,3 +118,18 @@ export const getSkillsByUserId = async (req, res) => {
       .json({ error: "Something went wrong. Please try again." });
   }
 };
+
+export const getSkillsByUserIdForShow = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const skills = await UserSkills.findOne({ userId })
+      .sort({ createdAt: -1 })
+      ?.populate("skill");
+    return res.status(200).json(skills);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. Please try again." });
+  }
+};

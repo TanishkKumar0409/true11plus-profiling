@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FaUserTie, FaPassport, FaMapLocationDot } from "react-icons/fa6";
 import { Button } from "@/ui/button/Button";
+import Image from "next/image";
 
 const educationSections = [
   {
@@ -13,8 +14,7 @@ const educationSections = [
     desc: "Connect with dedicated mentors who track your progress daily. No generic advice—just a tailor-made strategy designed to showcase your unique strengths to elite admission officers.",
     bg: "bg-(--primary-bg)",
     icon: <FaUserTie size={32} />,
-    image:
-      "/img/background/mentors.png",
+    image: "/img/background/mentors.png",
     tag: "1-on-1 Support",
     label: "Step 01 — Mentorship",
     reverse: false,
@@ -26,8 +26,7 @@ const educationSections = [
     desc: "Build a digital portfolio that tells your story. Our platform lets you track tasks, upload certifications, and visualize your growth as you transform from an applicant into a top-tier candidate.",
     bg: "bg-(--secondary-bg)",
     icon: <FaPassport size={32} />,
-    image:
-       "/img/background/students.png",
+    image: "/img/background/students.png",
     tag: "Digital Portfolio",
     label: "Step 02 — Construction",
     reverse: true,
@@ -37,10 +36,9 @@ const educationSections = [
     title: "ADMISSION SUCCESS",
     subtitle: "Gateways to Global Campus Life",
     desc: "Finalize your journey with expert review of every task assigned by your mentor. We ensure your final submission is polished, authentic, and impossible for big universities to ignore.",
-    bg: "bg-slate-100",
+    bg: "bg-(--tertiary-bg)",
     icon: <FaMapLocationDot size={32} />,
-    image:
-      "/img/background/selection-image.webp",
+    image: "/img/background/selection-image.webp",
     tag: "Ivy League Ready",
     label: "Step 03 — Final Call",
     reverse: false,
@@ -53,42 +51,47 @@ export default function StickyCarouselSection() {
       {educationSections.map((section, index) => (
         <section
           key={index}
-          className={`sticky top-10 h-screen w-full flex items-center justify-center overflow-hidden ${section?.bg}`}
+          className={`relative lg:sticky top-0 min-h-screen w-full flex items-center justify-center overflow-hidden py-20 lg:py-0 ${section?.bg}`}
           style={{ zIndex: index + 1 }}
         >
-          <div className="absolute -left-10 bottom-0 opacity-10 text-[40vw] font-black text-(--text-color-emphasis) leading-none pointer-events-none select-none">
+          {/* Background Number - Now dynamic based on reverse property */}
+          <div
+            className={`absolute bottom-0 opacity-10 text-[50vw] lg:text-[40vw] font-black text-(--text-color-emphasis) leading-none pointer-events-none select-none
+            ${section.reverse ? "-right-5 lg:-right-10" : "-left-5 lg:-left-10"}`}
+          >
             {section?.id}
           </div>
 
           <div className="container mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-32 z-10">
+            {/* Content Container - Centered on mobile, aligned on desktop */}
             <motion.div
-              initial={{ opacity: 0, x: section?.reverse ? 50 : -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              viewport={{ once: false, amount: 0.3 }}
-              className={`order-2 ${section.reverse ? "lg:order-2" : "lg:order-1"}`}
+              viewport={{ once: true, amount: 0.2 }}
+              className={`order-2 flex flex-col items-center text-center lg:items-start lg:text-left ${
+                section.reverse ? "lg:order-2" : "lg:order-1"
+              }`}
             >
-              <div className="flex items-center gap-4 mb-6">
-                <div
-                  className={`p-4 rounded-2xl bg-(--main-subtle) shadow-custom text-(--main)`}
-                >
+              <div className="flex flex-col lg:flex-row items-center gap-4 mb-6">
+                <div className="p-4 rounded-2xl bg-(--main-subtle) shadow-custom text-(--main)">
                   {section?.icon}
                 </div>
-                <div>
+                <div className="text-center lg:text-left">
                   <p className="text-xs font-black tracking-widest text-(--text-subtle) uppercase">
                     Journey Milestones
                   </p>
-                  <p className={`text-sm font-bold text-(--main)`}>
+                  <p className="text-sm font-bold text-(--main)">
                     {section?.label}
                   </p>
                 </div>
               </div>
 
-              <h2 className="text-(--text-color-emphasis) text-4xl md:text-6xl font-black leading-[1.1] mb-6 tracking-tight">
+              <h2 className="text-(--text-color-emphasis) text-3xl lg:text-4xl font-black mb-2 tracking-tight uppercase">
                 {section?.title}
               </h2>
 
-              <h3 className="text-lg md:text-xl italic text-(--text-color) mb-6 flex items-center gap-2">
+              <h3 className="text-lg md:text-xl italic text-(--text-color) mb-4 md:mb-6">
                 {section?.subtitle}
               </h3>
 
@@ -96,32 +99,32 @@ export default function StickyCarouselSection() {
                 {section?.desc}
               </p>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 w-full">
                 <Button
                   label="Start Your Journey"
-                  className="px-10 shadow-lg"
+                  href="/contact"
+                  className="px-10 py-4 shadow-lg w-full sm:w-auto"
                 />
               </div>
             </motion.div>
 
             <motion.div
-              initial={{
-                opacity: 0,
-                scale: 0.9,
-                rotate: section?.reverse ? -2 : 2,
-              }}
-              whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
-              viewport={{ once: false, amount: 0.3 }}
-              className={`flex justify-center items-center order-1 ${section?.reverse ? "lg:order-1" : "lg:order-2"}`}
+              viewport={{ once: true, amount: 0.2 }}
+              className={`flex justify-center items-center order-1 ${
+                section?.reverse ? "lg:order-1" : "lg:order-2"
+              }`}
             >
-              <div className="relative w-full max-w-xl aspect-square rounded-custom overflow-hidden border-5 border-(--border) shadow-custom">
-                <img
+              <div className="relative w-full max-w-md lg:max-w-xl aspect-square rounded-3xl overflow-hidden border-4 border-(--border) shadow-2xl">
+                <Image
                   src={section?.image}
                   alt={section?.title}
-                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105 rounded-custom"
+                  fill
+                  className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105"
                 />
-                <div className="absolute top-4 right-4 px-4 py-1.5 bg-(--main) text-(--main-subtle) backdrop-blur-sm rounded-full shadow-md">
+                <div className="absolute top-4 right-4 px-4 py-1.5 bg-(--main) text-white backdrop-blur-sm rounded-full shadow-md">
                   <p className="text-[10px] font-black uppercase tracking-widest">
                     {section?.tag}
                   </p>

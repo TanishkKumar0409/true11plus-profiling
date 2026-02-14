@@ -11,7 +11,7 @@ export const addPostComment = async (req, res) => {
     if (!userId) {
       return res
         .status(401)
-        .json({ error: "You are not Login. please Login or register" });
+        .json({ error: "You are not logged in. Please login or register." });
     }
 
     if (!postId) {
@@ -27,7 +27,7 @@ export const addPostComment = async (req, res) => {
       typeof content !== "string" ||
       content.trim().length === 0
     ) {
-      return res.status(400).json({ error: "content is required" });
+      return res.status(400).json({ error: "Content is required" });
     }
 
     let parentComment = null;
@@ -45,6 +45,13 @@ export const addPostComment = async (req, res) => {
       if (!parentComment) {
         return res.status(404).json({ error: "Parent comment not found" });
       }
+
+      if (parentComment.parentId) {
+        return res.status(400).json({
+          error:
+            "Replying to a reply is not allowed. You can only reply to top-level comments.",
+        });
+      }
     }
 
     const newComment = await Comment.create({
@@ -53,6 +60,7 @@ export const addPostComment = async (req, res) => {
       content: content.trim(),
       parentId: parentId ? new mongoose.Types.ObjectId(parentId) : null,
     });
+
     if (parentComment) {
       await Comment.updateOne(
         { _id: parentComment._id },
@@ -67,12 +75,13 @@ export const addPostComment = async (req, res) => {
       comment: newComment,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error in addPostComment:", error);
     return res
       .status(500)
-      .json({ error: "Something Went Wrong. Please try again" });
+      .json({ error: "Something went wrong. Please try again" });
   }
 };
+
 export const getCommentsByPostId = async (req, res) => {
   try {
     const { postId } = req.params;

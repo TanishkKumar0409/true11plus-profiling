@@ -219,7 +219,7 @@ export default function StudentTaskView() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col overflow-hidden font-sans ${resizingCol ? "cursor-col-resize select-none" : ""}`}
+      className={`min-h-screen flex flex-col overflow-hidden ${resizingCol ? "cursor-col-resize select-none" : ""}`}
     >
       <Breadcrumbs
         title="Task"

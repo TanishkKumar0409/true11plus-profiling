@@ -8,6 +8,9 @@ import { PostProps } from "@/types/PostTypes";
 import PostCard from "./_post_components/PostCard";
 import RelatedUsers from "../../_profile_components/RelatedUsers";
 import CommentSection from "./_post_components/CommentSection";
+import PostPageSkeleton from "@/ui/loading/pages/PostPageSkeleton";
+
+const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL;
 
 export default function SinglePostPage() {
   const { username, post_id } = useParams();
@@ -54,7 +57,14 @@ export default function SinglePostPage() {
     setPostLoading(true);
     try {
       const response = await API.get(`/posts/${post_id}`);
-      setPost(response.data);
+      const data = response.data;
+
+      setPost({
+        ...data,
+        all_images: data?.images?.map(
+          (item: { compressed: string }) => `${MEDIA_URL}/${item?.compressed}`,
+        ),
+      });
     } catch (error) {
       getErrorResponse(error, true);
     } finally {
@@ -74,22 +84,19 @@ export default function SinglePostPage() {
     }
   }, [post, postLoading, user?.username, router]);
 
-  if (loading) return <>loading...</>;
-  if (postLoading) return <>loading...</>;
+  if (loading || postLoading) return <PostPageSkeleton />;
 
   return (
-    <div className="bg-gray-50 min-h-screen w-full">
-      <div className="w-full px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-          <div className="lg:col-span-1 lg:sticky lg:top-6 space-y-4">
-            <PostCard user={user} post={post} authUser={authUser} />
-          </div>
-          <div className="lg:col-span-2 flex flex-col h-[85vh] bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <CommentSection authUser={authUser} post={post} />
-          </div>
-          <div className="lg:col-span-1 lg:sticky lg:top-6">
-            <RelatedUsers user={user} />
-          </div>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-24 pb-12 sm:px-8 px-4 bg-(--secondary-bg)">
+      <div className="lg:col-span-1 space-y-6 mb-6">
+        <PostCard user={user} post={post} authUser={authUser} />
+      </div>
+      <div className="lg:col-span-2">
+        <CommentSection authUser={authUser} post={post} />
+      </div>
+      <div className="lg:col-span-1">
+        <div className="sticky top-25">
+          <RelatedUsers user={user} />
         </div>
       </div>
     </div>

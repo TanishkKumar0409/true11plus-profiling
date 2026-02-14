@@ -12,6 +12,7 @@ import type { UserProps } from "../../types/UserProps";
 import { getErrorResponse, getUserAvatar } from "../../contexts/Callbacks";
 import Link from "next/link";
 import { LuLayoutDashboard } from "react-icons/lu";
+import Image from "next/image";
 
 interface Role {
   _id: string;
@@ -137,12 +138,13 @@ export function ProfileSidebar({
       >
         <div className="flex flex-col h-full overflow-y-auto">
           <div className="px-6 py-5 flex items-center justify-between border-b border-(--border)">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <img
+            <div className="flex items-center gap-3 ">
+              <div className="relative w-12 h-12">
+                <Image
+                  fill
                   src={getUserAvatar(authUser?.avatar || [])}
                   alt="User"
-                  className="w-12 h-12 rounded-full object-cover border border-(--border)"
+                  className=" rounded-full object-cover border border-(--border)"
                 />
               </div>
               <div>

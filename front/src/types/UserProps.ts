@@ -15,4 +15,5 @@ export interface UserProps {
   role: string;
   website: string;
   about: string;
+  title: string;
 }

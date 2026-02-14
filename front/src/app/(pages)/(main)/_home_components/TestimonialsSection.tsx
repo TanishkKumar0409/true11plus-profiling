@@ -8,10 +8,11 @@ import Heading from "@/ui/heading/Heading";
 import { BiCheckCircle } from "react-icons/bi";
 import { BsQuote } from "react-icons/bs";
 import { LuStar } from "react-icons/lu";
+import Image from "next/image";
 
 export default function TestimonialSection() {
   return (
-    <section className="relative sm:px-8 px-4 py-24 bg-(--secondary-bg) overflow-hidden">
+    <section className="relative sm:px-8 px-4 py-24 bg-linear-to-b to-(--primary-bg) from-(--secondary-bg) overflow-hidden">
       <div className="mb-10 text-center">
         <Heading
           badgeText="Testimonials"
@@ -67,16 +68,19 @@ export default function TestimonialSection() {
                   </div>
 
                   <p className="text-(--text-subtle) text-md mb-8 whitespace-normal font-semibold leading-relaxed">
-                    "{item?.content}"
+                    &quot;{item?.content}&quot;
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 border-t border-(--border) pt-6 mt-auto">
-                  <img
-                    src={item.img}
-                    alt={item.name}
-                    className="w-14 h-14 rounded-custom object-cover border-2 border-(--main)"
-                  />
+                  <div className="w-14 h-14 rounded-custom object-cover border-2 border-(--main) relative">
+                    <Image
+                      fill
+                      src={item.img}
+                      alt={item.name}
+                      className="rounded-custom"
+                    />
+                  </div>
                   <div className="text-left">
                     <h5 className="text-(--text-color) font-bold flex items-center gap-2">
                       {item.name}

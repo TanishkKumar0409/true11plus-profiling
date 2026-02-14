@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { BiLike, BiMessageSquare } from "react-icons/bi";
 import { CiShare1 } from "react-icons/ci";
-import SharePostModal from "./SharePostModal";
 import { PostProps } from "@/types/PostTypes";
 import { UserProps } from "@/types/UserProps";
 import { getErrorResponse } from "@/contexts/Callbacks";
 import { API } from "@/contexts/API";
 import { FaThumbsUp } from "react-icons/fa6";
+import Link from "next/link";
+import ShareModal from "@/ui/modals/ShareModal";
 
 const PostFooter = ({
   post,
@@ -47,43 +48,37 @@ const PostFooter = ({
   }, [post?._id, isLiked, likeCount]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between px-2 py-1">
-        <button
-          onClick={handleLike}
-          className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors group"
-        >
-          {/* Render based on Local State */}
-          {!isLiked ? (
-            <BiLike className="w-5 h-5 group-hover:scale-110 transition-transform" />
-          ) : (
-            <FaThumbsUp className="w-5 h-5 group-hover:scale-110 transition-transform text-blue-500" />
-          )}
+    <div className="px-4 py-3 flex justify-between sub-paragraph">
+      <button
+        onClick={handleLike}
+        className="flex items-center gap-1 hover:text-(--main) cursor-pointer"
+      >
+        {!isLiked ? (
+          <BiLike className="w-5 h-5 group-hover:scale-110 transition-transform" />
+        ) : (
+          <FaThumbsUp className="w-5 h-5 group-hover:scale-110 transition-transform text-(--main)" />
+        )}
+        <span className={isLiked ? "text-(--main)" : ""}>
+          Like {likeCount > 0 ? likeCount : ""}
+        </span>
+      </button>
+      <Link
+        href={`/profile/${user?.username}/post/${post?._id}`}
+        className="flex items-center gap-1 hover:text-(--main) cursor-pointer transition-colors"
+      >
+        <BiMessageSquare className="w-5 h-5" />
+        <span>Comment</span>
+      </Link>
 
-          <span className={isLiked ? "text-blue-500" : ""}>
-            Like {likeCount > 0 ? likeCount : ""}
-          </span>
-        </button>
+      <button
+        onClick={() => setIsShareModalOpen(true)}
+        className="flex items-center gap-1 hover:text-(--main) cursor-pointer"
+      >
+        <CiShare1 className="w-4 h-4" />
+        Share
+      </button>
 
-        {/* <Link href={`/profile/${user?.username}/post/${post?._id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors">
-                    <BiMessageSquare className="w-5 h-5" />
-                    <span>Comment</span>
-                </Link> */}
-        <button className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors">
-          <BiMessageSquare className="w-5 h-5" />
-          <span>Comment</span>
-        </button>
-
-        <button
-          //   onClick={() => setIsShareModalOpen(true)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors"
-        >
-          <CiShare1 className="w-5 h-5" />
-          <span>Share</span>
-        </button>
-      </div>
-
-      <SharePostModal
+      <ShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         postUrl={

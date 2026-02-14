@@ -8,6 +8,7 @@ export interface PostProps {
   createdAt: string;
   likedBy: string[];
   is_private: boolean;
+  all_images: string[];
 }
 
 export interface ReplyProps {

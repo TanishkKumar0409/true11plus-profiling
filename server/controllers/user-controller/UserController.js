@@ -673,6 +673,8 @@ export const getUserBysRole = async (req, res) => {
           avatar: ast.avatar,
           banner: ast.banner,
           website: ast.website,
+          about: ast?.about,
+          title: ast?.title,
         }),
       };
     });

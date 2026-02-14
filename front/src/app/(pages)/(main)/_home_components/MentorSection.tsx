@@ -1,7 +1,9 @@
 "use client";
 import Heading from "@/ui/heading/Heading";
 import { motion } from "framer-motion";
-import { BiAward, BiStar } from "react-icons/bi";
+import Image from "next/image";
+import { BiAward } from "react-icons/bi";
+import { LuStar } from "react-icons/lu";
 
 const mentors = [
   {
@@ -32,7 +34,7 @@ const mentors = [
     name: "Mr. Vinamra Bansal",
     role: "NUS singapore ",
     university: "MIT Researcher",
-     image: "/img/mentors/vinamra-bansal.webp",
+    image: "/img/mentors/vinamra-bansal.webp",
     rating: "4.9",
     students: "940+",
   },
@@ -40,7 +42,7 @@ const mentors = [
 
 export default function MentorSection() {
   return (
-    <section className="relative py-24 bg-(--primary-bg) overflow-hidden">
+    <section className="relative py-24 bg-linear-to-b from-(--tertiary-bg) to-(--primary-bg) overflow-hidden">
       <div className="sm:px-8 px-4">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
@@ -82,7 +84,8 @@ function MentorCard({ mentor, index }: { mentor: any; index: number }) {
     >
       {/* Image Container */}
       <div className="relative aspect-5/5 overflow-hidden rounded-custom shadow-custom">
-        <img
+        <Image
+          fill
           src={mentor.image}
           alt={mentor.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -102,8 +105,8 @@ function MentorCard({ mentor, index }: { mentor: any; index: number }) {
         </div> */}
 
         {/* Rating Tag */}
-        <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 bg-(--white)/90 backdrop-blur-md text-(--text-color) rounded-full text-xs font-bold shadow-custom">
-          <BiStar size={12} className="text-(--warning) fill-(--warning)" />
+        <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 bg-(--primary-bg)/90 backdrop-blur-md text-(--text-color) rounded-full text-xs font-bold shadow-custom">
+          <LuStar size={12} className="text-(--warning) fill-(--warning)" />
           {mentor.rating}
         </div>
       </div>

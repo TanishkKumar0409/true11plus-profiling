@@ -113,26 +113,26 @@ const getValidBool = (field: string, required: boolean = true) => {
   return schema;
 };
 
-// const getValidContent = (field: string, required: boolean = true) => {
-//   let schema = Yup.string()
-//     .min(3, `${field} must be at least 3 characters`)
-//     .test(
-//       "no-leading-trailing-space",
-//       `${field} cannot start or end with a space`,
-//       (value) => {
-//         if (!value) return !required; // allow empty if optional
-//         return value.trim().length === value.length;
-//       }
-//     );
+const getValidContent = (field: string, required: boolean = true) => {
+  let schema = Yup.string()
+    .min(3, `${field} must be at least 3 characters`)
+    .test(
+      "no-leading-trailing-space",
+      `${field} cannot start or end with a space`,
+      (value) => {
+        if (!value) return !required; // allow empty if optional
+        return value.trim().length === value.length;
+      },
+    );
 
-//   if (required) {
-//     schema = schema.required(`${field} is required`);
-//   } else {
-//     schema = schema.optional();
-//   }
+  if (required) {
+    schema = schema.required(`${field} is required`);
+  } else {
+    schema = schema.optional();
+  }
 
-//   return schema;
-// };
+  return schema;
+};
 
 const getValidUsername = (field: string, required: boolean = true) => {
   let schema = Yup.string()
@@ -169,6 +169,14 @@ export const registreValidation = Yup.object({
 });
 
 export const emailValidation = Yup.object({ email: getValidEmail("Email") });
+
+export const ContactSchema = Yup.object().shape({
+  name: getValidString("Your Name"),
+  email: getValidEmail("Email"),
+  mobile_no: getValidPhone("Mobile Number"),
+  subject: getValidString("Subject"),
+  message: getValidContent("Message"),
+});
 
 // export const userResetPasswordValidation = Yup.object({
 //   new_password: getValidPassword("New Password"),
