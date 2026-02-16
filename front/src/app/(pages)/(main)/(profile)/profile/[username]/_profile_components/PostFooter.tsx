@@ -59,7 +59,7 @@ const PostFooter = ({
           <FaThumbsUp className="w-5 h-5 group-hover:scale-110 transition-transform text-(--main)" />
         )}
         <span className={isLiked ? "text-(--main)" : ""}>
-          Like {likeCount > 0 ? likeCount : ""}
+          Like {likeCount > 0 ? `(${likeCount})` : ""}
         </span>
       </button>
       <Link
@@ -67,7 +67,10 @@ const PostFooter = ({
         className="flex items-center gap-1 hover:text-(--main) cursor-pointer transition-colors"
       >
         <BiMessageSquare className="w-5 h-5" />
-        <span>Comment</span>
+        <span>
+          Comment{" "}
+          {(post?.commentCountAll || 0) > 0 ? `(${post?.commentCountAll})` : ""}
+        </span>
       </Link>
 
       <button

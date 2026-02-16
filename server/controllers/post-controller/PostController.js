@@ -11,40 +11,54 @@ export const createPost = async (req, res) => {
     const { text } = req.body;
     const userId = await getDataFromToken(req);
 
-    const postImages = [];
-
-    if (!req?.files?.images || req.files.images.length === 0) {
-      return res.status(400).json({ error: "No images provided." });
-    }
-
-    if (req.files.images.length > maxImages) {
+    if (!text && (!req?.files?.images || req.files.images.length === 0)) {
       return res
         .status(400)
-        .json({ error: `You can upload a maximum of ${maxImages} images.` });
+        .json({ error: "Post must contain text or at least one image." });
     }
 
-    if (req.files?.images?.length) {
+    const postImages = [];
+    if (req?.files?.images?.length) {
+      if (req.files.images.length > maxImages) {
+        return res
+          .status(400)
+          .json({ error: `You can upload a maximum of ${maxImages} images.` });
+      }
+
       req.files.images.forEach((file) => {
         const original = file.originalFilename;
         const compressed = file.webpFilename;
+
         if (original && compressed) {
-          postImages.push({ original: original, compressed: compressed });
+          postImages.push({
+            original: original,
+            compressed: compressed,
+          });
         }
       });
     }
 
-    const newpost = new UserPosts({ userId, text, images: postImages });
+    const newpost = new UserPosts({
+      userId,
+      text: text || "",
+      images: postImages,
+    });
 
     const savedPost = await newpost.save();
 
-    if (savedPost) await UserPostImageMover(req, res, userId);
+    if (savedPost && postImages.length > 0) {
+      await UserPostImageMover(req, res, userId);
+    }
 
-    return res.status(200).json({ message: "Post created Successfully" });
+    return res.status(200).json({
+      message: "Post created Successfully",
+      post: savedPost,
+    });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Something went wrong. Please try again." });
+    console.error("CREATE POST ERROR:", error);
+    return res.status(500).json({
+      error: "Something went wrong. Please try again.",
+    });
   }
 };
 
@@ -104,16 +118,21 @@ export const editPost = async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
-    if (typeof text === "string") {
+    let isEdited = false;
+
+    // TEXT UPDATE
+    if (typeof text === "string" && text !== post.text) {
       post.text = text;
+      isEdited = true;
     }
 
+    // PARSE REMOVE IMAGES
     let parsedRemoveImages = [];
     if (removeImages) {
       if (typeof removeImages === "string") {
         try {
           parsedRemoveImages = JSON.parse(removeImages);
-        } catch (err) {
+        } catch {
           return res
             .status(400)
             .json({ error: "removeImages must be valid JSON" });
@@ -132,11 +151,12 @@ export const editPost = async (req, res) => {
         )
       : [];
 
+    // REMOVE IMAGES
     if (parsedRemoveImages.length > 0) {
-      parsedRemoveImages?.map(async (item) => {
-        await deleteFile(`../media/${item?.original}`);
-        await deleteFile(`../media/${item?.compressed}`);
-      });
+      for (const item of parsedRemoveImages) {
+        await deleteFile(`../media/${item.original}`);
+        await deleteFile(`../media/${item.compressed}`);
+      }
 
       post.images = (post.images || []).filter((img) => {
         const shouldRemove = parsedRemoveImages.some(
@@ -144,10 +164,12 @@ export const editPost = async (req, res) => {
         );
         return !shouldRemove;
       });
+
+      isEdited = true;
     }
 
+    // NEW IMAGES
     const newImages = [];
-
     if (req?.files?.images?.length) {
       req.files.images.forEach((file) => {
         const original = file.originalFilename;
@@ -170,6 +192,12 @@ export const editPost = async (req, res) => {
 
     if (newImages.length > 0) {
       post.images = [...(post.images || []), ...newImages];
+      isEdited = true;
+    }
+
+    // FORCE STATUS TO PENDING IF ANY EDIT
+    if (isEdited) {
+      post.status = "pending";
     }
 
     const updatedPost = await post.save();
@@ -183,10 +211,10 @@ export const editPost = async (req, res) => {
       post: updatedPost,
     });
   } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ error: "Something went wrong. Please try again." });
+    console.error("EDIT POST ERROR:", error);
+    return res.status(500).json({
+      error: "Something went wrong. Please try again.",
+    });
   }
 };
 
@@ -207,7 +235,7 @@ export const PostByUserTaskSubmission = async (req, res) => {
   try {
     const { submission_id, message, post_type } = req.body;
     const userId = await getDataFromToken(req);
-console.log(req.body);
+    console.log(req.body);
     const submission = await UserTaskSubmission.findOne({
       _id: submission_id,
       status: "approved",

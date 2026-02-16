@@ -58,13 +58,13 @@ export default function Profile() {
       setIsFetching(false);
       stopLoadingBar();
     }
-  }, [authUser?._id,startLoadingBar, stopLoadingBar]);
+  }, [authUser?._id, startLoadingBar, stopLoadingBar]);
 
   useEffect(() => {
     getPosts();
   }, [getPosts]);
 
-  if (isFetching) return <ProfileSkeleton/>
+  if (isFetching) return <ProfileSkeleton />;
 
   return (
     <div>

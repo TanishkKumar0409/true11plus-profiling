@@ -131,7 +131,7 @@ export default function RelatedUsers({ user }: { user: UserProps | null }) {
           label="Explore more suggestions"
           className="w-full"
           icon={<BsArrowRight className="w-4 h-4" />}
-          onClick={() => comingSoonToast()}
+          href="/students"
         />
       </div>
     </div>

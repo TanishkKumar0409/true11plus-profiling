@@ -19,6 +19,7 @@ import {
 } from "../controllers/post-controller/PostLikeController.js";
 import {
   addPostComment,
+  countCommentsByUserId,
   deleteCommentWithChildren,
   getCommentsByPostId,
   toggleCommentLike,
@@ -53,5 +54,6 @@ postRouter.delete(
 );
 postRouter.post("/user/post/add/comment/like/:commentId", toggleCommentLike);
 postRouter.get("/user/post/comment/:postId", getCommentsByPostId);
+postRouter.get("/user/post/comment/count/user/:userId", countCommentsByUserId);
 
 export default postRouter;

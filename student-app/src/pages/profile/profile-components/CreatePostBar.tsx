@@ -140,7 +140,7 @@ const CreatePostBar = ({ getPosts }: { getPosts: () => void }) => {
                     className="w-10 h-10 rounded-full border-2 border-(--main-subtle)"
                     alt="User"
                   />
-                  <h4 className="font-bold text-sm">Tanishk Kumar</h4>
+                  <h4 className="font-bold text-sm">{authUser?.username}</h4>
                 </div>
                 <button
                   type="button"

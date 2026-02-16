@@ -5,13 +5,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoCloseOutline } from "react-icons/io5";
 import { RiShieldFlashLine } from "react-icons/ri";
 
+const STORAGE_KEY = "hide-construction-toast";
+
 export default function UnderConstructionToast() {
   const [isVisible, setIsVisible] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 2000);
-    return () => clearTimeout(timer);
+    const isDismissed = localStorage.getItem(STORAGE_KEY);
+
+    if (!isDismissed) {
+      const timer = setTimeout(() => setIsVisible(true), 2000);
+      return () => clearTimeout(timer);
+    }
   }, []);
+
+  const handleDismiss = () => {
+    setIsVisible(false);
+    if (dontShowAgain) {
+      localStorage.setItem(STORAGE_KEY, "true");
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -29,7 +43,7 @@ export default function UnderConstructionToast() {
         >
           <div className="absolute -top-10 -left-10 w-32 h-32 bg-(--danger-subtle) rounded-full blur-3xl opacity-50" />
           <div className="relative shrink-0">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-(--danger) text-(--text-color-emphasis) shadow-lg shadow-(--danger)/30">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-(--danger) text-(--danger-subtle) shadow-lg shadow-(--danger)/30">
               <motion.div
                 animate={{
                   scale: [1, 1.15, 1],
@@ -47,7 +61,7 @@ export default function UnderConstructionToast() {
             {/* Ping Indicator */}
             <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-(--danger) opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-(--danger) border-2 border-(--text-color-emphasis)"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-(--danger) border-2 border-(--danger-subtle)"></span>
             </span>
           </div>
 
@@ -69,24 +83,39 @@ export default function UnderConstructionToast() {
               your learning journey. Some features may be temporarily limited.
             </p>
 
-            <div className="pt-2 flex items-center gap-4">
-              <div className="flex -space-x-2">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full border-2 border-(--text-color-emphasis) bg-(--tertiary-bg)"
-                  />
-                ))}
+            <div className="pt-2 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-2">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="w-6 h-6 rounded-full border-2 border-(--border) bg-(--tertiary-bg)"
+                    />
+                  ))}
+                </div>
+                <span className="text-[11px] font-bold text-(--text-subtle)">
+                  Optimizing
+                </span>
               </div>
-              <span className="text-[11px] font-bold text-(--text-subtle)">
-                Optimizing
-              </span>
+
+              {/* Don't show again checkbox */}
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => setDontShowAgain(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-(--border) bg-(--tertiary-bg) text-(--danger) focus:ring-(--danger)"
+                />
+                <span className="text-[10px] font-bold text-(--text-subtle) group-hover:text-(--danger) transition-colors whitespace-nowrap">
+                  Don&apos;t show again
+                </span>
+              </label>
             </div>
           </div>
 
           {/* Dismiss Button */}
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={handleDismiss}
             className="absolute top-4 right-4 text-(--text-subtle) hover:text-(--danger) transition-colors p-1"
           >
             <IoCloseOutline size={24} />

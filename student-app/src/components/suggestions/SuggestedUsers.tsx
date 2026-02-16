@@ -5,11 +5,11 @@ import {
   showComingSoonToast,
 } from "../../contexts/CallBacks";
 import type { UserProps } from "../../types/UserTypes";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router-dom";
 import type { DashboardOutletContextProps } from "../../types/Types";
 import { API } from "../../contexts/API";
 import { BiCheck, BiMapPin, BiUserPlus } from "react-icons/bi";
-import { BsArrowRight } from "react-icons/bs";
+import { SecondButton } from "../../ui/buttons/Button";
 
 export const SuggestedUsers = () => {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
@@ -80,15 +80,21 @@ export const SuggestedUsers = () => {
               key={personId || index}
               className="group flex items-center gap-4 p-3 hover:bg-(--secondary-bg) transition-all duration-300 cursor-default rounded-custom"
             >
-              <div className="shrink-0">
+              <Link
+                to={`${import.meta.env.VITE_FRONT_URL}/profile/${person?.username}`}
+                className="shrink-0"
+              >
                 <img
                   src={getUserAvatar(person.avatar)}
                   alt={person.name}
                   className="w-12 h-12 rounded-full bg-(--primary-bg) border-2 border-(--main-subtle) object-cover transition-transform duration-500 group-hover:scale-105 shadow-sm"
                 />
-              </div>
+              </Link>
 
-              <div className="flex-1 min-w-0">
+              <Link
+                to={`${import.meta.env.VITE_FRONT_URL}/profile/${person?.username}`}
+                className="flex-1 min-w-0"
+              >
                 <h4 className="truncate tracking-tight font-bold text-sm text-(--gray-emphasis)">
                   {person.name}
                 </h4>
@@ -102,7 +108,7 @@ export const SuggestedUsers = () => {
                     <span className="truncate">{location}</span>
                   </div>
                 )}
-              </div>
+              </Link>
 
               <button
                 type="button"
@@ -126,15 +132,11 @@ export const SuggestedUsers = () => {
       </div>
 
       <div className="p-3 pt-0 text-(--text-color)">
-        <button
-          onClick={showComingSoonToast}
-          className="group w-full py-3 px-4 bg-(--secondary-bg) hover:bg-(--main-subtle) hover:text-(--main) text-xs font-bold transition-all duration-300 flex items-center justify-between rounded-custom"
-        >
-          <span>Explore more suggestions</span>
-          <div className="bg-(--white) p-1 group-hover:translate-x-1 transition-transform rounded-md shadow-sm">
-            <BsArrowRight className="w-3 h-3" />
-          </div>
-        </button>
+        <SecondButton
+          label={"Explore More Suggestions"}
+          href={`${import.meta.env.VITE_FRONT_URL}/students`}
+          target="_blank"
+        />
       </div>
     </div>
   );

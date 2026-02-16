@@ -9,6 +9,7 @@ export interface PostProps {
   likedBy: string[];
   is_private: boolean;
   all_images: string[];
+  commentCountAll?: number;
 }
 
 export interface ReplyProps {

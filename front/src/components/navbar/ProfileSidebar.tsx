@@ -102,7 +102,7 @@ export function ProfileSidebar({
           label: "Account",
           items: [
             {
-              label: "Console",
+              label: "Dashboard",
               href: `${process.env.NEXT_PUBLIC_CONSOLE_URL}`,
               icon: LuLayoutDashboard,
               external: true,

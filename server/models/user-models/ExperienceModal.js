@@ -12,9 +12,9 @@ const experienceSchema = mongoose.Schema(
     start_date: { type: String, required: true },
     end_date: { type: String },
     iscurrently: { type: Boolean, default: false },
-    description: { type: String, required: true },
+    description: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const UserExperience = MainDatabase.model("user-experience", experienceSchema);

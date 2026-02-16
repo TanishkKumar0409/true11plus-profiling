@@ -73,16 +73,21 @@ export default function PostSection({
       const results = await Promise.allSettled([
         API.get(`/user/post/${user._id}`),
         API.get(`/user/all/post/like/${user._id}`),
+        API.get(`/user/post/comment/count/user/${user._id}`),
       ]);
 
       const postsResult = results[0];
       const likesResult = results[1];
+      const commentsResult = results[2];
 
       const postData =
         postsResult.status === "fulfilled" ? postsResult.value.data : [];
 
       const likeData =
         likesResult.status === "fulfilled" ? likesResult.value.data : [];
+
+      const commentData =
+        commentsResult.status === "fulfilled" ? commentsResult.value.data : [];
 
       const filteredPosts = postData.filter(
         (po: PostProps) => po?.status === "approved" && !po?.is_private,
@@ -93,9 +98,17 @@ export default function PostSection({
           (lk: { postId: string }) =>
             lk?.postId?.toString() === po?._id?.toString(),
         );
+
+        const commentFound = commentData.find(
+          (cm: { postId: string }) =>
+            cm?.postId?.toString() === po?._id?.toString(),
+        );
+
         return {
           ...po,
           likedBy: likeFound?.likedBy || [],
+          commentCountAll: commentFound?.all || 0,
+          commentCountMain: commentFound?.main || 0,
           all_images: po?.images?.map(
             (item: { compressed: string }) =>
               `${MEDIA_URL}/${item?.compressed}`,
@@ -111,6 +124,10 @@ export default function PostSection({
 
       if (likesResult.status === "rejected") {
         getErrorResponse(likesResult.reason, true);
+      }
+
+      if (commentsResult.status === "rejected") {
+        getErrorResponse(commentsResult.reason, true);
       }
     } catch (error) {
       getErrorResponse(error, true);

@@ -159,7 +159,7 @@ const RegisterPage = () => {
         >
           {formik.isSubmitting ? (
             <>
-              <LuLoader className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1 animate-spin" />
+              <LuLoader className="mx-3 h-4 w-4 transition-transform group-hover:translate-x-1 animate-spin" />
               Registering...
             </>
           ) : (

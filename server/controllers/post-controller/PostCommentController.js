@@ -250,3 +250,58 @@ export const deleteCommentWithChildren = async (req, res) => {
       .json({ error: "Something Went Wrong. Please try again" });
   }
 };
+export const countCommentsByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid userId" });
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    // Step 1: find all postIds where user commented
+    const userPosts = await Comment.distinct("postId", {
+      userId: userObjectId,
+    });
+
+    if (!userPosts.length) {
+      return res.status(200).json([]);
+    }
+
+    // Step 2: aggregate counts per post
+    const results = await Comment.aggregate([
+      {
+        $match: {
+          postId: { $in: userPosts },
+        },
+      },
+      {
+        $group: {
+          _id: "$postId",
+          all: { $sum: 1 },
+          main: {
+            $sum: {
+              $cond: [{ $eq: ["$parentId", null] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          postId: "$_id",
+          all: 1,
+          main: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json(results);
+  } catch (error) {
+    console.error("COUNT COMMENT BY USER ERROR:", error);
+    return res.status(500).json({
+      error: "Something went wrong",
+    });
+  }
+};

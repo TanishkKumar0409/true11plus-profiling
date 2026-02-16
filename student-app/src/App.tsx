@@ -71,7 +71,7 @@ function App() {
     }
   }, [authLoading, authUser]);
 
-  if (authLoading) return <MainLoader/>;
+  if (authLoading) return <MainLoader />;
 
   return (
     <>

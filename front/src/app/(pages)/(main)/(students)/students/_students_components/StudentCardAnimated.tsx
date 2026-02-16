@@ -59,7 +59,7 @@ export const StudentCardAnimated = ({ student, index }: StudentCardProps) => {
             <h3 className="font-bold text-(--text-color-emphasis) capitalize text-lg">
               {student.name}
             </h3>
-            <span className="text-xs font-bold text-(--main) uppercase mt-1">
+            <span className="text-xs font-bold text-(--main) mt-1">
               {student.username}
             </span>
           </div>

@@ -19,7 +19,7 @@ const postSchema = mongoose.Schema(
     },
     is_private: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     post_type: {
       type: String,
