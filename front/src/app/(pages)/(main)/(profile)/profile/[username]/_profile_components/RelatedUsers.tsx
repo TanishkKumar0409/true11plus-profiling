@@ -7,7 +7,7 @@ import { Button } from "@/ui/button/Button";
 import ConnectionSkeleton from "@/ui/loading/components/profile/ConnectionSkeleton";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useCallback, useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { BiCheck, BiMapPin, BiUserPlus, BiLoaderAlt } from "react-icons/bi";
 import { BsArrowRight } from "react-icons/bs";
 import { toast } from "react-hot-toast";

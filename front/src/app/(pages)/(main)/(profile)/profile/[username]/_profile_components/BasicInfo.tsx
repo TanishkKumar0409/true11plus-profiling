@@ -38,26 +38,28 @@ export default function BasicInfo({
   const hasExistingRequest = useMemo(() => {
     if (!user?._id || !connectionRequests?.requests) return false;
     return connectionRequests.requests.some(
-      (req) => req.receiver._id === user?._id || req.receiver === user?._id,
+      (req) => req.receiver._id === user?._id || req.receiver === user?._id
     );
   }, [user?._id, connectionRequests]);
 
   const viewerConnection = useMemo(() => {
-    if (!user?._id || !connections || removedIds.includes(user._id))
-      return null;
+    if (!user?._id || !connections || removedIds.includes(user._id)) return null;
     return connections.find((conn) => conn.users.includes(user._id));
   }, [user?._id, connections, removedIds]);
 
   const totalConnectionsCount = connections?.length || 0;
 
-  const location = [user?.city, user?.state, user?.country]
-    ?.filter(Boolean)
-    ?.join(", ");
+  const location = useMemo(() => {
+    return [user?.city, user?.state, user?.country]
+      ?.filter(Boolean)
+      ?.join(", ");
+  }, [user?.city, user?.state, user?.country]);
 
-  const profileUrl =
-    typeof window !== "undefined" && user?.username
+  const profileUrl = useMemo(() => {
+    return typeof window !== "undefined" && user?.username
       ? `${window.location.origin}/profile/${user?.username}`
       : "";
+  }, [user?.username]);
 
   const handleConnect = async (receiverId: string) => {
     setRequestingIds((prev) => [...prev, receiverId]);
@@ -101,15 +103,14 @@ export default function BasicInfo({
     }
   };
 
+  const connectionHandler = () => {
+    if (!user?._id) return;
+    if (isAccepted) { handleDisconnect(user._id) } else { handleConnect(user._id); }
+  }
+
   const isRequesting = user?._id ? requestingIds.includes(user._id) : false;
-
-  // 2. Combine Local UI state with Server-fetched state
-  const hasSentLocalRequest = user?._id
-    ? localRequestedIds.includes(user._id)
-    : false;
-
+  const hasSentLocalRequest = user?._id ? localRequestedIds.includes(user._id) : false;
   const isAccepted = viewerConnection?.status === "accepted";
-
   const isPending =
     (viewerConnection?.status === "pending" ||
       hasSentLocalRequest ||
@@ -171,19 +172,13 @@ export default function BasicInfo({
                   disabled={
                     isRequesting || !user?._id || (isPending && !isAccepted)
                   }
-                  onClick={() => {
-                    if (!user?._id) return;
-                    isAccepted
-                      ? handleDisconnect(user._id)
-                      : handleConnect(user._id);
-                  }}
-                  className={`flex gap-2 items-center py-1! px-4! ${
-                    isPending
-                      ? "bg-(--success-subtle)! text-(--success)! border-(--success)!"
-                      : isAccepted
-                        ? "hover:bg-red-500! hover:text-white! border-transparent!"
-                        : ""
-                  }`}
+                  onClick={connectionHandler}
+                  className={`flex gap-2 items-center py-1! px-4! ${isPending
+                    ? "bg-(--success-subtle)! text-(--success)! border-(--success)!"
+                    : isAccepted
+                      ? "hover:bg-red-500! hover:text-white! border-transparent!"
+                      : ""
+                    }`}
                 />
               )}
               <Button
@@ -209,10 +204,7 @@ export default function BasicInfo({
 
               <div className="flex flex-col items-end group cursor-pointer">
                 <div className="flex items-center gap-1.5 bg-(--secondary-bg) px-3 py-1 rounded-full border border-(--border) transition-all duration-200 group-hover:border-(--main)">
-                  <BiGroup
-                    className="text-(--text-subtle) group-hover:text-(--main)"
-                    size={16}
-                  />
+                  <BiGroup className="text-(--text-subtle) group-hover:text-(--main)" size={16} />
                   <span className="font-bold text-sm text-(--text-color)">
                     {totalConnectionsCount}
                   </span>
@@ -227,9 +219,7 @@ export default function BasicInfo({
               {location && (
                 <div className="flex items-center gap-1.5">
                   <BiMapPin size={16} className="text-(--text-subtle)" />
-                  <span className="text-sm text-(--text-subtle)">
-                    {location}
-                  </span>
+                  <span className="text-sm text-(--text-subtle)">{location}</span>
                 </div>
               )}
             </div>

@@ -4,7 +4,6 @@ import { true11SocialMedia } from "@/common/SocialMediaData";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
 import GoogleLoginButton from "./_google_login/GoogleLoginButton";
 
 export default function AuthLayout({
@@ -15,12 +14,7 @@ export default function AuthLayout({
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
 
-  // Define routes where Google Login should be visible
   const showSocialLogin = ["/auth/login", "/auth/register"].includes(pathname);
-
-  const handleGoogleLogin = () => {
-    console.log("Redirecting to Google Login...");
-  };
 
   return (
     <div className="flex min-h-screen w-full  bg-(--secondary-bg)">

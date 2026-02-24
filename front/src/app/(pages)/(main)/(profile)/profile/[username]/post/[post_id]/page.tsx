@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { UserProps } from "@/types/UserProps";
+import { ConnectionProps, UserProps } from "@/types/UserProps";
 import { getErrorResponse } from "@/contexts/Callbacks";
 import { API } from "@/contexts/API";
 import { PostProps } from "@/types/PostTypes";
@@ -19,7 +19,42 @@ export default function SinglePostPage() {
   const [post, setPost] = useState<PostProps | null>(null);
   const [authUser, setAuthUser] = useState<UserProps | null>(null);
   const [postLoading, setPostLoading] = useState(true);
+  const [connections, setConnections] = useState<ConnectionProps[]>([]);
+  const [connectionRequests, setConnectionsRequest] = useState<{
+    count: number;
+    requests: any[];
+  } | null>(null);
   const router = useRouter();
+
+  const getConnections = useCallback(async () => {
+    try {
+      const results = await Promise.allSettled([
+        API.get(`/user/connect/ids`),
+        API.get(`/user/connect/requester/request`),
+      ]);
+
+      const connectionRes = results[0];
+      const reqRes = results[1];
+
+      if (connectionRes.status === "fulfilled") {
+        setConnections(connectionRes.value.data);
+      } else {
+        console.error("Connections Fetch Error:", connectionRes.reason);
+      }
+
+      if (reqRes.status === "fulfilled") {
+        setConnectionsRequest(reqRes.value.data);
+      } else {
+        console.error("Requests Fetch Error:", reqRes.reason);
+      }
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, []);
+
+  useEffect(() => {
+    getConnections();
+  }, [getConnections]);
 
   const getAuthUserUser = useCallback(async () => {
     setLoading(true);
@@ -96,7 +131,7 @@ export default function SinglePostPage() {
       </div>
       <div className="lg:col-span-1">
         <div className="sticky top-25">
-          <RelatedUsers user={user} />
+          <RelatedUsers user={user} connectionRequests={connectionRequests} connections={connections} />
         </div>
       </div>
     </div>

@@ -32,7 +32,6 @@ const ProfilePublic = () => {
   const fetchProfileData = useCallback(async () => {
     setIsPageLoading(true);
     try {
-      // 1. Fetch the essential profile and auth data first
       const [authRes, publicUserRes, connectionRes] = await Promise.allSettled([
         API.get(`/auth/user`),
         API.get(`/user/username/${username}`),
@@ -62,7 +61,6 @@ const ProfilePublic = () => {
       if (fetchedUserId) {
         try {
           const reqRes = await API.get(`/user/connect/requester/request`);
-          console.log(reqRes);
           setConnectionsRequest(reqRes.data);
         } catch (err) {
           console.error("Failed to fetch connection requests", err);
