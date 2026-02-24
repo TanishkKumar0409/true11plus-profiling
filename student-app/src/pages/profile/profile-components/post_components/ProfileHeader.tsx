@@ -1,10 +1,29 @@
 import { useOutletContext } from "react-router-dom";
 import { ButtonGroup, SecondButton } from "../../../../ui/buttons/Button";
 import type { DashboardOutletContextProps } from "../../../../types/Types";
-import { getUserAvatar } from "../../../../contexts/CallBacks";
+import {
+  getErrorResponse,
+  getUserAvatar,
+} from "../../../../contexts/CallBacks";
+import { useCallback, useEffect, useState } from "react";
+import { API } from "../../../../contexts/API";
 
 export const ProfileHeader = () => {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
+  const [connections, setConnections] = useState([]);
+
+  const fetchConnections = useCallback(async () => {
+    try {
+      const response = await API.get(`/user/connect/ids`);
+      setConnections(response.data);
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchConnections();
+  }, [fetchConnections]);
 
   const bannerUrl = authUser?.banner?.[0]
     ? `${import.meta.env.VITE_MEDIA_URL}/${authUser.banner[0]}`
@@ -62,19 +81,11 @@ export const ProfileHeader = () => {
 
           <div className="flex gap-8 sm:text-right">
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-(--gray-emphasis)">
-                600+
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-(--gray)">
-                Followers
-              </span>
-            </div>
-            <div className="flex flex-col">
               <span className="text-xl font-bold text-(--purple-emphasis)">
-                85%
+                {connections?.length || 0}
               </span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-(--gray)">
-                Readiness
+                Connections
               </span>
             </div>
           </div>

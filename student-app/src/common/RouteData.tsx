@@ -7,6 +7,8 @@ import Task from "../pages/task/Task";
 import TaskView from "../pages/task/TaskView";
 import SinglePostPage from "../pages/activity/PostComments";
 import Profile from "../pages/profile/Profile";
+import Connections from "../pages/connections/Connections";
+import { LuUsers } from "react-icons/lu";
 
 export const SidbarNavigations = [
   {
@@ -29,6 +31,13 @@ export const SidbarNavigations = [
     icon: BiTask,
     href: "/task",
     component: Task,
+  },
+  {
+    name: "Connections",
+    id: "connections",
+    icon: LuUsers,
+    href: "connections",
+    component: Connections,
   },
 ];
 export const NonSidebarNavigations = [

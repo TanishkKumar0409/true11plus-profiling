@@ -17,6 +17,7 @@ const Header: React.FC<NavbarProps> = ({
   authUser,
 }) => {
   const [sidebarProfile, setSidebarProfile] = useState(false);
+
   return (
     <>
       <nav

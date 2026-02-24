@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { BiUpload, BiEditAlt, BiTrash, BiX } from "react-icons/bi";
 import {
@@ -34,9 +37,16 @@ export default function BannerUpload({ user }: BannerUploadProps) {
   const [originalFileName, setOriginalFileName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const cropperRef = useRef<CropperRef>(null);
+
+  // Handle Portal mounting
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     setBanner(
@@ -152,13 +162,13 @@ export default function BannerUpload({ user }: BannerUploadProps) {
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end gap-3 p-4">
               <button
                 onClick={() => inputRef.current?.click()}
-                className="p-2 bg-(--main-subtle) text-(--main) hover:scale-110 transition rounded-custom shadow-lg"
+                className="p-2 bg-white/90 text-(--text-color) hover:bg-white transition rounded-custom shadow-lg"
               >
                 <BiEditAlt size={20} />
               </button>
               <button
                 onClick={handleDelete}
-                className="p-2 bg-(--danger) text-white hover:scale-110 transition rounded-custom shadow-lg"
+                className="p-2 bg-red-500 text-white hover:bg-red-600 transition rounded-custom shadow-lg"
               >
                 <BiTrash size={20} />
               </button>
@@ -171,7 +181,7 @@ export default function BannerUpload({ user }: BannerUploadProps) {
           >
             <BiUpload size={40} className="mb-2 opacity-50" />
             <p className="font-bold">Upload Cover Banner</p>
-            <p className="text-xs opacity-60">Recommended Ratio 2:1</p>
+            <p className="text-xs opacity-60">Required Ratio 2:1</p>
           </div>
         )}
         <input
@@ -185,65 +195,71 @@ export default function BannerUpload({ user }: BannerUploadProps) {
         />
       </div>
 
-      <AnimatePresence>
-        {srcToCrop && (
-          <div className="fixed inset-0 z-1000 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="bg-(--primary-bg) overflow-hidden max-w-2xl w-full rounded-custom shadow-custom flex flex-col"
-            >
-              <div className="px-6 py-4 flex justify-between items-center border-b border-(--gray-subtle)">
-                <div>
-                  <h4 className="font-bold text-(--text-color) leading-tight">
-                    Edit Cover Photo
-                  </h4>
-                  <p className="text-[10px] uppercase tracking-wider font-semibold opacity-50">
-                    Adjust and Crop
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSrcToCrop(null)}
-                  className="p-1 hover:bg-(--main-subtle) rounded-custom transition-all text-(--text-subtle) hover:text-(--main)"
+      {/* --- CROPPER PORTAL --- */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {srcToCrop && (
+              <div className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  className="bg-(--primary-bg) overflow-hidden max-w-3xl w-full rounded-custom shadow-custom flex flex-col"
                 >
-                  <BiX size={26} />
-                </button>
-              </div>
-
-              <div className="relative w-full aspect-square md:aspect-video max-h-112.5 bg-black flex items-center justify-center overflow-hidden">
-                <Cropper
-                  ref={cropperRef}
-                  src={srcToCrop}
-                  stencilComponent={RectangleStencil}
-                  stencilProps={{
-                    aspectRatio: 2 / 1,
-                    grid: true,
-                  }}
-                  className="w-full h-full"
-                />
-              </div>
-
-              <div className="py-4 px-6 bg-(--primary-bg) flex flex-col sm:flex-row gap-4 justify-end items-center border-t border-(--gray-subtle)">
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <div className="flex-1">
-                    <SecondButton
-                      label="Cancel"
+                  <div className="px-6 py-4 flex justify-between items-center border-b border-(--gray-subtle)">
+                    <div>
+                      <h4 className="font-bold text-(--text-color) leading-tight">
+                        Edit Cover Photo
+                      </h4>
+                      <p className="text-[10px] uppercase tracking-wider font-semibold opacity-50">
+                        Wide Crop (2:1)
+                      </p>
+                    </div>
+                    <button
                       onClick={() => setSrcToCrop(null)}
-                      className="w-full justify-center"
+                      className="p-1 hover:bg-(--main-subtle) rounded-custom transition-all text-(--text-subtle) hover:text-(--main)"
+                    >
+                      <BiX size={26} />
+                    </button>
+                  </div>
+
+                  {/* Cropper Area */}
+                  <div className="relative w-full aspect-2/1 bg-black flex items-center justify-center overflow-hidden">
+                    <Cropper
+                      ref={cropperRef}
+                      src={srcToCrop}
+                      stencilComponent={RectangleStencil}
+                      stencilProps={{
+                        aspectRatio: 2 / 1,
+                        grid: true,
+                      }}
+                      className="w-full h-full"
                     />
                   </div>
-                  <ButtonGroup
-                    onClick={handleSaveCrop}
-                    label={isUploading ? "Uploading..." : "Save Changes"}
-                    disable={isUploading}
-                  />
-                </div>
+
+                  <div className="py-4 px-6 bg-(--primary-bg) flex flex-col sm:flex-row gap-4 justify-end items-center border-t border-(--gray-subtle)">
+                    <div className="flex gap-3 w-full sm:w-auto">
+                      <div className="flex-1">
+                        <SecondButton
+                          label="Cancel"
+                          onClick={() => setSrcToCrop(null)}
+                          className="w-full justify-center"
+                        />
+                      </div>
+                      <ButtonGroup
+                        onClick={handleSaveCrop}
+                        label={isUploading ? "Uploading..." : "Save Changes"}
+                        disable={isUploading}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </div>
   );
 }

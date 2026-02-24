@@ -35,6 +35,8 @@ export const getUserByUsername = async (req, res) => {
         website: userassets?.website,
         title: userassets?.title,
         about: userassets?.about,
+        mobile_private: userassets?.mobile_private,
+        email_private: userassets?.email_private,
       }),
     };
 
@@ -181,7 +183,16 @@ export const UpdateUserDetails = async (req, res) => {
 
     if (!userId) return res.status(400).json({ error: "User ID is required." });
 
-    let { name, username, mobile_no, website, title, about } = req.body;
+    let {
+      name,
+      username,
+      mobile_no,
+      website,
+      title,
+      about,
+      mobile_private,
+      email_private,
+    } = req.body;
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found." });
@@ -207,7 +218,7 @@ export const UpdateUserDetails = async (req, res) => {
     await User.findByIdAndUpdate(userId, { $set: updatedFields });
     await UserAssets.findOneAndUpdate(
       { userId },
-      { $set: { website, title, about } },
+      { $set: { website, title, about, email_private, mobile_private } },
       { upsert: true },
     );
 
@@ -311,6 +322,8 @@ export const getRandomStudentsWithDetailsLimit = async (req, res) => {
           website: ast.website,
           title: ast?.title,
           about: ast?.about,
+          mobile_private: ast?.mobile_private,
+          email_private: ast?.email_private,
         }),
       };
     });
@@ -418,6 +431,8 @@ export const getRandomUsersWithDetails = async (req, res) => {
           website: ast.website,
           title: ast?.title,
           about: ast?.about,
+          mobile_private: ast?.mobile_private,
+          email_private: ast?.email_private,
         }),
       };
     });
@@ -469,6 +484,8 @@ export const getAllUsers = async (req, res) => {
           website: ast.website,
           title: ast?.title,
           about: ast?.about,
+          mobile_private: ast?.mobile_private,
+          email_private: ast?.email_private,
         }),
       };
     });
@@ -508,6 +525,8 @@ export const getUserByObjectId = async (req, res) => {
         website: userassets?.website,
         title: userassets?.title,
         about: userassets?.about,
+        mobile_private: userassets?.mobile_private,
+        email_private: userassets?.email_private,
       }),
     };
 
@@ -675,6 +694,8 @@ export const getUserBysRole = async (req, res) => {
           website: ast.website,
           about: ast?.about,
           title: ast?.title,
+          mobile_private: ast?.mobile_private,
+          email_private: ast?.email_private,
         }),
       };
     });

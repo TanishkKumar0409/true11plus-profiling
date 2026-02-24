@@ -39,7 +39,7 @@ export default function ContactInfo({ user }: { user: UserProps | null }) {
       </div>
       <div className="p-5 space-y-5">
         <div className="space-y-4">
-          {user?.email && (
+          {!user?.email_private && user?.email && (
             <div className="flex items-center gap-3 group">
               <div className="p-1.5 bg-(--main-subtle) text-(--main) rounded-custom">
                 <BiEnvelope size={18} />
@@ -58,7 +58,7 @@ export default function ContactInfo({ user }: { user: UserProps | null }) {
             </div>
           )}
 
-          {user?.mobile_no && (
+          {!user?.mobile_private && user?.mobile_no && (
             <div className="flex items-center gap-3 group">
               <div className="p-1.5 bg-(--success-subtle) text-(--success) rounded-custom">
                 <BiPhone size={18} />

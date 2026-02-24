@@ -59,7 +59,7 @@ export default function CreateTask() {
     initialValues: {
       academic_group_id: "",
       title: "",
-      difficulty_level: "Medium",
+      difficulty_level: "",
       duration_value: "",
       duration_type: "Days",
       task_type: "",
@@ -146,7 +146,7 @@ export default function CreateTask() {
         text-(--text-color-emphasis) rounded-custom p-2 appearance-none 
         focus:ring-1 focus:ring-(--border) outline-none font-semibold"
               >
-                <option value="" disabled>
+                <option value="" disabled selected>
                   --select level--
                 </option>
                 {getCategoryAccodingToField(
@@ -195,7 +195,7 @@ export default function CreateTask() {
         text-(--text-color-emphasis) rounded-custom p-2 appearance-none 
         focus:ring-1 focus:ring-(--border) outline-none font-semibold"
               >
-                <option value="" disabled>
+                <option value="" disabled selected>
                   --select type--
                 </option>
                 {getCategoryAccodingToField(allCategory, "pillar")?.map(

@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
     mobile_no: { type: String, unique: true },
-    password: { type: String, required: true },
+    password: { type: String },
     role: { type: mongoose.Schema.Types.ObjectId, ref: "role" },
     permissions: { type: [mongoose.Schema.Types.ObjectId], ref: "permissions" },
     status: { type: String, default: "active", lowercase: true },

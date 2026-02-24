@@ -62,11 +62,13 @@ import {
   addOrUpdateUserSocialLinks,
   getUserSocialLinksByUserId,
 } from "../controllers/user-controller/UserSocialLinksController.js";
+import { GoogleAuthLogin } from "../controllers/user-controller/GoogleAuth.js";
 
 const router = express.Router();
 
 router.post("/auth/register", registerUser);
 router.post("/auth/login", Login);
+router.post("/auth/login/google", GoogleAuthLogin);
 router.get("/auth/verify-email/:token", GetEmailVerification);
 router.post(`/auth/verify-email/email/:email`, VerifyUserEmail);
 router.get(`/auth/token`, getAuthToken);
@@ -120,7 +122,7 @@ router.get(`/user/education/:userId`, getEducationByUserId);
 
 router.post("/user/add/skill", addUserSkill);
 router.get("/user/skills/:userId", getSkillsByUserId);
-router.get("/user/skills/show/:userId",getSkillsByUserIdForShow);
+router.get("/user/skills/show/:userId", getSkillsByUserIdForShow);
 router.delete("/user/delete/skill/:objectId", deleteUserSkill);
 
 router.post("/user/add/language", addUserLanguage);

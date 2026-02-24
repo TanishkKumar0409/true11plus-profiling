@@ -18,6 +18,8 @@ export interface UserProps extends Record<string, unknown> {
   website: string;
   title: string;
   about: string;
+  email_private: boolean;
+  mobile_private: boolean;
 }
 
 export interface RoleProps {

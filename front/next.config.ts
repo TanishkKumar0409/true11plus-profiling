@@ -9,13 +9,18 @@ const nextConfig = {
         ? [
             {
               protocol: new URL(
-                process.env.NEXT_PUBLIC_MEDIA_URL
+                process.env.NEXT_PUBLIC_MEDIA_URL,
               ).protocol.replace(":", ""),
               hostname: new URL(process.env.NEXT_PUBLIC_MEDIA_URL).hostname,
               pathname: "/**",
             },
           ]
         : []),
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+        pathname: "/**",
+      },
     ],
   },
 };

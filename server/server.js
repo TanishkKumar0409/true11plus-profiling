@@ -10,6 +10,7 @@ import SystemAssetsRoutes from "./routes/SystemAssetsRoutes.js";
 import academicStructureRoutes from "./routes/AcademicStructureRoutes.js";
 import userAcademicRoutes from "./routes/userAcademicRoutes.js";
 import enquiryRoutes from "./routes/EnquiryRoutes.js";
+import userConnectionRoutes from "./routes/ConnectionRoutes.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true, limit: "5gb" }));
 
 const allowedOrigins = [
   process.env.FRONT_URL,
+  process.env.WWW_URL,
   process.env.STUDENT_APP_URL,
   process.env.CONSOLE_URL,
 ];
@@ -49,11 +51,12 @@ app.get("/", (req, res) => {
 app.use("/api", router);
 app.use("/api", extraRoutes);
 app.use("/api", postRouter);
+app.use("/api", userConnectionRoutes);
 app.use("/api", SystemAssetsRoutes);
 app.use("/api", academicStructureRoutes);
 app.use("/api", userAcademicRoutes);
 app.use("/api", enquiryRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on ${PORT}`);
 });

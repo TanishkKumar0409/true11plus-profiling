@@ -3,6 +3,9 @@
 import { true11SocialMedia } from "@/common/SocialMediaData";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
+import GoogleLoginButton from "./_google_login/GoogleLoginButton";
 
 export default function AuthLayout({
   children,
@@ -10,10 +13,18 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   const currentYear = new Date().getFullYear();
+  const pathname = usePathname();
+
+  // Define routes where Google Login should be visible
+  const showSocialLogin = ["/auth/login", "/auth/register"].includes(pathname);
+
+  const handleGoogleLogin = () => {
+    console.log("Redirecting to Google Login...");
+  };
 
   return (
-    <div className="flex min-h-screen w-full  bg-slate-50">
-      <div className="hidden lg:flex w-1/2 sticky top-0 h-screen flex-col items-center justify-center text-white overflow-hidden">
+    <div className="flex min-h-screen w-full  bg-(--secondary-bg)">
+      <div className="hidden lg:flex w-1/2 sticky top-0 h-screen flex-col items-center justify-center text-(--white) overflow-hidden">
         <div className="absolute inset-0 z-0 w-full h-full">
           <Image
             src="/img/background/auth-background.webp"
@@ -50,7 +61,7 @@ export default function AuthLayout({
           </div>
 
           <div className="w-full border-t border-white/10 pt-8 mt-4">
-            <p className="mb-6 text-xs font-bold tracking-[0.2em] text-indigo-200 uppercase">
+            <p className="mb-6 text-xs font-bold tracking-[0.2em] text-(--main-subtle) uppercase">
               Join Our Global Community
             </p>
             <div className="flex gap-5 justify-center">
@@ -64,7 +75,7 @@ export default function AuthLayout({
                     target="_blank"
                     aria-label={item.label}
                     style={{ backgroundColor: item.color }}
-                    className="flex h-11 w-11 items-center justify-center rounded-xl cursor-pointer text-white shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-white"
+                    className="flex h-11 w-11 items-center justify-center rounded-xl cursor-pointer text-(--white) shadow-lg transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:shadow-white"
                   >
                     <Icon className="h-5 w-5" />
                   </Link>
@@ -74,13 +85,31 @@ export default function AuthLayout({
           </div>
         </div>
 
-        <div className="absolute bottom-8 z-10 text-[10px] text-indigo-200/40 font-bold uppercase tracking-widest">
+        <div className="absolute bottom-8 z-10 text-[10px] text-(--text-subtle) font-bold uppercase tracking-widest">
           © {currentYear} Days International. Shaping Global Leaders.
         </div>
       </div>
 
-      <main className="flex w-full lg:w-1/2 items-center justify-center bg-white px-6 py-12 lg:px-24 overflow-y-auto">
-        {children}
+      <main className="flex flex-col w-full lg:w-1/2 items-center justify-center bg-(--primary-bg) px-6 py-12 lg:px-24 overflow-y-auto">
+        <div className="w-full max-w-lg">
+          {children}
+
+          {showSocialLogin && (
+            <div className="mt-8 w-full">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-(--border)"></div>
+                </div>
+                <div className="relative flex justify-center text-sm uppercase">
+                  <span className="bg-(--primary-bg) px-4 text-(--text-subtle) font-medium">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+              <GoogleLoginButton />
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

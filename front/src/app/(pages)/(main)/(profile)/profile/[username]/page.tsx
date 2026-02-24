@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getErrorResponse } from "@/contexts/Callbacks";
-import { UserProps } from "@/types/UserProps";
+import { ConnectionProps, UserProps } from "@/types/UserProps";
 import { API } from "@/contexts/API";
 import ContactInfo from "./_profile_components/ContactInfo";
 import BasicInfo from "./_profile_components/BasicInfo";
@@ -23,24 +23,50 @@ const ProfilePublic = () => {
   const [authUser, setAuthUser] = useState<UserProps | null>(null);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [isUserNotFound, setIsUserNotFound] = useState(false);
+  const [connections, setConnections] = useState<ConnectionProps[]>([]);
+  const [connectionRequests, setConnectionsRequest] = useState<{
+    count: number;
+    requests: any[];
+  } | null>(null);
 
   const fetchProfileData = useCallback(async () => {
     setIsPageLoading(true);
     try {
-      const [authRes, publicUserRes] = await Promise.allSettled([
+      // 1. Fetch the essential profile and auth data first
+      const [authRes, publicUserRes, connectionRes] = await Promise.allSettled([
         API.get(`/auth/user`),
         API.get(`/user/username/${username}`),
+        API.get(`/user/connect/ids`),
       ]);
 
+      let fetchedUserId = null;
+
       if (authRes.status === "fulfilled") {
-        setAuthUser(authRes.value.data);
+        const userData = authRes.value.data;
+        setAuthUser(userData);
+        fetchedUserId = userData._id;
+      }
+
+      if (connectionRes.status === "fulfilled") {
+        setConnections(connectionRes.value.data);
       }
 
       if (publicUserRes.status === "fulfilled") {
-        setUser(publicUserRes.value.data);
+        const userData = publicUserRes.value.data;
+        setUser(userData);
         setIsUserNotFound(false);
       } else {
         setIsUserNotFound(true);
+      }
+
+      if (fetchedUserId) {
+        try {
+          const reqRes = await API.get(`/user/connect/requester/request`);
+          console.log(reqRes);
+          setConnectionsRequest(reqRes.data);
+        } catch (err) {
+          console.error("Failed to fetch connection requests", err);
+        }
       }
     } catch (error) {
       getErrorResponse(error, true);
@@ -66,7 +92,12 @@ const ProfilePublic = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-24 pb-12 sm:px-8 px-4 bg-(--secondary-bg)">
       <div className="lg:col-span-1 space-y-6 mb-6">
-        <BasicInfo user={user} />
+        <BasicInfo
+          user={user}
+          authUser={authUser}
+          connections={connections}
+          connectionRequests={connectionRequests}
+        />
         <ContactInfo user={user} />
         <EducationInfo user={user} />
         <ExperienceInfo user={user} />
@@ -95,7 +126,11 @@ const ProfilePublic = () => {
             </div>
           )}
 
-          <RelatedUsers user={user} />
+          <RelatedUsers
+            user={user}
+            connections={connections}
+            connectionRequests={connectionRequests}
+          />
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import UnderConstructionToast from "@/ui/toast/UnderConstructionToast";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,7 +36,11 @@ export default function RootLayout({
       >
         <Toaster />
         <UnderConstructionToast />
-        {children}
+        <GoogleOAuthProvider
+          clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
+        >
+          {children}
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

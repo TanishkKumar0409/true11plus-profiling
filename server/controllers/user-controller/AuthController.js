@@ -263,6 +263,8 @@ export const AuthUserDetails = async (req, res) => {
         website: userassets?.website,
         title: userassets?.title,
         about: userassets?.about,
+        mobile_private: userassets?.mobile_private,
+        email_private: userassets?.email_private,
       }),
     };
 

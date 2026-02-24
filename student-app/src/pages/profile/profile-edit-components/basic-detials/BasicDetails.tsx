@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useFormik } from "formik";
@@ -29,6 +31,8 @@ export default function BasicDetails() {
       about: authUser?.about || "",
       mobile_no: authUser?.mobile_no || "",
       website: authUser?.website || "",
+      email_private: authUser?.email_private || false,
+      mobile_private: authUser?.mobile_private || false,
     },
     validationSchema: userEditValidation,
     onSubmit: async (values) => {
@@ -55,12 +59,17 @@ export default function BasicDetails() {
       className="w-full bg-(--primary-bg) rounded-custom shadow-custom p-6"
     >
       <div className="mb-6 border-b border-(--border) pb-4">
-        <p className="font-medium text-(--text-color)">
-          Update your personal details and contact information
+        <h3 className="text-lg font-bold text-(--text-color-emphasis) mb-1">
+          Profile Settings
+        </h3>
+        <p className="text-sm font-medium text-(--text-subtle)">
+          Update your personal details and control your contact visibility
         </p>
       </div>
+
       <form onSubmit={formik.handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Full Name */}
           <div>
             <InputGroup
               label="Full Name"
@@ -71,6 +80,8 @@ export default function BasicDetails() {
             />
             {getFormikError(formik, "name")}
           </div>
+
+          {/* Username */}
           <div>
             <InputGroup
               label="Username"
@@ -82,7 +93,8 @@ export default function BasicDetails() {
             {getFormikError(formik, "username")}
           </div>
 
-          <div>
+          {/* Email + Privacy */}
+          <div className="space-y-3">
             <InputGroup
               label="Email Address"
               note="Not Editable"
@@ -92,24 +104,52 @@ export default function BasicDetails() {
               value={authUser?.email}
               disabled={true}
             />
-          </div>
-
-          <div>
-            <label className="text-xs mb-1 block">Phone</label>
-            <div className="w-full">
-              <PhoneInput
-                country="in"
-                value={formik.values.mobile_no}
-                onChange={(phone) => formik.setFieldValue("mobile_no", phone)}
-                onBlur={() => formik.setFieldTouched("mobile_no", true)}
-                inputClass={`${phoneInputClass.input} w-full`}
-                buttonClass={phoneInputClass.button}
-                dropdownClass={phoneInputClass.dropdown}
+            <label className="flex items-center gap-2 cursor-pointer group w-fit">
+              <input
+                type="checkbox"
+                name="email_private"
+                checked={formik.values.email_private}
+                onChange={formik.handleChange}
+                className="w-4 h-4 rounded border-(--border) text-(--main) focus:ring-(--main)"
               />
-            </div>
-            {getFormikError(formik, "mobile_no")}
+              <span className="text-xs font-medium text-(--text-color) group-hover:text-(--main) transition-colors">
+                Make email private (Hidden from profile)
+              </span>
+            </label>
           </div>
 
+          {/* Phone + Privacy */}
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold mb-1 block">Phone</label>
+              <div className="w-full">
+                <PhoneInput
+                  country="in"
+                  value={formik.values.mobile_no}
+                  onChange={(phone) => formik.setFieldValue("mobile_no", phone)}
+                  onBlur={() => formik.setFieldTouched("mobile_no", true)}
+                  inputClass={`${phoneInputClass.input} w-full`}
+                  buttonClass={phoneInputClass.button}
+                  dropdownClass={phoneInputClass.dropdown}
+                />
+              </div>
+              {getFormikError(formik, "mobile_no")}
+            </div>
+            <label className="flex items-center gap-2 cursor-pointer group w-fit">
+              <input
+                type="checkbox"
+                name="mobile_private"
+                checked={formik.values.mobile_private}
+                onChange={formik.handleChange}
+                className="w-4 h-4 rounded border-(--border) text-(--main) focus:ring-(--main)"
+              />
+              <span className="text-xs font-medium text-(--text-color) group-hover:text-(--main) transition-colors">
+                Make phone number private
+              </span>
+            </label>
+          </div>
+
+          {/* Headline */}
           <div>
             <InputGroup
               label="Profile Title / Headline"
@@ -121,6 +161,8 @@ export default function BasicDetails() {
             />
             {getFormikError(formik, "title")}
           </div>
+
+          {/* Website */}
           <div>
             <InputGroup
               label="Website"
@@ -132,6 +174,7 @@ export default function BasicDetails() {
             {getFormikError(formik, "website")}
           </div>
 
+          {/* About Bio */}
           <div className="space-y-1.5 md:col-span-2">
             <TextareaGroup
               id="about"
@@ -144,7 +187,8 @@ export default function BasicDetails() {
           </div>
         </div>
 
-        <div className="flex justify-end">
+        {/* Action Button */}
+        <div className="flex justify-end pt-4 border-t border-(--border)">
           <ButtonGroup
             type="submit"
             disable={isLoading || !formik.isValid || !formik.dirty}

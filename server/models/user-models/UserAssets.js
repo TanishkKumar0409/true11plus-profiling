@@ -21,6 +21,14 @@ const UserAssetSchema = mongoose.Schema(
     about: {
       type: String,
     },
+    mobile_private: {
+      type: Boolean,
+      default: false,
+    },
+    email_private: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

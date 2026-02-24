@@ -16,4 +16,15 @@ export interface UserProps {
   website: string;
   about: string;
   title: string;
+  mobile_private: boolean;
+  email_private: boolean;
+}
+
+export interface ConnectionProps {
+  _id: string;
+  users: string[];
+  status: "accepted" | "pending";
+  acceptedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }

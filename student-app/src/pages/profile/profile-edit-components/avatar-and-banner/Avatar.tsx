@@ -1,10 +1,13 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { BiUpload, BiEditAlt, BiTrash, BiX, BiUser } from "react-icons/bi";
 import {
   Cropper,
   type CropperRef,
-  CircleStencil,
+  RectangleStencil,
 } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
 import { useOutletContext } from "react-router-dom";
@@ -33,9 +36,16 @@ export default function AvatarUpload({ user }: AvatarUploadProps) {
   const [srcToCrop, setSrcToCrop] = useState<string | null>(null);
   const [originalFileName, setOriginalFileName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const cropperRef = useRef<CropperRef>(null);
+
+  // Handle mounting state for Portal
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     setAvatar(
@@ -48,7 +58,6 @@ export default function AvatarUpload({ user }: AvatarUploadProps) {
     }
   }, [user?.avatar, user?.username, originalFileName]);
 
-  // Handle Body Scroll Lock
   useEffect(() => {
     if (srcToCrop) {
       document.body.style.overflow = "hidden";
@@ -120,8 +129,7 @@ export default function AvatarUpload({ user }: AvatarUploadProps) {
     <div className="w-full">
       <div className="flex flex-col items-center sm:items-start">
         <div className="relative group">
-          {/* Avatar Preview Circle */}
-          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-(--gray-subtle) flex items-center justify-center transition-all duration-300">
+          <div className="w-32 h-32 rounded-full relative overflow-hidden border-4 border-white shadow-md bg-(--gray-subtle) flex items-center justify-center transition-all duration-300">
             {avatar ? (
               <img
                 src={avatar}
@@ -132,8 +140,7 @@ export default function AvatarUpload({ user }: AvatarUploadProps) {
               <BiUser className="w-16 h-16 text-(--main) opacity-30" />
             )}
 
-            {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-black/40 rounded-custom opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <button
                 onClick={() => inputRef.current?.click()}
                 className="p-2 bg-white text-gray-800 rounded-full hover:scale-110 transition shadow-lg"
@@ -153,7 +160,6 @@ export default function AvatarUpload({ user }: AvatarUploadProps) {
             </div>
           </div>
 
-          {/* Floating Edit Badge (Desktop) */}
           <button
             onClick={() => inputRef.current?.click()}
             className="absolute bottom-1 right-1 p-2 bg-(--main) text-white rounded-full shadow-lg border-2 border-white hover:scale-110 transition-transform sm:flex hidden"
@@ -173,69 +179,70 @@ export default function AvatarUpload({ user }: AvatarUploadProps) {
         />
       </div>
 
-      {/* --- CROPPER MODAL --- */}
-      <AnimatePresence>
-        {srcToCrop && (
-          <div className="fixed inset-0 z-1000 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="bg-(--primary-bg) overflow-hidden max-w-2xl w-full rounded-custom shadow-custom flex flex-col"
-            >
-              {/* Header */}
-              <div className="px-6 py-4 flex justify-between items-center border-b border-(--gray-subtle)">
-                <div>
-                  <h4 className="font-bold text-(--text-color) leading-tight">
-                    Edit Profile Photo
-                  </h4>
-                  <p className="text-[10px] uppercase tracking-wider font-semibold opacity-50">
-                    Adjust and Crop
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSrcToCrop(null)}
-                  className="p-1 hover:bg-(--main-subtle) rounded-custom transition-all text-(--text-subtle) hover:text-(--main)"
+      {/* --- PORTALED CROPPER MODAL --- */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {srcToCrop && (
+              <div className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  className="bg-(--primary-bg) overflow-hidden max-w-2xl w-full rounded-custom shadow-custom flex flex-col"
                 >
-                  <BiX size={26} />
-                </button>
-              </div>
-
-              {/* Cropper Body */}
-              <div className="relative w-full aspect-square max-h-112.5 bg-black flex items-center justify-center overflow-hidden">
-                <Cropper
-                  ref={cropperRef}
-                  src={srcToCrop}
-                  stencilComponent={CircleStencil}
-                  stencilProps={{
-                    aspectRatio: 1 / 1,
-                    grid: true,
-                  }}
-                  className="w-full h-full"
-                />
-              </div>
-
-              {/* Footer Actions */}
-              <div className="py-4 px-6 bg-(--primary-bg) flex flex-col sm:flex-row gap-4 justify-end items-center border-t border-(--gray-subtle)">
-                <div className="flex gap-3 w-full sm:w-auto">
-                  <div className="flex-1">
-                    <SecondButton
-                      label="Cancel"
+                  <div className="px-6 py-4 flex justify-between items-center border-b border-(--gray-subtle)">
+                    <div>
+                      <h4 className="font-bold text-(--text-color) leading-tight">
+                        Edit Profile Photo
+                      </h4>
+                      <p className="text-[10px] uppercase tracking-wider font-semibold opacity-50">
+                        Square Crop
+                      </p>
+                    </div>
+                    <button
                       onClick={() => setSrcToCrop(null)}
-                      className="w-full justify-center"
+                      className="p-1 hover:bg-(--main-subtle) rounded-custom transition-all text-(--text-subtle) hover:text-(--main)"
+                    >
+                      <BiX size={26} />
+                    </button>
+                  </div>
+
+                  <div className="relative w-full aspect-square max-h-[70vh] bg-black flex items-center justify-center overflow-hidden">
+                    <Cropper
+                      ref={cropperRef}
+                      src={srcToCrop}
+                      stencilComponent={RectangleStencil}
+                      stencilProps={{
+                        aspectRatio: 1 / 1,
+                        grid: true,
+                      }}
+                      className="w-full h-full"
                     />
                   </div>
-                  <ButtonGroup
-                    onClick={handleSaveCrop}
-                    label={isUploading ? "Uploading..." : "Save Changes"}
-                    disable={isUploading}
-                  />
-                </div>
+
+                  <div className="py-4 px-6 bg-(--primary-bg) flex flex-col sm:flex-row gap-4 justify-end items-center border-t border-(--gray-subtle)">
+                    <div className="flex gap-3 w-full sm:w-auto">
+                      <div className="flex-1">
+                        <SecondButton
+                          label="Cancel"
+                          onClick={() => setSrcToCrop(null)}
+                          className="w-full justify-center"
+                        />
+                      </div>
+                      <ButtonGroup
+                        onClick={handleSaveCrop}
+                        label={isUploading ? "Uploading..." : "Save Changes"}
+                        disable={isUploading}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </div>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </div>
   );
 }
