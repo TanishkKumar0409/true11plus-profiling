@@ -10,12 +10,48 @@ import type { PostProps } from "../../types/PostTypes";
 import { getErrorResponse } from "../../contexts/CallBacks";
 import { API } from "../../contexts/API";
 import ProfileSkeleton from "../../ui/loading/pages/ProfileSkeletoon";
+import type { ConnectionProps } from "../../types/UserTypes";
 
 export default function Profile() {
   const { authUser, startLoadingBar, stopLoadingBar } =
     useOutletContext<DashboardOutletContextProps>();
   const [posts, setPosts] = useState<PostProps[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const [connections, setConnections] = useState<ConnectionProps[]>([]);
+  const [connectionRequests, setConnectionsRequest] = useState<{
+    count: number;
+    requests: any[];
+  } | null>(null);
+
+  const getConnections = useCallback(async () => {
+    try {
+      const results = await Promise.allSettled([
+        API.get(`/user/connect/ids`),
+        API.get(`/user/connect/requester/request`),
+      ]);
+
+      const connectionRes = results[0];
+      const reqRes = results[1];
+
+      if (connectionRes.status === "fulfilled") {
+        setConnections(connectionRes.value.data);
+      } else {
+        console.error("Connections Fetch Error:", connectionRes.reason);
+      }
+
+      if (reqRes.status === "fulfilled") {
+        setConnectionsRequest(reqRes.value.data);
+      } else {
+        console.error("Requests Fetch Error:", reqRes.reason);
+      }
+    } catch (error) {
+      getErrorResponse(error, true);
+    }
+  }, []);
+
+  useEffect(() => {
+    getConnections();
+  }, [getConnections]);
 
   const getPosts = useCallback(async () => {
     startLoadingBar();
@@ -83,7 +119,10 @@ export default function Profile() {
         </div>
         <div className="lg:col-span-1">
           <div className="sticky top-16">
-            <SuggestedUsers />
+            <SuggestedUsers
+              connectionRequests={connectionRequests}
+              connections={connections}
+            />
           </div>
         </div>
       </div>

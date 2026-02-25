@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    mobile_no: { type: String, unique: true },
+    mobile_no: { type: String },
     password: { type: String },
     role: { type: mongoose.Schema.Types.ObjectId, ref: "role" },
     permissions: { type: [mongoose.Schema.Types.ObjectId], ref: "permissions" },

@@ -1,27 +1,52 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  getErrorResponse,
-  getUserAvatar,
-  showComingSoonToast,
-} from "../../contexts/CallBacks";
-import type { UserProps } from "../../types/UserTypes";
+import { getErrorResponse, getUserAvatar } from "../../contexts/CallBacks";
+import type { ConnectionProps, UserProps } from "../../types/UserTypes";
 import { Link, useOutletContext } from "react-router-dom";
 import type { DashboardOutletContextProps } from "../../types/Types";
 import { API } from "../../contexts/API";
-import { BiCheck, BiMapPin, BiUserPlus } from "react-icons/bi";
+import { BiCheck, BiLoaderAlt, BiMapPin, BiUserPlus } from "react-icons/bi";
 import { SecondButton } from "../../ui/buttons/Button";
+import toast from "react-hot-toast";
 
-export const SuggestedUsers = () => {
+export const SuggestedUsers = ({
+  connections,
+  connectionRequests,
+}: {
+  connections: ConnectionProps[];
+  connectionRequests: { count: number; requests: any[] } | null;
+}) => {
   const { authUser } = useOutletContext<DashboardOutletContextProps>();
   const [suggestions, setSuggestions] = useState<UserProps[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [connectedIds, setConnectedIds] = useState<string[]>([]);
+  const [requestingIds, setRequestingIds] = useState<string[]>([]);
+  const [localRequestedIds, setLocalRequestedIds] = useState<string[]>([]);
 
-  const handleConnect = (id: string) => {
-    showComingSoonToast();
-    setConnectedIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
+  useEffect(() => {
+    if (connectionRequests?.requests) {
+      const existingRequestIds = connectionRequests.requests.map((req: any) =>
+        typeof req.receiver === "string" ? req.receiver : req.receiver?._id,
+      );
+      setLocalRequestedIds(existingRequestIds);
+    }
+  }, [connectionRequests]);
+
+  const handleConnect = async (receiverId: string) => {
+    if (
+      requestingIds.includes(receiverId) ||
+      localRequestedIds.includes(receiverId)
+    )
+      return;
+
+    setRequestingIds((prev) => [...prev, receiverId]);
+    try {
+      await API.post(`/user/connect/request/${receiverId}`);
+      setLocalRequestedIds((prev) => [...prev, receiverId]);
+      toast.success("Connection request sent!");
+    } catch (error) {
+      getErrorResponse(error);
+    } finally {
+      setRequestingIds((prev) => prev.filter((id) => id !== receiverId));
+    }
   };
 
   const getSuggestions = useCallback(async () => {
@@ -29,13 +54,20 @@ export const SuggestedUsers = () => {
     try {
       setLoading(true);
       const response = await API.get(`/user/random/${authUser?._id}`);
-      setSuggestions(response.data);
+      const filtered = response.data.filter((suggestion: UserProps) => {
+        return !connections.some(
+          (conn) =>
+            conn.users.includes(suggestion._id || "") &&
+            conn.status === "accepted",
+        );
+      });
+      setSuggestions(filtered);
     } catch (error) {
       getErrorResponse(error, true);
     } finally {
       setLoading(false);
     }
-  }, [authUser?._id]);
+  }, [authUser?._id, connections]);
 
   useEffect(() => {
     getSuggestions();
@@ -68,8 +100,9 @@ export const SuggestedUsers = () => {
 
       <div className="px-3 pb-3 space-y-1">
         {suggestions.map((person, index) => {
-          const personId = person._id;
-          const isConnected = connectedIds.includes(personId);
+          const personId = person._id || "";
+          const isRequesting = requestingIds.includes(personId);
+          const hasRequested = localRequestedIds.includes(personId);
 
           const location = [person?.city, person?.state, person?.country]
             ?.filter(Boolean)
@@ -111,16 +144,22 @@ export const SuggestedUsers = () => {
               </Link>
 
               <button
-                type="button"
+                disabled={hasRequested || isRequesting}
                 onClick={() => handleConnect(personId)}
-                title={isConnected ? "Request Sent" : "Connect"}
-                className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300 ${
-                  isConnected
-                    ? "bg-(--success-subtle) text-(--success) border border-(--success)"
-                    : "bg-(--main-subtle) text-(--main) hover:bg-(--main) hover:text-white"
-                }`}
+                className={`
+                  shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300
+                  ${
+                    hasRequested
+                      ? "bg-(--success-subtle) text-(--success) cursor-default"
+                      : isRequesting
+                        ? "bg-(--secondary-bg) text-(--text-subtle) cursor-wait"
+                        : "bg-(--secondary-bg) text-(--text-color) hover:bg-(--main) hover:text-white cursor-pointer border border-(--border) hover:border-transparent"
+                  }
+                `}
               >
-                {isConnected ? (
+                {isRequesting ? (
+                  <BiLoaderAlt className="w-5 h-5 animate-spin" />
+                ) : hasRequested ? (
                   <BiCheck className="w-5 h-5" />
                 ) : (
                   <BiUserPlus className="w-5 h-5" />

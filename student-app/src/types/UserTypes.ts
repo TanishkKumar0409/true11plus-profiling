@@ -56,3 +56,14 @@ export interface UserLanguage {
   languageId?: string; // Reference to global ID
   language?: string; // Fallback name if populated or optimistic
 }
+
+
+
+export interface ConnectionProps {
+  _id: string;
+  users: string[];
+  status: "accepted" | "pending";
+  acceptedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
