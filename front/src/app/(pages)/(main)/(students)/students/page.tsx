@@ -11,6 +11,7 @@ import StudentdsSkeleton from "@/ui/loading/pages/StudentsSkeleton";
 export default function StudentMasonryDirectory() {
   const [students, setStudents] = useState<UserProps[]>([]);
   const [loading, setLoading] = useState(true);
+
   const getAllStudents = useCallback(async () => {
     setLoading(true);
     try {
@@ -35,7 +36,7 @@ export default function StudentMasonryDirectory() {
 
   return (
     <div className="min-h-screen bg-(--secondary-bg) selection:bg-(--blue-subtle)">
-      <main className="px-4 sm:px-8 py-16 md:py-24 ">
+      <main className="px-4 sm:px-8 py-16 md:py-24 max-w-400 mx-auto">
         {/* Header Section */}
         <header className="max-w-2xl mb-16">
           <motion.div
@@ -45,7 +46,7 @@ export default function StudentMasonryDirectory() {
           >
             <span className="h-px w-8 bg-(--main) rounded-full" />
             <span className="text-(--main) font-black text-xs uppercase tracking-[0.3em]">
-              Directory ${new Date().getFullYear()}
+              Directory 2026
             </span>
           </motion.div>
 
@@ -69,8 +70,8 @@ export default function StudentMasonryDirectory() {
           </motion.p>
         </header>
 
-        {/* Masonry Grid */}
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
+        {/* Stable Grid Replacement for Columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 items-stretch">
           {students?.map((student, idx) => (
             <StudentCardAnimated key={idx} student={student} index={idx} />
           ))}
