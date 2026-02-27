@@ -15,7 +15,11 @@ export default function StudentMasonryDirectory() {
     setLoading(true);
     try {
       const response = await API.get(`/users/role/student`);
-      setStudents(response.data);
+      const data = response.data;
+      const finalData = data.filter(
+        (item: UserProps) => item?.status === "active",
+      );
+      setStudents(finalData);
     } catch (error) {
       getErrorResponse(error, true);
     } finally {
@@ -27,7 +31,7 @@ export default function StudentMasonryDirectory() {
     getAllStudents();
   }, [getAllStudents]);
 
-  if(loading)return <StudentdsSkeleton/>
+  if (loading) return <StudentdsSkeleton />;
 
   return (
     <div className="min-h-screen bg-(--secondary-bg) selection:bg-(--blue-subtle)">

@@ -18,6 +18,7 @@ export interface UserProps {
   title: string;
   mobile_private: boolean;
   email_private: boolean;
+  status:string;
 }
 
 export interface ConnectionProps {

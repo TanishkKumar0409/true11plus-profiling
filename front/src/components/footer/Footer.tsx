@@ -13,7 +13,7 @@ export default function Footer() {
     company: [
       { name: "About Us", href: "/comming-soon" },
       { name: "Students", href: "/students" },
-      { name: "Success Stories", href: "/comming-soon" },
+      { name: "Scholarships", href: "/comming-soon" },
       { name: "Contact Us", href: "/contact" },
     ],
     services: [
@@ -59,7 +59,6 @@ export default function Footer() {
                     initial="initial"
                     whileHover="hover"
                   >
-                    {/* Tooltip */}
                     <motion.span
                       variants={{
                         initial: { opacity: 0, y: 10, scale: 0.8 },
@@ -69,11 +68,8 @@ export default function Footer() {
                       className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-(--secondary-bg) text-(--text-color-emphasis) text-[10px] font-bold uppercase tracking-widest rounded-md pointer-events-none whitespace-nowrap z-50 shadow-xl shadow-black/10"
                     >
                       {item.label}
-                      {/* Tooltip Arrow */}
                       <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-(--secondary-bg) rotate-45" />
                     </motion.span>
-
-                    {/* Social Icon Link */}
                     <motion.a
                       href={item.href}
                       target="_blank"

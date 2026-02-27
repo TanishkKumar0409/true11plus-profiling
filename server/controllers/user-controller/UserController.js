@@ -272,6 +272,7 @@ export const getRandomStudentsWithDetailsLimit = async (req, res) => {
       {
         $match: {
           role: new mongoose.Types.ObjectId(foundRole._id),
+          status: "active",
         },
       },
       { $sample: { size: safeLimit } },
@@ -367,6 +368,7 @@ export const getRandomUsersWithDetails = async (req, res) => {
     // ✅ Only students
     pipeline.push({
       $match: {
+        status: "active",
         role: new mongoose.Types.ObjectId(foundRole._id),
       },
     });
